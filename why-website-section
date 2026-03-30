@@ -1,0 +1,300 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Check } from "lucide-react";
+
+const liveCreatorsFeatures = [
+  {
+    icon: "👤",
+    badge: "PRIORITY ACCESS",
+    title: "Direct TikTok Support",
+    description: "Get direct access to TikTok's support team through our official partnership. We help with account issues, unbans, verification, and technical problems.",
+    bullets: [
+      "Fast-track unban support",
+      "Account protection assistance",
+      "Technical issue resolution"
+    ]
+  },
+  {
+    icon: "🏆",
+    badge: "MEMBERS ONLY",
+    title: "Exclusive LIVE Opportunities",
+    description: "Access exclusive tournaments, brand campaigns, and sponsored streaming opportunities that are only available to Creator Scans network members.",
+    bullets: [
+      "Exclusive brand campaigns",
+      "Tournament prizes & bonuses",
+      "Traffic support requests"
+    ]
+  },
+  {
+    icon: "📊",
+    badge: "PERSONALIZED",
+    title: "LIVE Strategy & Feedback",
+    description: "Our team reviews your past LIVE sessions and provides detailed feedback plus proven scripts to maximize engagement and monetization during streams.",
+    bullets: [
+      "Expert LIVE session reviews",
+      "Monetization scripts & strategies",
+      "Conversion optimization tips"
+    ]
+  },
+  {
+    icon: "🎓",
+    badge: "EDUCATION",
+    title: "LIVE Academy",
+    description: "Complete training system from foundations to advanced techniques, covering streaming setup, audience engagement, and selling strategies for LIVE.",
+    bullets: [
+      "Foundations + Advanced courses",
+      "Engagement techniques",
+      "LIVE selling mastery"
+    ]
+  },
+  {
+    icon: "💬",
+    badge: "ALWAYS AVAILABLE",
+    title: "Daily Support",
+    description: "Never stream alone. Our support team is available daily to help with any challenges, questions, or technical issues before, during, or after your streams.",
+    bullets: [
+      "Instant messaging support",
+      "Emergency assistance",
+      "Technical troubleshooting"
+    ]
+  },
+  {
+    icon: "🚀",
+    badge: "ADVANCEMENT",
+    title: "Career Growth Path",
+    description: "Start as a creator and grow into a Creator Manager role. Build your own roster, earn additional income, and develop leadership skills within our network.",
+    bullets: [
+      "Progress to Creator Manager",
+      "Build your own team",
+      "Leadership & earning opportunities"
+    ]
+  }
+];
+
+const shopCreatorsFeatures = [
+  {
+    icon: "✍️",
+    badge: "PERSONALIZED",
+    title: "Expert Feedback & Accountability",
+    description: "Get detailed feedback on your videos from our coaching team plus accountability tracking with streaks, points, and gamification to keep you consistent and improving daily.",
+    bullets: [
+      "Expert video content reviews",
+      "Daily streak & points system",
+      "Actionable improvement tips"
+    ]
+  },
+  {
+    icon: "💰",
+    badge: "EXCLUSIVE ACCESS",
+    title: "Higher Commissions",
+    description: "Access exclusive brand partnerships with commission rates 5-15% higher than open marketplace through our official TikTok Shop Partner status.",
+    bullets: [
+      "5-15% higher commission rates",
+      "Exclusive brand campaigns",
+      "Priority sample access"
+    ]
+  },
+  {
+    icon: "🎓",
+    badge: "EDUCATION",
+    title: "Shop Academy",
+    description: "Complete training system from foundations to advanced strategies, covering product selection, selling techniques, and affiliate optimization.",
+    bullets: [
+      "Foundations + Advanced courses",
+      "Product selection strategies",
+      "Conversion optimization training"
+    ]
+  },
+  {
+    icon: "📦",
+    badge: "MEMBERS ONLY",
+    title: "Free Product Samples",
+    description: "Get free product samples from partner brands and discover high-converting products before they trend on the platform.",
+    bullets: [
+      "Free brand samples",
+      "Product discovery tools",
+      "Trending product alerts"
+    ]
+  },
+  {
+    icon: "🎙️",
+    badge: "LIVE TRAINING",
+    title: "Weekly Expert Calls",
+    description: "Join weekly live calls where our instructors and top-performing creators share what's working now and answer your questions in real-time.",
+    bullets: [
+      "Live weekly coaching calls",
+      "Top performer insights",
+      "Real-time Q&A sessions"
+    ]
+  },
+  {
+    icon: "💬",
+    badge: "24/7 SUPPORT",
+    title: "WhatsApp Community",
+    description: "Connect with fellow creators, share wins, get quick feedback, and access our support team anytime through our dedicated WhatsApp community.",
+    bullets: [
+      "24/7 community access",
+      "Instant peer support",
+      "Direct coach messaging"
+    ]
+  }
+];
+
+export default function Block() {
+  const [activeTab, setActiveTab] = useState("live");
+
+  const currentFeatures = activeTab === "live" ? liveCreatorsFeatures : shopCreatorsFeatures;
+
+  return (
+    <div className="w-full py-[100px]" style={{ background: "linear-gradient(180deg, #000B3A 0%, #001364 100%)" }}>
+      <div className="container">
+        <div className="content max-w-[1200px] mx-auto">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <h2 className="text-[48px] font-bold leading-tight mb-4">
+              <span className="text-white">Why Join </span>
+              <span style={{ color: "#7A93FF" }}>Creator Scans</span>
+              <span className="text-white">?</span>
+            </h2>
+            <p className="text-[20px] mx-auto max-w-[700px]" style={{ color: "#B8B8B8" }}>
+              Everything you need to succeed on TikTok, whether you're streaming live or selling through Shop.
+            </p>
+          </div>
+
+          {/* Toggle Switch */}
+          <div className="flex justify-center mb-[60px]">
+            <div className="inline-flex rounded-full p-1" style={{ background: "rgba(255, 255, 255, 0.1)" }}>
+              <button
+                onClick={() => setActiveTab("live")}
+                className={`text-[16px] font-semibold px-8 py-3 rounded-full transition-all duration-300 ${
+                  activeTab === "live" 
+                    ? "text-white shadow-lg" 
+                    : "text-[#B8B8B8]"
+                }`}
+                style={{
+                  background: activeTab === "live" ? "#7A93FF" : "transparent"
+                }}
+              >
+                TikTok LIVE
+              </button>
+              <button
+                onClick={() => setActiveTab("shop")}
+                className={`text-[16px] font-semibold px-8 py-3 rounded-full transition-all duration-300 ${
+                  activeTab === "shop" 
+                    ? "text-white shadow-lg" 
+                    : "text-[#B8B8B8]"
+                }`}
+                style={{
+                  background: activeTab === "shop" ? "#FE2C55" : "transparent"
+                }}
+              >
+                TikTok Shop
+              </button>
+            </div>
+          </div>
+
+          {/* Feature Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-[60px]">
+            {currentFeatures.map((feature, index) => (
+              <Card
+                key={index}
+                className="border-0 transition-all duration-500 hover:scale-110 hover:rotate-3 cursor-pointer group relative overflow-hidden"
+                style={{
+                  background: "rgba(255, 255, 255, 0.03)",
+                  backdropFilter: "blur(10px)",
+                  borderRadius: "12px",
+                  transformStyle: "preserve-3d"
+                }}
+              >
+                {/* Animated border gradient */}
+                <div 
+                  className="absolute inset-0 rounded-[12px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{
+                    background: "linear-gradient(90deg, #7A93FF, #FE2C55, #7A93FF, #FE2C55)",
+                    backgroundSize: "300% 300%",
+                    animation: "borderFlow 3s ease infinite",
+                    padding: "2px",
+                    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                    WebkitMaskComposite: "xor",
+                    maskComposite: "exclude"
+                  }}
+                />
+                
+                <CardContent className="p-8 relative z-10">
+                  <div className="flex items-start justify-between mb-3">
+                    <span 
+                      className="text-[40px] transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 inline-block"
+                      style={{ transformStyle: "preserve-3d" }}
+                    >
+                      {feature.icon}
+                    </span>
+                    <Badge
+                      className="text-[11px] uppercase font-semibold px-4 py-2.5 border-0"
+                      style={{
+                        background: "rgba(122, 147, 255, 0.15)",
+                        color: "#7A93FF"
+                      }}
+                    >
+                      {feature.badge}
+                    </Badge>
+                  </div>
+                  <h3 className="text-[20px] font-bold text-white mb-3">{feature.title}</h3>
+                  <p className="text-[15px] leading-relaxed mb-4" style={{ color: "#B8B8B8" }}>
+                    {feature.description}
+                  </p>
+                  <ul className="space-y-2">
+                    {feature.bullets.map((bullet, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-[14px]" style={{ color: "#B8B8B8" }}>
+                        <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#7A93FF" }} />
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+
+                {/* Glow effect on hover */}
+                <div 
+                  className="absolute inset-0 rounded-[12px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                  style={{
+                    boxShadow: "0 8px 32px rgba(122, 147, 255, 0.4), 0 0 60px rgba(254, 44, 85, 0.3)"
+                  }}
+                />
+              </Card>
+            ))}
+          </div>
+
+          {/* CTA Button */}
+          <div className="flex justify-center">
+            <a href="/forms-creators" className="inline-block">
+              <Button
+                className="text-[18px] font-bold px-12 py-6 rounded-lg transition-all duration-300 hover:scale-105 hover:-translate-y-1 border-0"
+                style={{
+                  background: activeTab === "live" ? "#7A93FF" : "#FE2C55",
+                  color: "white"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = activeTab === "live" ? "#8FA5FF" : "#FF4069";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = activeTab === "live" ? "#7A93FF" : "#FE2C55";
+                }}
+              >
+                {activeTab === "live" ? "Apply as a LIVE Creator →" : "Join as a Shop Creator →"}
+              </Button>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes borderFlow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
+    </div>
+  );
+}
