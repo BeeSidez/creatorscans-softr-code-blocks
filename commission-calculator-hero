@@ -1,0 +1,122 @@
+import { Sparkles } from 'lucide-react';
+
+export default function Block() {
+  return (
+    <div className="relative min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-white overflow-hidden">
+      {/* Floating animated diamonds */}
+      <div className="absolute inset-0 pointer-events-none">
+        <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="wallet" className="absolute top-20 left-[10%] w-12 h-12 animate-float-rotate" style={{ animationDelay: '0s', animationDuration: '6s', filter: 'hue-rotate(200deg) saturate(1.5)', opacity: 0.3 }} />
+        <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="wallet" className="absolute top-40 right-[15%] w-24 h-24 animate-float" style={{ animationDelay: '1s', animationDuration: '7s', filter: 'hue-rotate(200deg) saturate(1.5)', opacity: 0.35 }} />
+        <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="wallet" className="absolute bottom-32 left-[20%] w-16 h-16 animate-float" style={{ animationDelay: '2s', animationDuration: '8s', filter: 'hue-rotate(200deg) saturate(1.5)', opacity: 0.25 }} />
+        <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="wallet" className="absolute top-60 right-[25%] w-20 h-20 animate-float-rotate" style={{ animationDelay: '1.5s', animationDuration: '6.5s', filter: 'hue-rotate(200deg) saturate(1.5)', opacity: 0.3 }} />
+        <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="wallet" className="absolute bottom-20 right-[10%] w-24 h-24 animate-float" style={{ animationDelay: '0.5s', animationDuration: '7.5s', filter: 'hue-rotate(200deg) saturate(1.5)', opacity: 0.3 }} />
+        <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="wallet" className="absolute top-[30%] left-[5%] w-20 h-20 animate-float-rotate" style={{ animationDelay: '2.5s', animationDuration: '6.8s', filter: 'hue-rotate(200deg) saturate(1.5)', opacity: 0.28 }} />
+        <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="wallet" className="absolute bottom-[35%] right-[8%] w-16 h-16 animate-float" style={{ animationDelay: '1.8s', animationDuration: '7.2s', filter: 'hue-rotate(200deg) saturate(1.5)', opacity: 0.32 }} />
+      </div>
+
+      {/* Main content */}
+      <div className="container relative z-10">
+        <div className="content flex flex-col items-center justify-center min-h-screen text-center px-4">
+          {/* Icon badge */}
+          <div className="mb-8 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border border-primary/20" style={{ backgroundColor: '#879cf7' }}>
+              <Sparkles className="w-4 h-4 text-white" />
+              <span className="text-sm font-medium text-white">Official 2026 Rates</span>
+            </div>
+          </div>
+
+          {/* Title */}
+          <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            TikTok Shop
+            <br />
+            <span style={{ color: '#879cf7' }}>
+              Commission Calculator
+            </span>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl leading-relaxed mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            See exactly what you'll earn from TikTok Shop commissions. Enter your product price, commission rate, and monthly sales to calculate your actual take-home pay.{' '}
+            
+          </p>
+
+          {/* Decorative elements */}
+          <div className="flex items-center gap-8 mt-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-sm text-muted-foreground">Accurate</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: '0.5s' }} />
+              <span className="text-sm text-muted-foreground">Real-time</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: '1s' }} />
+              <span className="text-sm text-muted-foreground">Free</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0) scale(1);
+            opacity: 0.3;
+          }
+          50% {
+            transform: translateY(-30px) scale(1.1);
+            opacity: 0.6;
+          }
+        }
+
+        @keyframes float-rotate {
+          0%, 100% {
+            transform: translateY(0) scale(1) rotate(0deg);
+            opacity: 0.3;
+          }
+          50% {
+            transform: translateY(-30px) scale(1.1) rotate(15deg);
+            opacity: 0.6;
+          }
+        }
+
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes fade-in-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-float-rotate {
+          animation: float-rotate 6s ease-in-out infinite;
+        }
+
+        .animate-fade-in {
+          animation: fade-in 1s ease-out forwards;
+        }
+
+        .animate-fade-in-up {
+          animation: fade-in-up 1s ease-out forwards;
+        }
+      `}</style>
+    </div>
+  );
+}
