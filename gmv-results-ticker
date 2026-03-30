@@ -1,0 +1,120 @@
+import { useRecords, q } from "@/lib/datasource";
+import { Button } from "@/components/ui/button";
+import { useEffect, useRef } from "react";
+
+const select = q.select({
+  image: "ACnov",
+});
+
+export default function Block() {
+  const { data, status, fetchNextPage, hasNextPage, isFetchingNextPage } = useRecords({ 
+    select, 
+    count: 12 
+  });
+
+  if (status === "pending") {
+    return (
+      <div style={{ backgroundColor: '#000B3A' }} className="min-h-[400px] flex items-center justify-center">
+        <div className="text-white">Loading images...</div>
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center" style={{ backgroundColor: '#000B3A' }}>
+        <div className="text-destructive">Error loading images</div>
+      </div>
+    );
+  }
+
+  const items = data?.pages.flatMap((page) => page.items) || [];
+
+  if (items.length === 0) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center" style={{ backgroundColor: '#000B3A' }}>
+        <div className="text-white">No images yet</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ backgroundColor: '#000B3A' }} className="w-full py-16 pb-24">
+      <div className="container">
+        <h1 className="text-white text-4xl md:text-5xl font-bold text-center mb-12">Results From Our Creators</h1>
+        <div className="max-w-6xl mx-auto px-4 overflow-hidden h-[600px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[0, 1, 2].map((colIndex) => {
+              const colItems = items.filter((_, idx) => idx % 3 === colIndex);
+              const direction = colIndex === 1 ? 'down' : 'up';
+              
+              return (
+                <div key={colIndex} className="relative">
+                  <div 
+                    className={"animate-scroll-" + direction}
+                    style={{
+                      animation: `scroll-${direction} 60s linear infinite`
+                    }}
+                  >
+                    {colItems.concat(colItems).map((item, itemIdx) => {
+                      const imageField = item.fields.image;
+                      const images = Array.isArray(imageField) ? imageField : [imageField];
+                      
+                      return images.map((img, idx) => {
+                        if (!img || typeof img !== 'object' || !('url' in img)) return null;
+                        
+                        return (
+                          <div key={`${item.id}-${itemIdx}-${idx}`} className="mb-6">
+                            <div className="bg-white rounded-lg overflow-hidden shadow-md">
+                              <img
+                                src={img.url as string}
+                                alt={img.filename as string || 'Image'}
+                                className="w-full h-auto object-cover"
+                              />
+                            </div>
+                          </div>
+                        );
+                      });
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <style>{`
+            @keyframes scroll-up {
+              0% { transform: translateY(0); }
+              100% { transform: translateY(-50%); }
+            }
+            @keyframes scroll-down {
+              0% { transform: translateY(-50%); }
+              100% { transform: translateY(0); }
+            }
+            .animate-scroll-up {
+              animation: scroll-up 60s linear infinite;
+            }
+            .animate-scroll-down {
+              animation: scroll-down 60s linear infinite;
+            }
+            .animate-scroll-up:hover,
+            .animate-scroll-down:hover {
+              animation-play-state: paused;
+            }
+          `}</style>
+        </div>
+      </div>
+      {hasNextPage && (
+        <div className="flex justify-center mt-8">
+          <Button 
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            style={{ backgroundColor: '#FE2C55' }}
+            className="text-white hover:opacity-90"
+          >
+            {isFetchingNextPage ? "Loading..." : "Load More"}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
