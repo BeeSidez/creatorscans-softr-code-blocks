@@ -1,0 +1,224 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useEffect, useRef } from "react";
+import { ArrowRight } from "lucide-react";
+
+export default function Block() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const stars: { x: number; y: number; radius: number; vx: number; vy: number; opacity: number }[] = [];
+    const starCount = 150;
+
+    for (let i = 0; i < starCount; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.5 + 0.5,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        opacity: Math.random() * 0.5 + 0.3,
+      });
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      stars.forEach((star) => {
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.fill();
+
+        star.x += star.vx;
+        star.y += star.vy;
+
+        if (star.x < 0) star.x = canvas.width;
+        if (star.x > canvas.width) star.x = 0;
+        if (star.y < 0) star.y = canvas.height;
+        if (star.y > canvas.height) star.y = 0;
+      });
+
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+    };
+  }, []);
+
+  const handleCreatorsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (typeof window !== 'undefined' && (window as any).Softr?.modal?.open) {
+      (window as any).Softr.modal.open('/forms-creators');
+      return;
+    }
+    
+    const modalEvent = new CustomEvent('softr:openModal', {
+      detail: { url: '/forms-creators' }
+    });
+    window.dispatchEvent(modalEvent);
+    
+    const link = document.createElement('a');
+    link.href = '/forms-creators';
+    link.setAttribute('data-modal', 'true');
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="relative min-h-screen overflow-hidden">
+      <style>{`
+        @keyframes shimmer {
+          0% {
+            background-position: 0% 0%;
+          }
+          100% {
+            background-position: 200% 200%;
+          }
+        }
+        
+        .shimmer-border-pink {
+          position: relative;
+          background: #FE2C55;
+          border-radius: 0.5rem;
+        }
+        
+        .shimmer-border-pink::before {
+          content: '';
+          position: absolute;
+          inset: -3px;
+          border-radius: calc(0.5rem + 3px);
+          padding: 3px;
+          background: linear-gradient(
+            90deg,
+            #FE2C55 0%,
+            #FF6B9D 25%,
+            #FE2C55 50%,
+            #FF6B9D 75%,
+            #FE2C55 100%
+          );
+          background-size: 200% 200%;
+          animation: shimmer 3s linear infinite;
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          z-index: -1;
+        }
+        
+        .shimmer-border-blue {
+          position: relative;
+          background: linear-gradient(135deg, #7a93ff 0%, #5a73ff 100%);
+          border-radius: 0.5rem;
+        }
+        
+        .shimmer-border-blue::before {
+          content: '';
+          position: absolute;
+          inset: -3px;
+          border-radius: calc(0.5rem + 3px);
+          padding: 3px;
+          background: linear-gradient(
+            90deg,
+            #7a93ff 0%,
+            #a8b9ff 25%,
+            #5a73ff 50%,
+            #a8b9ff 75%,
+            #7a93ff 100%
+          );
+          background-size: 200% 200%;
+          animation: shimmer 3s linear infinite;
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          z-index: -1;
+        }
+      `}</style>
+
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full"
+        style={{
+          background: "#000B3A",
+        }}
+      />
+
+      <div className="container relative z-10">
+        <div className="content flex flex-col items-center justify-center min-h-screen text-center px-4">
+          <Badge
+            variant="secondary"
+            className="mb-6 bg-white/10 border-white/20 backdrop-blur-sm px-4 py-2 text-sm font-semibold flex items-center gap-2"
+            style={{ color: "#7a93ff" }}
+          >
+            <img 
+              src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/TIKTOK_jetgnf.png" 
+              alt="TikTok" 
+              className="h-5 w-5 rounded-sm"
+              style={{ transform: "rotate(-5deg)" }}
+            />
+            Official TikTok Partner Agency
+          </Badge>
+
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 max-w-4xl leading-tight">
+            TikTok Shop & LIVE Talent Agency
+          </h1>
+
+          <p className="text-lg md:text-xl text-white/90 mb-10 max-w-3xl leading-relaxed">
+            The #1 Platform for Brands, Beginners & Creators to Make Money on TikTok Through Live Streams and TikTok Shop Affiliates
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              size="lg"
+              onClick={handleCreatorsClick}
+              className="shimmer-border-pink font-semibold hover:opacity-90 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 group w-full sm:w-auto"
+              style={{
+                color: "white",
+                padding: "1.5rem 2rem",
+                fontSize: "1.125rem",
+                lineHeight: "1.75rem",
+                borderRadius: "0.5rem"
+              }}
+            >
+              For Creators
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            <a href="/brands" className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                className="shimmer-border-blue font-semibold text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 group w-full"
+                style={{
+                  padding: "1.5rem 2rem",
+                  fontSize: "1.125rem",
+                  lineHeight: "1.75rem",
+                  borderRadius: "0.5rem"
+                }}
+              >
+                For Brands
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
