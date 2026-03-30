@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ExternalLink, TrendingUp, Users, Package, Video, Radio, Eye, Heart, Calendar } from "lucide-react";
+import { ExternalLink, TrendingUp, Users, Package, Video, Radio, Eye, Heart, Calendar, MapPin, BarChart3, Target } from "lucide-react";
 
 const select = q.select({
   handle: "DJMLR",
@@ -71,28 +71,131 @@ const select = q.select({
   video3Url: "1cqH6",
 });
 
+// Brand colours
+const CS = {
+  blue: "#294ff6",
+  blue2: "#4466f8",
+  blue3: "#5e7bf6",
+  blue4: "#7a93ff",
+  blue5: "#879cf7",
+  navy: "#000f4d",
+  navy2: "#001364",
+  navy3: "#152237",
+  light1: "#f8fbff",
+  light2: "#eef4fd",
+  light3: "#fafbff",
+  lavender: "#d8d8ff",
+  red: "#fe2c55",
+};
+
+const parsePercent = (val: any): number => {
+  if (val === null || val === undefined) return 0;
+  return parseFloat(String(val).replace('%', '').replace(',', '')) || 0;
+};
+
 function getVideoEmbedUrl(url: string | null | undefined): string | null {
   if (!url) return null;
-  
-  // TikTok
   const tiktokMatch = url.match(/tiktok\.com\/@[^\/]+\/video\/(\d+)/);
-  if (tiktokMatch) {
-    return `https://www.tiktok.com/embed/v2/${tiktokMatch[1]}`;
-  }
-  
-  // YouTube
+  if (tiktokMatch) return `https://www.tiktok.com/embed/v2/${tiktokMatch[1]}`;
   const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
-  if (youtubeMatch) {
-    return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
-  }
-  
-  // Instagram
+  if (youtubeMatch) return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
   const instagramMatch = url.match(/instagram\.com\/(?:p|reel)\/([^\/]+)/);
-  if (instagramMatch) {
-    return `https://www.instagram.com/p/${instagramMatch[1]}/embed`;
-  }
-  
+  if (instagramMatch) return `https://www.instagram.com/p/${instagramMatch[1]}/embed`;
   return null;
+}
+
+// --- Chart Components ---
+
+function DonutChart({ segments, size = 120, strokeWidth = 16 }: { segments: { value: number; color: string; label: string }[]; size?: number; strokeWidth?: number }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const total = segments.reduce((sum, s) => sum + s.value, 0);
+  if (total === 0) return null;
+
+  let offset = 0;
+  return (
+    <div className="flex items-center gap-6">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={CS.light2} strokeWidth={strokeWidth} />
+        {segments.map((seg, i) => {
+          const pct = seg.value / total;
+          const dashArray = `${pct * circumference} ${circumference}`;
+          const rotation = offset * 360 - 90;
+          const el = (
+            <circle
+              key={i}
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke={seg.color}
+              strokeWidth={strokeWidth}
+              strokeDasharray={dashArray}
+              strokeDashoffset="0"
+              strokeLinecap="round"
+              transform={`rotate(${rotation} ${size / 2} ${size / 2})`}
+            />
+          );
+          offset += pct;
+          return el;
+        })}
+      </svg>
+      <div className="space-y-2">
+        {segments.map((seg, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: seg.color }} />
+            <span className="text-sm text-muted-foreground">{seg.label}</span>
+            <span className="text-sm font-semibold" style={{ color: CS.navy }}>{seg.value.toFixed(1)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HorizontalBar({ label, value, maxValue, color }: { label: string; value: number; maxValue: number; color: string }) {
+  const width = maxValue > 0 ? Math.min((value / maxValue) * 100, 100) : 0;
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-sm">
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-semibold" style={{ color: CS.navy }}>{value.toFixed(1)}%</span>
+      </div>
+      <div className="h-2.5 rounded-full w-full" style={{ backgroundColor: CS.light2 }}>
+        <div className="h-2.5 rounded-full transition-all duration-500" style={{ width: `${width}%`, backgroundColor: color }} />
+      </div>
+    </div>
+  );
+}
+
+function MetricCard({ icon: Icon, label, value, sub, color }: { icon: any; label: string; value: string; sub?: string; color: string }) {
+  return (
+    <Card className="border-0 shadow-sm" style={{ backgroundColor: CS.light1 }}>
+      <CardContent className="pt-5 pb-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}15` }}>
+            <Icon className="h-5 w-5" style={{ color }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
+            <p className="text-2xl font-bold mt-0.5" style={{ color: CS.navy }}>{value}</p>
+            {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function LocationBadge({ rank, name }: { rank: number; name: string }) {
+  return (
+    <div className="flex items-center gap-3 py-1.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ backgroundColor: rank <= 2 ? CS.blue : CS.blue4 }}>
+        {rank}
+      </div>
+      <span className="text-sm">{name}</span>
+    </div>
+  );
 }
 
 export default function Block() {
@@ -103,7 +206,10 @@ export default function Block() {
     return (
       <div className="container py-12">
         <div className="content flex items-center justify-center min-h-[400px]">
-          <div className="text-muted-foreground">Loading dashboard...</div>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: CS.blue, borderTopColor: 'transparent' }} />
+            <span className="text-sm text-muted-foreground">Loading dashboard...</span>
+          </div>
         </div>
       </div>
     );
@@ -113,47 +219,102 @@ export default function Block() {
     return (
       <div className="container py-12">
         <div className="content flex items-center justify-center min-h-[400px]">
-          <div className="text-destructive">Error loading dashboard data</div>
+          <div style={{ color: CS.red }} className="text-sm">Error loading dashboard data</div>
         </div>
       </div>
     );
   }
 
-  const profilePic = Array.isArray(data.fields.profilePicture) && data.fields.profilePicture.length > 0 
-    ? data.fields.profilePicture[0].url 
+  const profilePic = Array.isArray(data.fields.profilePicture) && data.fields.profilePicture.length > 0
+    ? data.fields.profilePicture[0].url
     : null;
-
   const growthStatus = data.fields.growthStatus?.label || null;
   const dataPeriod = data.fields.dataPeriod?.label || null;
 
+  // Parse demographic percentages
+  const femaleVal = parsePercent(data.fields.female);
+  const maleVal = parsePercent(data.fields.male);
+  const ageData = [
+    { label: "18-24", value: parsePercent(data.fields.age1824), color: CS.blue5 },
+    { label: "25-34", value: parsePercent(data.fields.age2534), color: CS.blue4 },
+    { label: "35-44", value: parsePercent(data.fields.age3544), color: CS.blue3 },
+    { label: "45-54", value: parsePercent(data.fields.age4554), color: CS.blue2 },
+    { label: "55+", value: parsePercent(data.fields.age55plus), color: CS.blue },
+  ];
+  const maxAge = Math.max(...ageData.map(a => a.value), 1);
+
+  // Parse sales channel percentages
+  const videoChannelPct = parsePercent(data.fields.gmvVideo);
+  const productCardsPct = parsePercent(data.fields.gmvProductCards);
+
+  // Parse category percentages
+  const categories = [
+    { name: data.fields.gmvCategory1, pct: parsePercent(data.fields.gmvCategory1Pct), color: CS.blue },
+    { name: data.fields.gmvCategory2, pct: parsePercent(data.fields.gmvCategory2Pct), color: CS.blue2 },
+    { name: data.fields.gmvCategory3, pct: parsePercent(data.fields.gmvCategory3Pct), color: CS.blue3 },
+    { name: data.fields.gmvCategory4, pct: parsePercent(data.fields.gmvCategory4Pct), color: CS.blue4 },
+  ].filter(c => c.name);
+  const maxCat = Math.max(...categories.map(c => c.pct), 1);
+
+  // Locations
+  const locations = [
+    data.fields.topLocation1?.label || data.fields.topLocation1,
+    data.fields.topLocation2?.label || data.fields.topLocation2,
+    data.fields.topLocation3,
+    data.fields.topLocation4,
+    data.fields.topLocation5,
+  ].filter(Boolean);
+
+  // Videos
   const video1EmbedUrl = getVideoEmbedUrl(data.fields.video1Url);
   const video2EmbedUrl = getVideoEmbedUrl(data.fields.video2Url);
   const video3EmbedUrl = getVideoEmbedUrl(data.fields.video3Url);
 
+  const videos = [
+    { title: data.fields.video1Title, views: data.fields.video1Views, likes: data.fields.video1Likes, date: data.fields.video1Date, url: data.fields.video1Url, embed: video1EmbedUrl },
+    { title: data.fields.video2Title, views: data.fields.video2Views, likes: data.fields.video2Likes, date: data.fields.video2Date, url: data.fields.video2Url, embed: video2EmbedUrl },
+    { title: data.fields.video3Title, views: data.fields.video3Views, likes: data.fields.video3Likes, date: data.fields.video3Date, url: data.fields.video3Url, embed: video3EmbedUrl },
+  ].filter(v => v.title);
+
   return (
     <div className="container py-8">
-      <div className="content space-y-8">
-        {/* Profile Header */}
-        <Card>
-          <CardContent className="pt-6">
+      <div className="content space-y-6">
+
+        {/* ── Profile Header (Dark Navy) ── */}
+        <Card className="border-0 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CS.navy3} 0%, ${CS.navy} 100%)` }}>
+          <CardContent className="pt-6 pb-6">
             <div className="flex flex-col md:flex-row gap-6 items-start">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={profilePic || undefined} alt={data.fields.displayName || data.fields.handle || "Creator"} />
-                <AvatarFallback className="text-2xl">{(data.fields.displayName || data.fields.handle || "C")[0].toUpperCase()}</AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <div className="rounded-full p-0.5" style={{ background: `linear-gradient(135deg, ${CS.blue} 0%, ${CS.blue4} 100%)` }}>
+                  <Avatar className="h-20 w-20 border-2 border-transparent">
+                    <AvatarImage src={profilePic || undefined} alt={data.fields.displayName || data.fields.handle || "Creator"} />
+                    <AvatarFallback className="text-xl font-bold" style={{ backgroundColor: CS.navy2, color: 'white' }}>
+                      {(data.fields.displayName || data.fields.handle || "C")[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              </div>
               <div className="flex-1 space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="font-heading text-3xl">{data.fields.displayName || data.fields.handle}</h1>
-                  {growthStatus && <Badge variant="secondary">{growthStatus}</Badge>}
+                  <h1 className="text-2xl font-bold text-white">{data.fields.displayName || data.fields.handle}</h1>
+                  {growthStatus && (
+                    <Badge className="text-white border-0 text-xs" style={{ backgroundColor: CS.blue }}>
+                      {growthStatus}
+                    </Badge>
+                  )}
                 </div>
-                {data.fields.handle && <p className="text-muted-foreground">@{data.fields.handle}</p>}
-                {data.fields.bio && <p className="text-sm mt-2">{data.fields.bio}</p>}
-                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mt-3">
-                  {data.fields.categories && <span>📂 {data.fields.categories}</span>}
-                  {data.fields.followers && <span>👥 {data.fields.followers} followers</span>}
+                {data.fields.handle && <p className="text-sm" style={{ color: CS.blue4 }}>@{data.fields.handle}</p>}
+                {data.fields.bio && <p className="text-sm text-white/70 max-w-lg">{data.fields.bio}</p>}
+                <div className="flex flex-wrap gap-4 text-sm mt-3" style={{ color: CS.blue5 }}>
+                  {data.fields.categories && <span>{data.fields.categories}</span>}
+                  {data.fields.followers && (
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3.5 w-3.5" /> {data.fields.followers}
+                    </span>
+                  )}
                   {data.fields.profileLink && (
-                    <a href={data.fields.profileLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground">
-                      <ExternalLink className="h-3 w-3" /> Profile
+                    <a href={data.fields.profileLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
+                      <ExternalLink className="h-3.5 w-3.5" /> TikTok Profile
                     </a>
                   )}
                 </div>
@@ -163,408 +324,283 @@ export default function Block() {
         </Card>
 
         {dataPeriod && (
-          <div className="text-sm text-muted-foreground">
-            📊 Data Period: {dataPeriod}
+          <div className="flex items-center gap-2 text-xs font-medium px-1" style={{ color: CS.blue3 }}>
+            <BarChart3 className="h-3.5 w-3.5" />
+            Data Period: {dataPeriod}
           </div>
         )}
 
-        {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total GMV</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data.fields.gmv || "—"}</div>
-              {data.fields.gpm !== null && <p className="text-xs text-muted-foreground mt-1">GPM: {typeof data.fields.gpm === 'number' ? `£${data.fields.gpm.toFixed(2)}` : data.fields.gpm}</p>}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Items Sold</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data.fields.itemsSold || "—"}</div>
-              {data.fields.products !== null && <p className="text-xs text-muted-foreground mt-1">{data.fields.products} products</p>}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Videos</CardTitle>
-              <Video className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data.fields.videos !== null ? data.fields.videos : "—"}</div>
-              {data.fields.avgVideoViews !== null && <p className="text-xs text-muted-foreground mt-1">Avg {data.fields.avgVideoViews.toLocaleString()} views</p>}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Live Streams</CardTitle>
-              <Radio className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data.fields.liveStreams !== null ? data.fields.liveStreams : "—"}</div>
-              {data.fields.avgLiveViews && <p className="text-xs text-muted-foreground mt-1">Avg {data.fields.avgLiveViews} views</p>}
-            </CardContent>
-          </Card>
+        {/* ── Key Metrics ── */}
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          <MetricCard
+            icon={TrendingUp}
+            label="Total GMV"
+            value={data.fields.gmv || "\u2014"}
+            sub={data.fields.gpm !== null ? `GPM: ${typeof data.fields.gpm === 'number' ? `\u00A3${data.fields.gpm.toFixed(2)}` : data.fields.gpm}` : undefined}
+            color={CS.blue}
+          />
+          <MetricCard
+            icon={Package}
+            label="Items Sold"
+            value={data.fields.itemsSold || "\u2014"}
+            sub={data.fields.products !== null ? `${data.fields.products} products` : undefined}
+            color={CS.blue2}
+          />
+          <MetricCard
+            icon={Video}
+            label="Videos"
+            value={data.fields.videos !== null ? String(data.fields.videos) : "\u2014"}
+            sub={data.fields.avgVideoViews !== null ? `Avg ${data.fields.avgVideoViews.toLocaleString()} views` : undefined}
+            color={CS.blue3}
+          />
+          <MetricCard
+            icon={Radio}
+            label="Live Streams"
+            value={data.fields.liveStreams !== null ? String(data.fields.liveStreams) : "\u2014"}
+            sub={data.fields.avgLiveViews ? `Avg ${data.fields.avgLiveViews} views` : undefined}
+            color={CS.blue4}
+          />
         </div>
 
-        {/* Sales Performance */}
+        {/* ── Sales Channels + Performance KPIs ── */}
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sales Channels</CardTitle>
+          {/* Sales Channel Donut */}
+          <Card className="border-0 shadow-sm" style={{ backgroundColor: CS.light1 }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base" style={{ color: CS.navy }}>Sales Channels</CardTitle>
               <CardDescription>GMV breakdown by channel</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {data.fields.gmvVideo && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Video</span>
-                  <span className="font-medium">{data.fields.gmvVideo}</span>
-                </div>
-              )}
-              {data.fields.gmvProductCards && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Product Cards</span>
-                  <span className="font-medium">{data.fields.gmvProductCards}</span>
-                </div>
+            <CardContent>
+              {(videoChannelPct > 0 || productCardsPct > 0) ? (
+                <DonutChart segments={[
+                  { value: videoChannelPct, color: CS.blue, label: "Video" },
+                  { value: productCardsPct, color: CS.blue4, label: "Product Cards" },
+                ]} />
+              ) : (
+                <p className="text-sm text-muted-foreground">No channel data available</p>
               )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Metrics</CardTitle>
+          {/* Performance KPIs */}
+          <Card className="border-0 shadow-sm" style={{ backgroundColor: CS.light1 }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base" style={{ color: CS.navy }}>Performance</CardTitle>
               <CardDescription>Key performance indicators</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               {data.fields.gmvPerCustomer !== null && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm">GMV per Customer</span>
-                  <span className="font-medium">{typeof data.fields.gmvPerCustomer === 'number' ? `£${data.fields.gmvPerCustomer.toFixed(2)}` : data.fields.gmvPerCustomer}</span>
+                  <span className="text-sm text-muted-foreground">GMV per Customer</span>
+                  <span className="font-bold" style={{ color: CS.navy }}>{typeof data.fields.gmvPerCustomer === 'number' ? `\u00A3${data.fields.gmvPerCustomer.toFixed(2)}` : data.fields.gmvPerCustomer}</span>
                 </div>
               )}
               {data.fields.avgCommissionRate && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm">Avg Commission Rate</span>
-                  <span className="font-medium">{data.fields.avgCommissionRate}</span>
+                  <span className="text-sm text-muted-foreground">Avg Commission Rate</span>
+                  <span className="font-bold" style={{ color: CS.navy }}>{data.fields.avgCommissionRate}</span>
                 </div>
               )}
               {data.fields.brandCollaborations !== null && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm">Brand Collaborations</span>
-                  <span className="font-medium">{data.fields.brandCollaborations}</span>
+                  <span className="text-sm text-muted-foreground">Brand Collaborations</span>
+                  <span className="font-bold" style={{ color: CS.navy }}>{data.fields.brandCollaborations}</span>
+                </div>
+              )}
+              {data.fields.productPrice && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Avg Product Price</span>
+                  <span className="font-bold" style={{ color: CS.navy }}>{data.fields.productPrice}</span>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Category Performance */}
-        {(data.fields.gmvCategory1 || data.fields.gmvCategory2 || data.fields.gmvCategory3 || data.fields.gmvCategory4) && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Categories by GMV</CardTitle>
+        {/* ── Category GMV Chart ── */}
+        {categories.length > 0 && (
+          <Card className="border-0 shadow-sm" style={{ backgroundColor: CS.light1 }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base" style={{ color: CS.navy }}>Top Categories by GMV</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {data.fields.gmvCategory1 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">{data.fields.gmvCategory1}</span>
-                  <span className="font-medium">{data.fields.gmvCategory1Pct || "—"}</span>
-                </div>
-              )}
-              {data.fields.gmvCategory2 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">{data.fields.gmvCategory2}</span>
-                  <span className="font-medium">{data.fields.gmvCategory2Pct || "—"}</span>
-                </div>
-              )}
-              {data.fields.gmvCategory3 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">{data.fields.gmvCategory3}</span>
-                  <span className="font-medium">{data.fields.gmvCategory3Pct || "—"}</span>
-                </div>
-              )}
-              {data.fields.gmvCategory4 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">{data.fields.gmvCategory4}</span>
-                  <span className="font-medium">{data.fields.gmvCategory4Pct || "—"}</span>
-                </div>
-              )}
+              {categories.map((cat, i) => (
+                <HorizontalBar key={i} label={cat.name} value={cat.pct} maxValue={maxCat} color={cat.color} />
+              ))}
             </CardContent>
           </Card>
         )}
 
-        {/* Audience Demographics */}
+        {/* ── Demographics: Gender Donut + Age Bars ── */}
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Audience Demographics</CardTitle>
+          {/* Gender */}
+          <Card className="border-0 shadow-sm" style={{ backgroundColor: CS.light1 }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base" style={{ color: CS.navy }}>Audience Gender</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {(data.fields.female || data.fields.male) && (
-                <div>
-                  <p className="text-sm font-medium mb-2">Gender</p>
-                  <div className="space-y-2">
-                    {data.fields.female && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Female</span>
-                        <span className="text-sm font-medium">{data.fields.female}</span>
-                      </div>
-                    )}
-                    {data.fields.male && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Male</span>
-                        <span className="text-sm font-medium">{data.fields.male}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              <Separator />
-              {(data.fields.age1824 || data.fields.age2534 || data.fields.age3544 || data.fields.age4554 || data.fields.age55plus) && (
-                <div>
-                  <p className="text-sm font-medium mb-2">Age Groups</p>
-                  <div className="space-y-2">
-                    {data.fields.age1824 && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">18-24</span>
-                        <span className="text-sm font-medium">{data.fields.age1824}</span>
-                      </div>
-                    )}
-                    {data.fields.age2534 && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">25-34</span>
-                        <span className="text-sm font-medium">{data.fields.age2534}</span>
-                      </div>
-                    )}
-                    {data.fields.age3544 && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">35-44</span>
-                        <span className="text-sm font-medium">{data.fields.age3544}</span>
-                      </div>
-                    )}
-                    {data.fields.age4554 && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">45-54</span>
-                        <span className="text-sm font-medium">{data.fields.age4554}</span>
-                      </div>
-                    )}
-                    {data.fields.age55plus && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">55+</span>
-                        <span className="text-sm font-medium">{data.fields.age55plus}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+            <CardContent>
+              {(femaleVal > 0 || maleVal > 0) ? (
+                <DonutChart segments={[
+                  { value: femaleVal, color: CS.blue3, label: "Female" },
+                  { value: maleVal, color: CS.navy2, label: "Male" },
+                ]} />
+              ) : (
+                <p className="text-sm text-muted-foreground">No gender data available</p>
               )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Locations</CardTitle>
+          {/* Age */}
+          <Card className="border-0 shadow-sm" style={{ backgroundColor: CS.light1 }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base" style={{ color: CS.navy }}>Age Distribution</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {data.fields.topLocation1?.label && <div className="text-sm">1. {data.fields.topLocation1.label}</div>}
-              {data.fields.topLocation2?.label && <div className="text-sm">2. {data.fields.topLocation2.label}</div>}
-              {data.fields.topLocation3 && <div className="text-sm">3. {data.fields.topLocation3}</div>}
-              {data.fields.topLocation4 && <div className="text-sm">4. {data.fields.topLocation4}</div>}
-              {data.fields.topLocation5 && <div className="text-sm">5. {data.fields.topLocation5}</div>}
+            <CardContent className="space-y-3">
+              {ageData.some(a => a.value > 0) ? (
+                ageData.map((age, i) => (
+                  <HorizontalBar key={i} label={age.label} value={age.value} maxValue={maxAge} color={age.color} />
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No age data available</p>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Top Videos with Embeds */}
-        {(data.fields.video1Title || data.fields.video2Title || data.fields.video3Title) && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Videos with Products</CardTitle>
+        {/* ── Top Locations ── */}
+        {locations.length > 0 && (
+          <Card className="border-0 shadow-sm" style={{ backgroundColor: CS.light1 }}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" style={{ color: CS.blue }} />
+                <CardTitle className="text-base" style={{ color: CS.navy }}>Top Locations</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {data.fields.video1Title && (
-                  <div className="space-y-3">
-                    {video1EmbedUrl ? (
-                      <div className="aspect-[9/16] w-full rounded-lg overflow-hidden bg-muted">
-                        <iframe
-                          src={video1EmbedUrl}
-                          className="w-full h-full"
-                          allowFullScreen
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        />
-                      </div>
-                    ) : data.fields.video1Url ? (
-                      <a href={data.fields.video1Url} target="_blank" rel="noopener noreferrer" className="block aspect-[9/16] w-full rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80">
-                        <Video className="h-12 w-12 text-muted-foreground" />
-                      </a>
-                    ) : (
-                      <div className="aspect-[9/16] w-full rounded-lg bg-muted flex items-center justify-center">
-                        <Video className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm line-clamp-2">{data.fields.video1Title}</h4>
-                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                        {data.fields.video1Views && (
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" /> {data.fields.video1Views}
-                          </span>
-                        )}
-                        {data.fields.video1Likes && (
-                          <span className="flex items-center gap-1">
-                            <Heart className="h-3 w-3" /> {data.fields.video1Likes}
-                          </span>
-                        )}
-                      </div>
-                      {data.fields.video1Date && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" /> {new Date(data.fields.video1Date).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {data.fields.video2Title && (
-                  <div className="space-y-3">
-                    {video2EmbedUrl ? (
-                      <div className="aspect-[9/16] w-full rounded-lg overflow-hidden bg-muted">
-                        <iframe
-                          src={video2EmbedUrl}
-                          className="w-full h-full"
-                          allowFullScreen
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        />
-                      </div>
-                    ) : data.fields.video2Url ? (
-                      <a href={data.fields.video2Url} target="_blank" rel="noopener noreferrer" className="block aspect-[9/16] w-full rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80">
-                        <Video className="h-12 w-12 text-muted-foreground" />
-                      </a>
-                    ) : (
-                      <div className="aspect-[9/16] w-full rounded-lg bg-muted flex items-center justify-center">
-                        <Video className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm line-clamp-2">{data.fields.video2Title}</h4>
-                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                        {data.fields.video2Views && (
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" /> {data.fields.video2Views}
-                          </span>
-                        )}
-                        {data.fields.video2Likes && (
-                          <span className="flex items-center gap-1">
-                            <Heart className="h-3 w-3" /> {data.fields.video2Likes}
-                          </span>
-                        )}
-                      </div>
-                      {data.fields.video2Date && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" /> {new Date(data.fields.video2Date).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {data.fields.video3Title && (
-                  <div className="space-y-3">
-                    {video3EmbedUrl ? (
-                      <div className="aspect-[9/16] w-full rounded-lg overflow-hidden bg-muted">
-                        <iframe
-                          src={video3EmbedUrl}
-                          className="w-full h-full"
-                          allowFullScreen
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        />
-                      </div>
-                    ) : data.fields.video3Url ? (
-                      <a href={data.fields.video3Url} target="_blank" rel="noopener noreferrer" className="block aspect-[9/16] w-full rounded-lg bg-muted flex items-center justify-center hover:bg-muted/80">
-                        <Video className="h-12 w-12 text-muted-foreground" />
-                      </a>
-                    ) : (
-                      <div className="aspect-[9/16] w-full rounded-lg bg-muted flex items-center justify-center">
-                        <Video className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm line-clamp-2">{data.fields.video3Title}</h4>
-                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                        {data.fields.video3Views && (
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" /> {data.fields.video3Views}
-                          </span>
-                        )}
-                        {data.fields.video3Likes && (
-                          <span className="flex items-center gap-1">
-                            <Heart className="h-3 w-3" /> {data.fields.video3Likes}
-                          </span>
-                        )}
-                      </div>
-                      {data.fields.video3Date && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" /> {new Date(data.fields.video3Date).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                {locations.map((loc, i) => (
+                  <LocationBadge key={i} rank={i + 1} name={String(loc)} />
+                ))}
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Content Performance */}
+        {/* ── Video vs Live Performance ── */}
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Video Performance</CardTitle>
+          <Card className="border-0 shadow-sm" style={{ backgroundColor: CS.light1 }}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Video className="h-4 w-4" style={{ color: CS.blue }} />
+                <CardTitle className="text-base" style={{ color: CS.navy }}>Video Performance</CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.fields.videoGpm !== null && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm">Video GPM</span>
-                  <span className="font-medium">{typeof data.fields.videoGpm === 'number' ? `£${data.fields.videoGpm.toFixed(2)}` : data.fields.videoGpm}</span>
+                  <span className="text-sm text-muted-foreground">Video GPM</span>
+                  <span className="font-bold text-lg" style={{ color: CS.blue }}>{typeof data.fields.videoGpm === 'number' ? `\u00A3${data.fields.videoGpm.toFixed(2)}` : data.fields.videoGpm}</span>
+                </div>
+              )}
+              {data.fields.avgVideoViews !== null && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Avg Views</span>
+                  <span className="font-semibold" style={{ color: CS.navy }}>{data.fields.avgVideoViews.toLocaleString()}</span>
                 </div>
               )}
               {data.fields.avgVideoEngagement && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm">Avg Engagement</span>
-                  <span className="font-medium">{data.fields.avgVideoEngagement}</span>
+                  <span className="text-sm text-muted-foreground">Avg Engagement</span>
+                  <span className="font-semibold" style={{ color: CS.navy }}>{data.fields.avgVideoEngagement}</span>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Live Stream Performance</CardTitle>
+          <Card className="border-0 shadow-sm" style={{ backgroundColor: CS.light1 }}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Radio className="h-4 w-4" style={{ color: CS.red }} />
+                <CardTitle className="text-base" style={{ color: CS.navy }}>Live Performance</CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.fields.liveGpm !== null && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm">Live GPM</span>
-                  <span className="font-medium">{typeof data.fields.liveGpm === 'number' ? `£${data.fields.liveGpm}` : data.fields.liveGpm}</span>
+                  <span className="text-sm text-muted-foreground">Live GPM</span>
+                  <span className="font-bold text-lg" style={{ color: CS.red }}>{typeof data.fields.liveGpm === 'number' ? `\u00A3${data.fields.liveGpm.toFixed(2)}` : data.fields.liveGpm}</span>
+                </div>
+              )}
+              {data.fields.avgLiveViews && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Avg Views</span>
+                  <span className="font-semibold" style={{ color: CS.navy }}>{data.fields.avgLiveViews}</span>
                 </div>
               )}
               {data.fields.avgLiveEngagement && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm">Avg Engagement</span>
-                  <span className="font-medium">{data.fields.avgLiveEngagement}</span>
+                  <span className="text-sm text-muted-foreground">Avg Engagement</span>
+                  <span className="font-semibold" style={{ color: CS.navy }}>{data.fields.avgLiveEngagement}</span>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
+
+        {/* ── Top Videos ── */}
+        {videos.length > 0 && (
+          <Card className="border-0 shadow-sm" style={{ backgroundColor: CS.light1 }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base" style={{ color: CS.navy }}>Top Videos with Products</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {videos.map((vid, i) => (
+                  <div key={i} className="space-y-3 group">
+                    {vid.embed ? (
+                      <div className="aspect-[9/16] w-full rounded-xl overflow-hidden" style={{ backgroundColor: CS.light2 }}>
+                        <iframe
+                          src={vid.embed}
+                          className="w-full h-full"
+                          allowFullScreen
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        />
+                      </div>
+                    ) : vid.url ? (
+                      <a href={vid.url} target="_blank" rel="noopener noreferrer" className="block aspect-[9/16] w-full rounded-xl flex items-center justify-center transition-colors" style={{ backgroundColor: CS.light2 }}>
+                        <Video className="h-10 w-10" style={{ color: CS.blue4 }} />
+                      </a>
+                    ) : (
+                      <div className="aspect-[9/16] w-full rounded-xl flex items-center justify-center" style={{ backgroundColor: CS.light2 }}>
+                        <Video className="h-10 w-10" style={{ color: CS.blue4 }} />
+                      </div>
+                    )}
+                    <div className="space-y-1.5">
+                      <h4 className="font-medium text-sm line-clamp-2" style={{ color: CS.navy }}>{vid.title}</h4>
+                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        {vid.views && (
+                          <span className="flex items-center gap-1">
+                            <Eye className="h-3 w-3" style={{ color: CS.blue3 }} /> {vid.views}
+                          </span>
+                        )}
+                        {vid.likes && (
+                          <span className="flex items-center gap-1">
+                            <Heart className="h-3 w-3" style={{ color: CS.red }} /> {vid.likes}
+                          </span>
+                        )}
+                      </div>
+                      {vid.date && (
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="h-3 w-3" style={{ color: CS.blue4 }} /> {new Date(vid.date).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
