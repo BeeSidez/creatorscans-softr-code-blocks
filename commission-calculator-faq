@@ -1,0 +1,108 @@
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const faqs = [
+  {
+    question: 'How much commission does TikTok Shop pay creators?',
+    answer: 'TikTok Shop commissions typically range from 2-20%, with most products at 5-10%. Beauty and health products often offer 8-15%, while electronics pay 3-8%. Premium sellers may offer up to 20% for high-margin items.'
+  },
+  {
+    question: 'When and how do I get paid from TikTok Shop?',
+    answer: 'Commissions are paid 7-14 days after the buyer receives the product and the return period ends. Payments go directly to your TikTok Shop Wallet, which you can withdraw to PayPal or bank account. Minimum withdrawal is typically £10.'
+  },
+  {
+    question: 'Do I need a certain number of followers for TikTok Shop?',
+    answer: 'No! Unlike brand deals or Creator Fund, TikTok Shop has no follower minimum. Creators with 500 followers can earn commissions. However, larger audiences (10K+) typically generate 10-20× more sales through better reach.'
+  },
+  {
+    question: 'What happens if a customer returns a product?',
+    answer: 'If a buyer returns a product, the commission is deducted from your next payment. Return rates average 10-15%. To minimize returns, only promote products you have tested and genuinely recommend—authentic reviews lead to happier buyers.'
+  },
+  {
+    question: 'Can I promote any product on TikTok Shop?',
+    answer: 'You can promote most products listed on TikTok Shop, but some sellers restrict their affiliate programs to specific creators. Focus on products relevant to your niche for better conversion rates. Authentic fit matters more than commission percentage.'
+  },
+  {
+    question: 'How do TikTok Shop earnings compare to Amazon Associates?',
+    answer: "TikTok Shop typically pays higher commissions (5-20% vs Amazon's 1-10%) and converts better due to in-app shopping. However, Amazon has broader product selection. Many creators use both: TikTok Shop for viral products, Amazon for niche/specific items."
+  }
+];
+
+export default function Block() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const toggleFaq = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const highlightCurrency = (text: string) => {
+    const parts = text.split(/(£[0-9,]+\.?[0-9]*|£[0-9,]+|[0-9,]+\+? diamonds?|[0-9]+-[0-9]+%|[0-9]+%|[0-9]+K\+|10-20×)/g);
+    return parts.map((part, i) => {
+      if (part.match(/(£[0-9,]+\.?[0-9]*|£[0-9,]+|[0-9,]+\+? diamonds?|[0-9]+-[0-9]+%|[0-9]+%|[0-9]+K\+|10-20×)/)) {
+        return <span key={i} className="text-[#5e7bf6] font-semibold">{part}</span>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div className="container py-12 bg-gradient-to-br from-white via-blue-50/30 to-white">
+      <div className="content max-w-4xl mx-auto">
+        <h2 className="text-3xl md:text-4xl font-bold text-[#001364] text-center mb-3">
+          Frequently Asked Questions
+        </h2>
+        <p className="text-center text-muted-foreground mb-10">
+          Everything you need to know about TikTok Shop commissions and creator earnings
+        </p>
+        
+        <div className="space-y-2">
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index;
+            const isEven = index % 2 === 0;
+            
+            return (
+              <div
+                key={index}
+                className={cn(
+                  'rounded-lg border border-border overflow-hidden transition-all duration-200',
+                  isEven ? 'bg-white' : 'bg-blue-50/30'
+                )}
+              >
+                <button
+                  onClick={() => toggleFaq(index)}
+                  className="w-full px-6 py-5 flex items-start justify-between gap-4 text-left hover:bg-black/5 transition-colors"
+                  aria-expanded={isOpen}
+                >
+                  <span className="text-[#001364] font-semibold text-base md:text-lg leading-relaxed pr-4">
+                    {faq.question}
+                  </span>
+                  <div className="flex-shrink-0 mt-1">
+                    {isOpen ? (
+                      <Minus className="w-5 h-5 text-[#5e7bf6] transition-transform duration-200" />
+                    ) : (
+                      <Plus className="w-5 h-5 text-[#5e7bf6] transition-transform duration-200" />
+                    )}
+                  </div>
+                </button>
+                
+                <div
+                  className={cn(
+                    'overflow-hidden transition-all duration-300 ease-in-out',
+                    isOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+                  )}
+                >
+                  <div className="px-6 pb-5 pt-1">
+                    <p className="text-foreground leading-relaxed">
+                      {highlightCurrency(faq.answer)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
