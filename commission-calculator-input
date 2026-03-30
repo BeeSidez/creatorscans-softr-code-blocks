@@ -1,0 +1,176 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+
+export default function Block() {
+  const [productPrice, setProductPrice] = useState('50');
+  const [commissionRate, setCommissionRate] = useState('5');
+  const [monthlySales, setMonthlySales] = useState('20');
+  const [results, setResults] = useState(null);
+
+  const handleCalculate = () => {
+    const price = parseFloat(productPrice);
+    const rate = parseFloat(commissionRate);
+    const sales = parseFloat(monthlySales);
+
+    if (isNaN(price) || isNaN(rate) || isNaN(sales) || price <= 0 || rate < 2 || rate > 20 || sales <= 0) {
+      return;
+    }
+
+    const earningsPerSale = (price * rate) / 100;
+    const monthlyEarnings = earningsPerSale * sales;
+    const annualEarnings = monthlyEarnings * 12;
+
+    setResults({
+      earningsPerSale,
+      monthlyEarnings,
+      annualEarnings
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-white">
+      <div className="container py-12">
+        <div className="content max-w-4xl mx-auto space-y-8">
+          {/* Calculator Form */}
+          <Card className="border-none shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl text-[#001364]">Calculate Commission Earnings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#001364]">
+                  Product Price (£) <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="number"
+                  value={productPrice}
+                  onChange={(e) => setProductPrice(e.target.value)}
+                  className="h-12 border-2 focus:border-[#5e7bf6] transition-colors"
+                />
+                <p className="text-sm text-gray-600">Average product price</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#001364]">
+                  Commission Rate (%) <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="number"
+                  min="2"
+                  max="20"
+                  value={commissionRate}
+                  onChange={(e) => setCommissionRate(e.target.value)}
+                  className="h-12 border-2 focus:border-[#5e7bf6] transition-colors"
+                />
+                <p className="text-sm text-gray-600">Commission percentage (2-20%)</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#001364]">
+                  Expected Monthly Sales <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="number"
+                  value={monthlySales}
+                  onChange={(e) => setMonthlySales(e.target.value)}
+                  className="h-12 border-2 focus:border-[#5e7bf6] transition-colors"
+                />
+                <p className="text-sm text-gray-600">Number of sales you expect per month</p>
+              </div>
+
+              <Button
+                onClick={handleCalculate}
+                className="w-full h-12 text-lg bg-[#5e7bf6] hover:bg-[#5e7bf6]/90 text-white font-semibold shadow-md transition-all"
+              >
+                Calculate Commission
+              </Button>
+
+              {results && (
+                <div className="mt-8 space-y-4 animate-in fade-in duration-500">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Card className="border-2 border-[#5e7bf6]/20 bg-gradient-to-br from-white to-blue-50/30">
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-[#001364]/60 mb-2">Earnings Per Sale</p>
+                        <p className="text-3xl font-bold text-[#5e7bf6]">£{results.earningsPerSale.toFixed(2)}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-2 border-[#5e7bf6]/20 bg-gradient-to-br from-white to-blue-50/30">
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-[#001364]/60 mb-2">Monthly Earnings</p>
+                        <p className="text-3xl font-bold text-[#5e7bf6]">£{results.monthlyEarnings.toFixed(2)}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-2 border-[#5e7bf6]/20 bg-gradient-to-br from-white to-blue-50/30">
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-[#001364]/60 mb-2">Annual Projection</p>
+                        <p className="text-3xl font-bold text-[#5e7bf6]">£{results.annualEarnings.toFixed(2)}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Calculator Inputs Explained */}
+          <Card className="border-none shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl text-[#001364]">Calculator Inputs Explained</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-gray-200">
+                      <th className="text-left py-3 px-4 font-bold text-[#001364]">Input</th>
+                      <th className="text-left py-3 px-4 font-bold text-[#001364]">Description</th>
+                      <th className="text-left py-3 px-4 font-bold text-[#001364]">Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-[#001364]">Product Price</span>
+                          <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Required</Badge>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-[#001364]/70">Your product selling price on TikTok Shop</td>
+                      <td className="py-4 px-4 font-bold text-[#5e7bf6]">£35</td>
+                    </tr>
+                    <tr className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-[#001364]">Units Sold</span>
+                          <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Required</Badge>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-[#001364]/70">Number of products sold</td>
+                      <td className="py-4 px-4 font-bold text-[#5e7bf6]">500</td>
+                    </tr>
+                    <tr className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
+                      <td className="py-4 px-4 font-medium text-[#001364]">TikTok Commission</td>
+                      <td className="py-4 px-4 text-[#001364]/70">TikTok Shop commission rate (2-8%)</td>
+                      <td className="py-4 px-4 font-bold text-[#5e7bf6]">5%</td>
+                    </tr>
+                    <tr className="hover:bg-blue-50/30 transition-colors">
+                      <td className="py-4 px-4 font-medium text-[#001364]">Product Cost</td>
+                      <td className="py-4 px-4 text-[#001364]/70">Your cost per unit including shipping</td>
+                      <td className="py-4 px-4 font-bold text-[#5e7bf6]">£15</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-sm italic text-gray-600 mt-6">
+                TikTok Shop commission varies by category: 2% for essentials, 5% standard, 8% for luxury.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
