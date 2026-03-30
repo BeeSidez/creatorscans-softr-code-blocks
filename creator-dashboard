@@ -1,0 +1,261 @@
+import React, { useState } from 'react';
+import { HelpCircle, QrCode, MessageCircle, Heart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+
+interface MetricCardProps {
+  label: string;
+  value: string;
+  hasTooltip?: boolean;
+}
+
+interface PieChartData {
+  label: string;
+  value: number;
+  color: string;
+}
+
+interface LegendItemProps {
+  color: string;
+  label: string;
+  percentage: string;
+}
+
+const MetricCard: React.FC<MetricCardProps> = ({ label, value, hasTooltip = true }) => (
+  <Card>
+    <CardContent className="p-4">
+      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
+        {label}
+        {hasTooltip && <HelpCircle className="h-3 w-3" />}
+      </div>
+      <div className="text-2xl font-semibold">{value}</div>
+    </CardContent>
+  </Card>
+);
+
+const LegendItem: React.FC<LegendItemProps> = ({ color, label, percentage }) => (
+  <div className="flex items-center gap-2 text-sm">
+    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+    <span className="text-muted-foreground min-w-[100px]">{label}</span>
+    <span className="font-medium">{percentage}</span>
+  </div>
+);
+
+const DonutChart: React.FC<{ data: PieChartData[]; size?: number }> = ({ data, size = 180 }) => {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  let cumulativePercentage = 0;
+
+  const createArcPath = (startPercentage: number, endPercentage: number, radius: number, innerRadius: number) => {
+    const startAngle = (startPercentage / 100) * 360 - 90;
+    const endAngle = (endPercentage / 100) * 360 - 90;
+    
+    const startRadians = (startAngle * Math.PI) / 180;
+    const endRadians = (endAngle * Math.PI) / 180;
+    
+    const x1 = 50 + radius * Math.cos(startRadians);
+    const y1 = 50 + radius * Math.sin(startRadians);
+    const x2 = 50 + radius * Math.cos(endRadians);
+    const y2 = 50 + radius * Math.sin(endRadians);
+    
+    const x3 = 50 + innerRadius * Math.cos(endRadians);
+    const y3 = 50 + innerRadius * Math.sin(endRadians);
+    const x4 = 50 + innerRadius * Math.cos(startRadians);
+    const y4 = 50 + innerRadius * Math.sin(startRadians);
+    
+    const largeArcFlag = endPercentage - startPercentage > 50 ? 1 : 0;
+    
+    return `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x4} ${y4} Z`;
+  };
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100">
+      {data.map((item, index) => {
+        const percentage = (item.value / total) * 100;
+        const startPercentage = cumulativePercentage;
+        cumulativePercentage += percentage;
+        
+        return (
+          <path
+            key={index}
+            d={createArcPath(startPercentage, cumulativePercentage, 45, 30)}
+            fill={item.color}
+          />
+        );
+      })}
+    </svg>
+  );
+};
+
+export default function Block() {
+  const [activeTab, setActiveTab] = useState('Sales');
+
+  const tabs = [
+    'Sales',
+    'Collaboration metrics',
+    'Video',
+    'LIVE',
+    'Followers',
+    'Trends',
+    'Example videos',
+    'Similar creators',
+  ];
+
+  const salesChannelData: PieChartData[] = [
+    { label: 'Video', value: 100, color: '#0D9488' },
+  ];
+
+  const productCategoryData: PieChartData[] = [
+    { label: 'Beauty & Personal Care', value: 56, color: '#0D9488' },
+    { label: 'Womenswear & Underwear', value: 18.42, color: '#F59E0B' },
+    { label: 'Health', value: 15.11, color: '#3B82F6' },
+    { label: 'Other', value: 10.47, color: '#6EE7B7' },
+  ];
+
+  return (
+    <div className="bg-background min-h-screen">
+      {/* Header Section */}
+      <div className="border-b">
+        <div className="container py-6">
+          <div className="content flex flex-col md:flex-row gap-6">
+            <div className="flex gap-4">
+              <img
+                src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&fit=crop&crop=face"
+                alt="Profile"
+                className="w-20 h-20 rounded-full object-cover"
+              />
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-semibold">trendythingzz0</h1>
+                  <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded font-medium">
+                    Fast growing
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">trendythingzz</p>
+                <div className="flex gap-2 text-sm">
+                  <span className="text-muted-foreground">Categories</span>
+                  <span className="font-medium">Beauty and Person... , +2</span>
+                </div>
+                <div className="flex gap-2 text-sm">
+                  <span className="text-muted-foreground">Followers</span>
+                  <span className="font-medium">3.8K</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 text-sm text-muted-foreground leading-relaxed">
+              <p>Testing viral beauty & wellness so you don't waste your 💵</p>
+              <p>real body. real skin. real results.</p>
+              <p>UGC | collabs: reffiong99@gmail.com</p>
+              <p>for overwhelmed minds ↓ ✨</p>
+              <p>🔗 https://reffion.gumroad.c...</p>
+            </div>
+
+            <div className="flex flex-col items-end gap-4">
+              <div className="flex gap-3">
+                <QrCode className="h-5 w-5 cursor-pointer" />
+                <svg className="h-5 w-5 cursor-pointer" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+                </svg>
+              </div>
+              <div className="flex gap-2">
+                <Button className="bg-teal-600 hover:bg-teal-700 px-12">Invite</Button>
+                <Button variant="outline" size="icon">
+                  <MessageCircle className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon">
+                  <Heart className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="border-b">
+        <div className="container">
+          <div className="content flex gap-2 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                className={`px-4 py-4 text-sm whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === tab
+                    ? 'border-teal-600 text-teal-600 font-medium'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Sales Content */}
+      <div className="bg-muted/30">
+        <div className="container py-6">
+          <div className="content">
+            <div className="mb-5">
+              <h2 className="text-xl font-semibold mb-1">Sales</h2>
+              <p className="text-sm text-muted-foreground">
+                Feb 16, 2026 - Mar 18, 2026 (GMT+00:00)
+              </p>
+            </div>
+
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <MetricCard label="GMV" value="£24.7K" />
+              <MetricCard label="Items sold" value="1.38K" />
+              <MetricCard label="GPM" value="£6.18" />
+              <MetricCard label="GMV per customer" value="£19.95" />
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* GMV per sales channel */}
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-1 text-sm font-medium mb-5">
+                    GMV per sales channel
+                    <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                  </div>
+                  <div className="flex items-center justify-center gap-8">
+                    <DonutChart data={salesChannelData} />
+                    <div className="flex flex-col gap-3">
+                      <LegendItem color="#0D9488" label="Video" percentage="100.00%" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* GMV by product category */}
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-1 text-sm font-medium mb-5">
+                    GMV by product category
+                    <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                  </div>
+                  <div className="flex items-center justify-center gap-8">
+                    <DonutChart data={productCategoryData} />
+                    <div className="flex flex-col gap-3">
+                      <LegendItem color="#0D9488" label="Beauty & Perso..." percentage="56.00%" />
+                      <LegendItem color="#F59E0B" label="Womenswear & ..." percentage="18.42%" />
+                      <LegendItem color="#3B82F6" label="Health" percentage="15.11%" />
+                      <LegendItem color="#6EE7B7" label="Other" percentage="10.47%" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="bg-muted/50 py-4 flex justify-center">
+        <div className="w-12 h-1 bg-muted-foreground/30 rounded-full" />
+      </div>
+    </div>
+  );
+}
