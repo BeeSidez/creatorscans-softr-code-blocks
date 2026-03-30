@@ -1,0 +1,118 @@
+import { useEffect, useRef, useState } from "react";
+
+export default function Block() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+
+  const features = [
+    { emoji: "✅", text: "Official TikTok Partner Certifications" },
+    { emoji: "📊", text: "Real-time Analytics & Insights" },
+    { emoji: "💎", text: "24/7 Dedicated Support" },
+    { emoji: "🚀", text: "Fast-Track to £10K+ Monthly" },
+  ];
+
+  return (
+    <section
+      ref={sectionRef}
+      style={{ backgroundColor: '#000B3A' }}
+      className="py-20"
+    >
+      <div className="container mx-auto px-4">
+        <div className="max-w-6xl">
+          {/* Eyebrow */}
+          <div
+            style={{ color: '#4A9EFF' }}
+            className={`text-xs uppercase tracking-[0.2em] mb-6 transition-all duration-700 ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            }`}
+          >
+            ABOUT CREATOR SCANS
+          </div>
+
+          {/* H1 Title with glow - "Real Money" highlighted */}
+          <div className="relative mb-6">
+            <div
+              className="absolute inset-0 blur-3xl opacity-20 pointer-events-none"
+              style={{
+                background: "radial-gradient(circle at left, #4A9EFF 0%, transparent 70%)",
+                transform: "translateY(20px)",
+              }}
+            />
+            <h1
+              className={`text-5xl md:text-6xl font-bold mb-6 relative transition-all duration-700 delay-200 ${
+                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+              }`}
+            >
+              <span style={{ color: '#ffffff' }}>We Help You Make </span>
+              <span style={{ color: '#7a93ff' }}>Real Money</span>
+              <span style={{ color: '#ffffff' }}> on TikTok</span>
+            </h1>
+          </div>
+
+          {/* Subtitle - Reduced size */}
+          <p
+            style={{ color: '#B8B8B8' }}
+            className={`text-base md:text-lg max-w-3xl mb-16 transition-all duration-700 delay-[400ms] ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
+          >
+            Whether you're just starting out or already have followers, we'll teach you how to earn through TikTok Shop and live streaming. We're official TikTok partners, so you get the best support and opportunities.
+          </p>
+
+          {/* Feature Buttons - Vertical List */}
+          <div className="flex flex-col gap-4 max-w-2xl">
+            {features.map((feature, index) => (
+              <button
+                key={index}
+                className={`group relative overflow-hidden rounded-xl p-6 text-left transition-all duration-300 hover:-translate-y-1 backdrop-blur-lg shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(74,158,255,0.3)] ${
+                  isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                }`}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(74, 158, 255, 0.2)',
+                  transitionDelay: `${600 + index * 100}ms`,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.borderColor = 'rgba(74, 158, 255, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(74, 158, 255, 0.2)';
+                }}
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-2xl">{feature.emoji}</span>
+                  <span style={{ color: '#ffffff' }} className="text-base md:text-lg font-medium">
+                    {feature.text}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
