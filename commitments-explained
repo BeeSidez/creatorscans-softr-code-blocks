@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pick Your Tracks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .tracks-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .track-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px 30px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+        }
+
+        .track-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(94, 123, 246, 0.1) 0%, rgba(94, 123, 246, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .track-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(94, 123, 246, 0.5);
+            box-shadow: 0 20px 60px rgba(94, 123, 246, 0.3);
+        }
+
+        .track-card:hover::before {
+            opacity: 1;
+        }
+
+        .track-card.selected {
+            border-color: #5E7BF6;
+            background: rgba(94, 123, 246, 0.1);
+        }
+
+        .track-card.selected::before {
+            opacity: 1;
+        }
+
+        .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #5E7BF6 0%, #4A63D8 100%);
+            border-radius: 20px;
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .track-card:hover .icon-wrapper {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 10px 30px rgba(94, 123, 246, 0.5);
+        }
+
+        .icon-wrapper i {
+            font-size: 36px;
+            color: white;
+        }
+
+        .track-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 15px;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+
+        .track-description {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-align: center;
+            min-height: 50px;
+        }
+
+        .commitment-levels {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .commitment-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .commitment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .commitment-item:last-child {
+            border-bottom: none;
+        }
+
+        .commitment-name {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .commitment-value {
+            font-size: 15px;
+            color: #5E7BF6;
+            font-weight: 600;
+        }
+
+        .select-indicator {
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .track-card.selected .select-indicator {
+            background: #5E7BF6;
+            border-color: #5E7BF6;
+        }
+
+        .select-indicator i {
+            font-size: 16px;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .track-card.selected .select-indicator i {
+            opacity: 1;
+        }
+
+        /* Pulse animation for selected cards */
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(94, 123, 246, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(94, 123, 246, 0);
+            }
+        }
+
+        .track-card.selected .icon-wrapper {
+            animation: pulse 2s infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .tracks-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .track-card {
+                padding: 30px 25px;
+            }
+
+            .icon-wrapper {
+                width: 70px;
+                height: 70px;
+            }
+
+            .icon-wrapper i {
+                font-size: 32px;
+            }
+
+            .track-title {
+                font-size: 22px;
+            }
+        }
+
+        /* Fade in animation on load */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .track-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .track-card:nth-child(1) {
+            animation-delay: 0.1s;
+            opacity: 0;
+        }
+
+        .track-card:nth-child(2) {
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+
+        .track-card:nth-child(3) {
+            animation-delay: 0.3s;
+            opacity: 0;
+        }
+    </style>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="tracks-container">
+        <!-- TikTok Shop Card -->
+        <div class="track-card" data-track="shop">
+            <div class="select-indicator">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="icon-wrapper">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h3 class="track-title">TikTok Shop</h3>
+            <p class="track-description">Promote products, earn commissions, and get sample vouchers and brand deals as you level up.</p>
+            <div class="commitment-levels">
+                <div class="commitment-label">Commitment Levels</div>
+                <div class="commitment-item">
+                    <span class="commitment-name">Starter</span>
+                    <span class="commitment-value">3 posts/week</span>
+                </div>
+                <div class="commitment-item">
+                    <span class="commitment-name">Pro</span>
+                    <span class="commitment-value">5 posts/week</span>
+                </div>
+                <div class="commitment-item">
+                    <span class="commitment-name">Advanced</span>
+                    <span class="commitment-value">7 posts/week</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TikTok Lives Card -->
+        <div class="track-card" data-track="live">
+            <div class="select-indicator">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="icon-wrapper">
+                <i class="fas fa-video"></i>
+            </div>
+            <h3 class="track-title">TikTok Lives</h3>
+            <p class="track-description">Stream consistently, grow your audience, and unlock live-specific perks like gift rewards and violation support.</p>
+            <div class="commitment-levels">
+                <div class="commitment-label">Commitment Levels</div>
+                <div class="commitment-item">
+                    <span class="commitment-name">Starter</span>
+                    <span class="commitment-value">2 lives/week</span>
+                </div>
+                <div class="commitment-item">
+                    <span class="commitment-name">Pro</span>
+                    <span class="commitment-value">4 lives/week</span>
+                </div>
+                <div class="commitment-item">
+                    <span class="commitment-name">Advanced</span>
+                    <span class="commitment-value">6 lives/week</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Organic Posts Card -->
+        <div class="track-card" data-track="organic">
+            <div class="select-indicator">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="icon-wrapper">
+                <i class="fas fa-pen-nib"></i>
+            </div>
+            <h3 class="track-title">Organic Posts</h3>
+            <p class="track-description">Build your TikTok with regular content. Stay accountable without the pressure of selling or streaming.</p>
+            <div class="commitment-levels">
+                <div class="commitment-label">Commitment Levels</div>
+                <div class="commitment-item">
+                    <span class="commitment-name">Starter</span>
+                    <span class="commitment-value">3 posts/week</span>
+                </div>
+                <div class="commitment-item">
+                    <span class="commitment-name">Pro</span>
+                    <span class="commitment-value">5 posts/week</span>
+                </div>
+                <div class="commitment-item">
+                    <span class="commitment-name">Advanced</span>
+                    <span class="commitment-value">7 posts/week</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Multi-select functionality
+        const trackCards = document.querySelectorAll('.track-card');
+
+        trackCards.forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('selected');
+                
+                // Optional: Store selected tracks
+                const selectedTracks = [];
+                document.querySelectorAll('.track-card.selected').forEach(selected => {
+                    selectedTracks.push(selected.dataset.track);
+                });
+                
+                // You can use this array to pass data to Softr or your backend
+                console.log('Selected tracks:', selectedTracks);
+                
+                // Store in localStorage for use in next steps
+                localStorage.setItem('selectedTracks', JSON.stringify(selectedTracks));
+            });
+        });
+
+        // Optional: Load previously selected tracks on page load
+        window.addEventListener('load', function() {
+            const savedTracks = JSON.parse(localStorage.getItem('selectedTracks') || '[]');
+            savedTracks.forEach(trackName => {
+                const card = document.querySelector(`[data-track="${trackName}"]`);
+                if (card) card.classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html>
