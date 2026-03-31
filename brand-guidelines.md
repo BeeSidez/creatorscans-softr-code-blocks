@@ -111,6 +111,13 @@ const CS = {
 ### Loading State
 - Spinner: `border-2` with `border-color: #294ff6`, `border-top-color: transparent`, `animate-spin`
 
+## Softr Code Block Rules
+
+- NEVER use TypeScript syntax in Softr code blocks. Softr runs plain JavaScript/JSX only.
+- No type annotations: `(n: string)` must be `(n)`, `Record<string, any>` must be `{}`, `useState<string | null>` must be `useState`
+- No TypeScript interfaces or type definitions
+- All code must be valid plain JSX that runs without a TypeScript compiler
+
 ## Do / Don't
 
 - DO use the blue palette for data visualisation, progress, and positive states
