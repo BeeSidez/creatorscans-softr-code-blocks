@@ -1,125 +1,269 @@
 import { useRecord, useRecordUpdate, useCurrentRecordId, q } from "@/lib/datasource";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { Toaster } from "@/components/ui/toaster";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { useState } from "react";
-import { User, MapPin, Briefcase, Target, Globe, Pencil, Check, X, ExternalLink, Languages } from "lucide-react";
+import { Edit2, Save, X, Check } from "lucide-react";
 
 const select = q.select({
+  email: "T3cFq",
   fullName: "PXdkq",
   avatar: "8L9hV",
+  tiktokUsername: "uZ8z0",
+  shopBound: "bTOzJ",
+  liveBound: "sZ3R2",
   bio: "on8OZ",
   tagline: "v2Gu1",
-  tiktokUsername: "uZ8z0",
-  tiktokProfileUrl: "f2AHE",
-  followers: "wMXX0",
+  myGoal: "uNdfV",
+  city: "z4TF1",
+  age: "aNbbk",
   pronouns: "W933n",
   gender: "ZrMCm",
+  address: "ONDAV",
   birthday: "A79E9",
   generation: "UiS1H",
-  age: "aNbbk",
-  city: "z4TF1",
-  regionalAccent: "TV7Nz",
-  firstLanguage: "3hJpt",
-  ethnicBackground: "iXpQB",
-  heritage: "FzvXF",
-  localDialect: "aWNgr",
   jobTitle: "6aChZ",
   industry: "aDyIX",
   position: "1kULp",
   careerStage: "SCLTv",
   income: "iwraT",
-  myGoal: "uNdfV",
   lookingFor: "VzOte",
-  shopBound: "bTOzJ",
-  liveBound: "sZ3R2",
-  track: "QbvGk",
+  ethnicBackground: "iXpQB",
+  heritage: "FzvXF",
+  regionalAccent: "TV7Nz",
+  firstLanguage: "3hJpt",
+  localDialect: "aWNgr",
 });
 
-const CS = {
-  blue: "#294ff6",
-  blue2: "#4466f8",
-  blue3: "#5e7bf6",
-  blue4: "#7a93ff",
-  blue5: "#879cf7",
-  navy: "#000f4d",
-  navy2: "#001364",
-  navy3: "#152237",
-  light1: "#f8fbff",
-  light2: "#eef4fd",
-  light3: "#fafbff",
-  lavender: "#d8d8ff",
-  red: "#fe2c55",
-};
+const CS_BLUE = "#001364";
+const CS_BORDER = "#eef4fd";
 
-const OPTIONS = {
-  pronouns: ["She", "Her", "He", "Him", "They", "Them"],
-  gender: ["Female", "Male"],
-  age: ["18-24", "25-34", "35-44", "45-54", "55+"],
-  regionalAccent: ["London / South East", "Midlands", "North West", "North East", "Yorkshire", "Scottish", "Welsh", "Northern Irish", "Other"],
-  ethnicBackground: ["English, Welsh, Scottish, Northern Irish or British", "Irish", "Gypsy or Irish Traveller", "Roma", "Any other White background", "White and Black Caribbean", "White and Black African", "White and Asian", "Any other Mixed or Multiple background", "Indian", "Pakistani", "Bangladeshi", "Chinese", "Any other Asian background", "African", "Caribbean", "Any other Black, Black British or Caribbean background", "Arab", "Any other ethnic group"],
-  industry: ["Accounting And Planning", "Arts And Craft", "Automotive", "Beauty", "Computer Software", "Design", "Education", "Entertainment", "E-commerce", "Fashion", "Financial Services", "Food And Beverages", "Government", "Health Wellness And Fitness", "Health Care", "Higher Education", "Hospitality", "Law", "Marketing And Advertising", "Media", "Music", "Pharmaceuticals", "Photography", "Public Relations And Communications", "Real Estate", "Research", "Retail", "Social Services", "Technology", "Transport", "The Arts"],
-  position: ["Student", "Graduate", "First job", "Supervisor", "Manager", "Senior Manger", "Head of", "Senior VP", "VP", "Director", "C-suite", "Founder", "Sabbatical", "Freelancer", "Transitioning", "Not applicable", "CEO of my household", "Self-employed"],
-  careerStage: ["Studying", "Full-time employed", "Part-time employed", "Self-employed", "Unemployed", "Starting a new role", "Developing in my current role", "Exploring new opportunities", "Starting a business", "Starting a side hustle", "Scaling a business", "Scaling a side hustle", "On parental leave", "Retired"],
-  lookingFor: ["Extra income", "Full-time creator income", "Build my personal brand", "Grow my audience", "Learn content creation", "Promote my own business", "Promote my own products", "Find brand deals", "Build a community", "Have fun / creative outlet", "Career change into content", "Network with other creators", "Content coaching & feedback", "Help with bans & violations", "Content creation education", "AI for content creation", "Content planning & strategy", "Community & accountability"],
-  income: ["Not applicable", "Up to £12,500", "£12,501 to £29,999", "£30,000 to £49,999", "£50,000 to £69,999", "£70,000 to £89,999", "£90,000 to £109,999", "£110,000 to £150,000", "Over £150,000"],
-};
+const AGE_OPTIONS = [
+  { id: "7c18b135-14c3-4495-b16e-95b72d3e0cbc", label: "18-24" },
+  { id: "5b2a810b-00f7-4858-88db-6d0c423d646b", label: "25-34" },
+  { id: "52f19f78-b5fb-40ce-be37-6328d3cd01c8", label: "35-44" },
+  { id: "78b01971-c8c5-40fe-8d82-f28f87d2b3bb", label: "45-54" },
+  { id: "eadfa9ad-457b-438a-9ffd-c49141be5aa8", label: "55+" },
+];
 
-const getLabel = (val: any): string => {
-  if (!val) return "";
-  if (typeof val === "object" && val.label) return val.label;
-  return String(val);
-};
+const PRONOUNS_OPTIONS = [
+  { id: "7c923ac9-29b6-4f43-9bdd-26c41f3d4a87", label: "She" },
+  { id: "4561af4c-a1db-4d5b-8f8c-dbf4f138cc58", label: "Her" },
+  { id: "3bad761c-42fa-48f4-ac62-6dbfd01c4871", label: "He" },
+  { id: "6ea6a342-d2a1-43cc-ba97-0623e98b4310", label: "Him" },
+  { id: "b4a5a067-6f04-461b-8f5e-f08055c27f04", label: "They" },
+  { id: "d767bc88-9aca-4983-9e45-5a2bdaaa069c", label: "Them" },
+];
 
-function DisplayField({ label, value, icon: Icon }: { label: string; value: string; icon?: any }) {
+const GENDER_OPTIONS = [
+  { id: "dbf0be9b-2b73-4e0a-b27d-cdaff23f70ce", label: "Female" },
+  { id: "5734272f-f846-47fb-a3b8-e594e24570aa", label: "Male" },
+];
+
+const REGIONAL_ACCENT_OPTIONS = [
+  { id: "f36ac53b-e31a-4ee1-a40a-fd17a0001754", label: "London / South East" },
+  { id: "d35b42ac-f606-431d-a97b-6b61fb3203c7", label: "Midlands" },
+  { id: "f7c13297-d00e-4f12-9c1a-1cc2262e91e9", label: "North West" },
+  { id: "a35d5e8a-c00e-4494-ac5e-e12129e8842c", label: "North East" },
+  { id: "00372359-9b6a-4d07-97ad-a973a07aad2a", label: "Yorkshire" },
+  { id: "8c6a285c-eceb-45eb-8fa0-b2b8f55eeaf6", label: "Scottish" },
+  { id: "a24a3812-a9ad-4476-9366-be0d489463f9", label: "Welsh" },
+  { id: "3f0ddb59-b9c9-4a01-89a8-722125ef34b4", label: "Northern Irish" },
+  { id: "7cd041dd-dd06-4128-a650-376ea9edd022", label: "Other" },
+];
+
+const INDUSTRY_OPTIONS = [
+  { id: "0260ea52-40b5-4898-957c-2e276655145d", label: "Accounting And Planning" },
+  { id: "7659a4b6-6efb-4934-b279-c8a58d16334a", label: "Arts And Craft" },
+  { id: "04a57bc8-52de-4a4b-a77d-69faa2026a22", label: "Automotive" },
+  { id: "a1aedefc-a2aa-4687-ae7c-0a2f0c0de99b", label: "Beauty" },
+  { id: "4cff0323-af2a-44c8-b081-634f22664344", label: "Computer Software" },
+  { id: "0a26a96b-56a3-4e7a-a30c-ca2ccf16a382", label: "Design" },
+  { id: "e17f4caa-1506-40b2-8ec4-272097a201b6", label: "Education" },
+  { id: "20bf6bd4-8040-417e-9843-f5a80060ca7b", label: "Entertainment" },
+  { id: "037e81c8-ae23-4316-8229-fd989e284f56", label: "E-commerce" },
+  { id: "a42b6950-0ec5-4940-bb5d-a8f022852329", label: "Fashion" },
+  { id: "5a02167f-df51-40ef-b081-c612c3d5a650", label: "Financial Services" },
+  { id: "bf0e24dc-b884-445f-b8a0-0c44c8472068", label: "Food And Beverages" },
+  { id: "27c25c4b-2bf7-4e8e-baa1-f0c003ad1d49", label: "Government" },
+  { id: "0b130df3-1c9f-4236-b58e-93a8d17361c8", label: "Health Wellness And Fitness" },
+  { id: "26624cfc-05a0-4ddf-a60a-56a39a89716b", label: "Health Care" },
+  { id: "09d94ce4-2090-42d1-9981-62a8fe000416", label: "Higher Education" },
+  { id: "e89be7df-a3a3-4ea3-a872-b78ae9e3eaa9", label: "Hospitality" },
+  { id: "1041a3f0-6b73-4ce4-9af5-51255beb6eb6", label: "Law" },
+  { id: "282149f5-c076-4543-93b7-a372a1fa387e", label: "Marketing And Advertising" },
+  { id: "33445e27-00d3-48c7-a0a1-e40a9a56a76d", label: "Media" },
+  { id: "dd093db3-21bb-4e86-9d7b-42a636d26e90", label: "Music" },
+  { id: "67df71f7-1c1c-4fd8-8830-26e7df958230", label: "Pharmaceuticals" },
+  { id: "15e2a081-482d-4472-87c1-825d63d4801b", label: "Photography" },
+  { id: "6041f7d0-4ba3-45ca-878e-1e91b2fcd52c", label: "Public Relations And Communications" },
+  { id: "7d1284da-3352-4fc1-b2d3-6ec2b3896eca", label: "Real Estate" },
+  { id: "048ca458-68dd-4c0b-a632-e3b19b19018a", label: "Research" },
+  { id: "cc1af1e2-177e-4e52-ba48-97133c00b78c", label: "Retail" },
+  { id: "878f1467-5208-4121-9b14-9ee08c927d10", label: "Social Services" },
+  { id: "fc7af4e6-e449-4198-9927-bc26e0e3be81", label: "Technology" },
+  { id: "644d47ae-7b52-4b66-be4c-6b4f742dc92c", label: "Transport" },
+  { id: "f52e3d85-2d82-4db2-92ec-f3c318dee8dc", label: "The Arts" },
+];
+
+const POSITION_OPTIONS = [
+  { id: "e12b6edf-a034-4f1f-9b57-8bf1365c96fe", label: "Student" },
+  { id: "6d6f0ec4-1285-44bc-b04e-bd7b0f8f47a4", label: "Graduate" },
+  { id: "0ee3900c-360f-47b9-a206-1499bae874f1", label: "First job" },
+  { id: "8944af77-ed1f-4403-bb9e-135c208eb302", label: "Supervisor" },
+  { id: "f3c40a91-41c4-440f-aa66-ec449b8c9805", label: "Manager" },
+  { id: "1d625b39-64a0-4691-9364-45c4cfd1f511", label: "Senior Manger" },
+  { id: "4fc7573a-bfb3-4536-9b4d-459b01ca4a2b", label: "Head of" },
+  { id: "5f0f2d85-049e-410d-b131-38cce71cfc85", label: "Senior VP" },
+  { id: "a4632697-b6eb-4290-a6e9-7b3d9eaa41a7", label: "VP" },
+  { id: "45a84956-7172-4d87-b436-5af2bd2ecff0", label: "Director" },
+  { id: "680dee7f-0238-456f-9f80-a0229cea544d", label: "C-suite" },
+  { id: "4a949d72-2be2-4aa8-8b2a-18be58636ccb", label: "Founder" },
+  { id: "afaf7396-03bc-47a5-8c6e-3d0cb566f60f", label: "Sabbatical" },
+  { id: "5a511959-7173-4e28-9e61-ce1a341a1f5b", label: "Freelancer" },
+  { id: "baca5e2b-58f8-4e88-9e25-42b8489be512", label: "Transitioning" },
+  { id: "8d750b5e-14ac-4299-84bb-06969f84c929", label: "Not applicable" },
+  { id: "32537df4-045b-4528-8d7a-1329964cb55f", label: "CEO of my household" },
+  { id: "4910924a-223c-40a5-9007-f0348a8b20e1", label: "Self-employed" },
+];
+
+const CAREER_STAGE_OPTIONS = [
+  { id: "3f2aa006-da2e-43ac-93db-81cfde7bec31", label: "Studying" },
+  { id: "a6a812f8-2144-4d19-98e8-f268e64cabc6", label: "Full-time employed" },
+  { id: "18d6cf21-0d1f-4620-a85f-9c08104b6ef2", label: "Part-time employed" },
+  { id: "58c5b479-e873-4391-9a78-c691b253483f", label: "Self-employed" },
+  { id: "a1c40bda-48fa-42e1-9b67-82ee93c6410e", label: "Unemployed" },
+  { id: "2cbb3480-7637-4682-b8b6-6b5ee88507ca", label: "Starting a new role" },
+  { id: "0bc39f84-52c4-4226-bf00-c837c0b8512d", label: "Developing in my current role" },
+  { id: "2ad2256d-5568-4ee1-8611-0b5d03b1ac78", label: "Exploring new opportunities" },
+  { id: "e1ad3525-26ed-488b-94d9-ced7896a7f16", label: "Starting a business" },
+  { id: "25b04f85-801d-464d-8da9-3661c8e31d13", label: "Starting a side hustle" },
+  { id: "08ffdc9f-0830-4686-81e5-6e8e8f6cb3ad", label: "Scaling a business" },
+  { id: "e2176bab-d596-49d7-a07e-70f576ca7fdb", label: "Scaling a side hustle" },
+  { id: "3f9bdc26-30ce-437d-9af4-a1c3b59e6d04", label: "On parental leave" },
+  { id: "dc5767b6-c0da-4548-b5a8-e0f543939fe1", label: "Retired" },
+];
+
+const INCOME_OPTIONS = [
+  { id: "8902e9bd-6a8b-4586-a7cd-9c07d7e80ebb", label: "Not applicable" },
+  { id: "318de1ca-4056-47b4-a381-42345864283f", label: "Up to £12,500" },
+  { id: "3a06a5f3-4aec-47fa-87db-ff0165dc0dcd", label: "£12,501 to £29,999" },
+  { id: "0f575015-7acf-49eb-8892-9a91e8ce71ee", label: "£30,000 to £49,999" },
+  { id: "358165e3-287d-4ecd-8d01-24ddbbc12129", label: "£50,000 to £69,999" },
+  { id: "b54baa1c-5769-4cd1-b622-d622fa659843", label: "£70,000 to £89,999" },
+  { id: "997e66b2-dcf1-4bb6-8bf1-44d73be52575", label: "£90,000 to £109,999" },
+  { id: "c4c88d25-a76b-4589-9bcd-be462f6031a9", label: "£110,000 to £150,000" },
+  { id: "2e1a0248-a495-4d9c-b2ea-cba5f07f0b49", label: "Over £150,000" },
+];
+
+const LOOKING_FOR_OPTIONS = [
+  { id: "d050142d-44af-4494-9099-c23c0ea9c43b", label: "Extra income" },
+  { id: "b45719a7-bc03-4289-a662-e37481ecf758", label: "Full-time creator income" },
+  { id: "1ff90485-4c20-4dea-aa84-6187a34a142f", label: "Build my personal brand" },
+  { id: "01f039b3-eb72-44cc-945c-044a90a4fc48", label: "Grow my audience" },
+  { id: "3a714e9e-5a86-4ca4-9dde-813b779e69d8", label: "Learn content creation" },
+  { id: "eed51b53-c58d-44ab-898b-eb1666ba09f4", label: "Promote my own business" },
+  { id: "c832ae69-090d-41e8-aacf-a7905b38fd97", label: "Promote my own products" },
+  { id: "9945f80d-ea69-4aec-9196-931a5ea6afa5", label: "Find brand deals" },
+  { id: "a880fa43-b543-48d2-b80b-b70a0c0dc46a", label: "Build a community" },
+  { id: "7c2a657f-1ca0-4b44-8844-f92f2ffeb8c5", label: "Have fun / creative outlet" },
+  { id: "990387b2-a454-444f-aed5-aba93a440394", label: "Career change into content" },
+  { id: "4356406e-efc8-49c7-a39b-0b785a1ce60c", label: "Network with other creators" },
+  { id: "54b60926-7bd3-4e7f-a0a2-083586c334a2", label: "Content coaching & feedback" },
+  { id: "6c8aa18c-4552-48c2-b7e6-bf00510a1ae8", label: "Help with bans & violations" },
+  { id: "d80dcd57-5df0-4952-a41a-7dc7958ef927", label: "Content creation education" },
+  { id: "9b1bd238-1886-4591-a98c-c6a22b4f7a31", label: "AI for content creation" },
+  { id: "61f552f7-5944-4422-8fd1-724a631f6b5a", label: "Content planning & strategy" },
+  { id: "3a587a02-60fc-4dfc-9c7b-df89024816b2", label: "Community & accountability" },
+];
+
+const ETHNIC_BACKGROUND_OPTIONS = [
+  { id: "a7083d76-bfda-432d-9593-7f488ce42d2c", label: "English, Welsh, Scottish, Northern Irish or British" },
+  { id: "810b705b-21f1-45f6-b83f-36d95df51b5d", label: "Irish" },
+  { id: "e3610b6b-f99a-459f-b74b-c93b8122f80f", label: "Gypsy or Irish Traveller" },
+  { id: "192afb67-f348-4455-8d9a-c3c23b43074a", label: "Roma" },
+  { id: "21e47c28-4f08-4883-9443-1c71b13aa554", label: "Any other White background" },
+  { id: "edf2ffd2-1976-4943-8245-35e9964433ae", label: "White and Black Caribbean" },
+  { id: "2c73786e-d8d4-4411-a160-af74f9cb319a", label: "White and Black African" },
+  { id: "049b8489-dfb8-4a17-9bad-64a48608de68", label: "White and Asian" },
+  { id: "08b3fe1c-991b-4abe-beab-4cf349124d84", label: "Any other Mixed or Multiple background" },
+  { id: "0a1b6e63-3602-4507-84b9-4b1fc462672e", label: "Indian" },
+  { id: "fd6b5dee-3c75-4fee-8ed3-cb9a4cee279f", label: "Pakistani" },
+  { id: "4eb6435b-5998-49a8-884c-d7e649983f93", label: "Bangladeshi" },
+  { id: "77daa23c-4cad-4fad-8c98-88f4272291ee", label: "Chinese" },
+  { id: "230b38d0-8e51-4836-9d37-def8f65714f5", label: "Any other Asian background" },
+  { id: "1ce67a46-e904-4823-893f-e6da609c9daa", label: "African" },
+  { id: "ed0b88ce-e4eb-42ae-b8b6-05788bb96fd7", label: "Caribbean" },
+  { id: "ef20d76d-b830-4f74-96b0-e2aad95912d4", label: "Any other Black, Black British or Caribbean background" },
+  { id: "5171a811-72ed-4fbd-af2f-c4422fe2ea18", label: "Arab" },
+  { id: "bd2f7f5a-6fad-4b36-91af-60b41933a1e3", label: "Any other ethnic group" },
+];
+
+function getLabel(options: { id: string; label: string }[], value: { id: string; label: string } | null) {
+  if (!value) return "";
+  const option = options.find((o) => o.id === value.id);
+  return option ? option.label : value.label;
+}
+
+function DisplayField({ label, value }: { label: string; value: string | boolean | null | undefined }) {
   return (
     <div className="space-y-1">
-      <div className="flex items-center gap-1.5">
-        {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
-        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</Label>
-      </div>
-      <p className="text-sm" style={{ color: CS.navy }}>{value || <span className="text-muted-foreground italic">Not set</span>}</p>
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <div className="text-sm">{value === true ? "Yes" : value === false ? "No" : value || "\u2014"}</div>
     </div>
   );
 }
 
-function SectionCard({ title, icon: Icon, editing, onEdit, onSave, onCancel, saving, children }: {
-  title: string; icon: any; editing: boolean;
-  onEdit: () => void; onSave: () => void; onCancel: () => void;
-  saving: boolean; children: React.ReactNode;
+function SectionCard({
+  title,
+  isEditing,
+  onEdit,
+  onSave,
+  onCancel,
+  isSaving,
+  children,
+}: {
+  title: string;
+  isEditing: boolean;
+  onEdit: () => void;
+  onSave: () => void;
+  onCancel: () => void;
+  isSaving: boolean;
+  children: React.ReactNode;
 }) {
   return (
-    <Card className="border shadow-sm" style={{ borderColor: CS.light2 }}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-md" style={{ backgroundColor: `${CS.blue}10` }}>
-              <Icon className="h-4 w-4" style={{ color: CS.blue }} />
-            </div>
-            <CardTitle className="text-base font-semibold" style={{ color: CS.navy }}>{title}</CardTitle>
-          </div>
-          {!editing ? (
-            <Button variant="ghost" size="sm" onClick={onEdit} className="text-xs gap-1.5 hover:bg-transparent" style={{ color: CS.blue }}>
-              <Pencil className="h-3.5 w-3.5" /> Edit
+    <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-lg font-semibold" style={{ color: CS_BLUE }}>
+          {title}
+        </CardTitle>
+        <div className="flex gap-2">
+          {!isEditing ? (
+            <Button variant="ghost" size="sm" onClick={onEdit} style={{ color: CS_BLUE }}>
+              <Edit2 className="h-4 w-4" />
             </Button>
           ) : (
-            <div className="flex gap-2">
-              <Button size="sm" onClick={onSave} disabled={saving} className="text-xs gap-1 text-white border-0" style={{ backgroundColor: CS.blue }}>
-                <Check className="h-3.5 w-3.5" /> {saving ? "Saving..." : "Save"}
+            <>
+              <Button variant="ghost" size="sm" onClick={onCancel} disabled={isSaving}>
+                <X className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={onCancel} disabled={saving} className="text-xs gap-1">
-                <X className="h-3.5 w-3.5" /> Cancel
+              <Button
+                variant="default"
+                size="sm"
+                onClick={onSave}
+                disabled={isSaving}
+                style={{ backgroundColor: CS_BLUE }}
+              >
+                {isSaving ? "Saving..." : <Save className="h-4 w-4" />}
               </Button>
-            </div>
+            </>
           )}
         </div>
       </CardHeader>
@@ -128,17 +272,29 @@ function SectionCard({ title, icon: Icon, editing, onEdit, onSave, onCancel, sav
   );
 }
 
-function SelectField({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { id: string; label: string }[];
+}) {
   return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</Label>
+    <div className="space-y-2">
+      <Label className="text-sm">{label}</Label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="h-9 text-sm" style={{ borderColor: CS.light2 }}>
+        <SelectTrigger>
           <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
         </SelectTrigger>
         <SelectContent>
-          {options.map(opt => (
-            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+          {options.map((opt) => (
+            <SelectItem key={opt.id} value={opt.id}>
+              {opt.label}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -146,14 +302,24 @@ function SelectField({ label, value, options, onChange }: { label: string; value
   );
 }
 
-function TextField({ label, value, onChange, multiline = false }: { label: string; value: string; onChange: (v: string) => void; multiline?: boolean }) {
+function TextField({
+  label,
+  value,
+  onChange,
+  multiline,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  multiline?: boolean;
+}) {
   return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</Label>
+    <div className="space-y-2">
+      <Label className="text-sm">{label}</Label>
       {multiline ? (
-        <Textarea value={value} onChange={e => onChange(e.target.value)} className="text-sm min-h-[80px] resize-none" style={{ borderColor: CS.light2 }} />
+        <Textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} />
       ) : (
-        <Input value={value} onChange={e => onChange(e.target.value)} className="h-9 text-sm" style={{ borderColor: CS.light2 }} />
+        <Input value={value} onChange={(e) => onChange(e.target.value)} />
       )}
     </div>
   );
@@ -161,23 +327,31 @@ function TextField({ label, value, onChange, multiline = false }: { label: strin
 
 export default function Block() {
   const recordId = useCurrentRecordId();
-  const { data, status } = useRecord({ recordId, select });
-  const { update } = useRecordUpdate();
-  const { toast } = useToast();
+  const { data, status, error, refetch } = useRecord({ recordId, select });
 
-  // Section edit states
   const [editSection, setEditSection] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [draft, setDraft] = useState<Record<string, any>>({});
+  const [draft, setDraft] = useState<any>({});
+
+  const updateRecord = useRecordUpdate({
+    fields: select,
+    async onSuccess() {
+      await refetch();
+      toast.success("Profile updated successfully!");
+      setEditSection(null);
+      setSaving(false);
+    },
+    onError(error) {
+      toast.error("Failed to update profile", { description: error.message });
+      setSaving(false);
+    },
+  });
 
   if (status === "pending") {
     return (
       <div className="container py-12">
-        <div className="content flex items-center justify-center min-h-[300px]">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: CS.blue, borderTopColor: "transparent" }} />
-            <span className="text-sm text-muted-foreground">Loading profile...</span>
-          </div>
+        <div className="content flex items-center justify-center min-h-[400px]">
+          <div className="text-muted-foreground">Loading profile...</div>
         </div>
       </div>
     );
@@ -186,39 +360,26 @@ export default function Block() {
   if (status === "error" || !data) {
     return (
       <div className="container py-12">
-        <div className="content flex items-center justify-center min-h-[300px]">
-          <div className="text-sm text-destructive">Error loading profile</div>
+        <div className="content flex items-center justify-center min-h-[400px]">
+          <div className="text-destructive">Error loading profile</div>
         </div>
       </div>
     );
   }
 
-  const f = data.fields;
-  const avatarUrl = Array.isArray(f.avatar) && f.avatar.length > 0 ? f.avatar[0].url : null;
-  const initials = (f.fullName || "C").charAt(0).toUpperCase();
+  const avatarUrl = Array.isArray(data.fields.avatar) && data.fields.avatar.length > 0 ? data.fields.avatar[0].url : null;
+  const initials = data.fields.fullName
+    ? data.fields.fullName
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "?";
 
-  const startEdit = (section: string) => {
-    const sectionFields: Record<string, string[]> = {
-      header: ["fullName", "bio", "tagline"],
-      personal: ["pronouns", "gender", "age", "birthday"],
-      location: ["city", "regionalAccent", "firstLanguage", "ethnicBackground", "heritage", "localDialect"],
-      career: ["jobTitle", "industry", "position", "careerStage", "income"],
-      goals: ["myGoal", "lookingFor"],
-    };
-    const fields = sectionFields[section] || [];
-    const d: Record<string, any> = {};
-    fields.forEach(key => {
-      const val = f[key];
-      if (key === "localDialect") {
-        d[key] = val || false;
-      } else if (key === "birthday" && val) {
-        d[key] = new Date(val).toISOString().split("T")[0];
-      } else {
-        d[key] = getLabel(val);
-      }
-    });
-    setDraft(d);
+  const startEdit = (section: string, initialData: any) => {
     setEditSection(section);
+    setDraft(initialData);
   };
 
   const cancelEdit = () => {
@@ -226,228 +387,276 @@ export default function Block() {
     setDraft({});
   };
 
-  const saveSection = async () => {
+  const saveSection = async (section: string, fieldMapping: Record<string, string>) => {
     setSaving(true);
-    try {
-      const fieldMap: Record<string, string> = {
-        fullName: "PXdkq", bio: "on8OZ", tagline: "v2Gu1",
-        pronouns: "W933n", gender: "ZrMCm", age: "aNbbk", birthday: "A79E9",
-        city: "z4TF1", regionalAccent: "TV7Nz", firstLanguage: "3hJpt",
-        ethnicBackground: "iXpQB", heritage: "FzvXF", localDialect: "aWNgr",
-        jobTitle: "6aChZ", industry: "aDyIX", position: "1kULp",
-        careerStage: "SCLTv", income: "iwraT",
-        myGoal: "uNdfV", lookingFor: "VzOte",
-      };
-      const updates: Record<string, any> = {};
-      Object.entries(draft).forEach(([key, value]) => {
-        if (fieldMap[key]) {
-          updates[fieldMap[key]] = value;
-        }
-      });
-      await update({ recordId, fields: updates });
-      toast({ title: "Profile updated", description: "Your changes have been saved." });
-      setEditSection(null);
-      setDraft({});
-    } catch (err) {
-      toast({ title: "Error", description: "Failed to save changes. Please try again.", variant: "destructive" });
-    }
-    setSaving(false);
+    const updates: Record<string, any> = {};
+    Object.keys(fieldMapping).forEach((key) => {
+      updates[fieldMapping[key]] = draft[key];
+    });
+    updateRecord.mutate({ recordId: data.id, fields: updates });
   };
 
-  const isEditing = (section: string) => editSection === section;
-
   return (
-    <div className="container py-8">
-      <div className="content space-y-5 max-w-3xl mx-auto">
-        <Toaster />
-
-        {/* ── Profile Header ── */}
-        <SectionCard title="Profile" icon={User}
-          editing={isEditing("header")} onEdit={() => startEdit("header")}
-          onSave={saveSection} onCancel={cancelEdit} saving={saving}>
-          <div className="flex flex-col sm:flex-row gap-5 items-start">
-            <div className="flex-shrink-0">
-              <div className="rounded-full p-0.5" style={{ background: `linear-gradient(135deg, ${CS.blue} 0%, ${CS.blue4} 100%)` }}>
-                <Avatar className="h-20 w-20 border-2 border-white">
-                  <AvatarImage src={avatarUrl || undefined} alt={f.fullName || "Creator"} />
-                  <AvatarFallback className="text-xl font-bold" style={{ backgroundColor: CS.light2, color: CS.navy }}>{initials}</AvatarFallback>
-                </Avatar>
+    <>
+      <Toaster />
+      <div className="container py-8">
+        <div className="content max-w-4xl mx-auto space-y-6">
+          {/* Profile Section */}
+          <SectionCard
+            title="Profile"
+            isEditing={editSection === "profile"}
+            onEdit={() =>
+              startEdit("profile", {
+                fullName: data.fields.fullName || "",
+                bio: data.fields.bio || "",
+                tagline: data.fields.tagline || "",
+              })
+            }
+            onSave={() =>
+              saveSection("profile", {
+                fullName: "PXdkq",
+                bio: "on8OZ",
+                tagline: "v2Gu1",
+              })
+            }
+            onCancel={cancelEdit}
+            isSaving={saving}
+          >
+            {editSection === "profile" ? (
+              <div className="space-y-4">
+                <TextField label="Full Name" value={draft.fullName} onChange={(v) => setDraft({ ...draft, fullName: v })} />
+                <TextField label="Bio" value={draft.bio} onChange={(v) => setDraft({ ...draft, bio: v })} multiline />
+                <TextField label="Tagline" value={draft.tagline} onChange={(v) => setDraft({ ...draft, tagline: v })} />
               </div>
-            </div>
-            <div className="flex-1 space-y-3 w-full">
-              {isEditing("header") ? (
-                <>
-                  <TextField label="Full Name" value={draft.fullName || ""} onChange={v => setDraft({ ...draft, fullName: v })} />
-                  <TextField label="Bio" value={draft.bio || ""} onChange={v => setDraft({ ...draft, bio: v })} multiline />
-                  <TextField label="Tagline" value={draft.tagline || ""} onChange={v => setDraft({ ...draft, tagline: v })} />
-                </>
-              ) : (
-                <>
-                  <h2 className="text-xl font-bold" style={{ color: CS.navy }}>{f.fullName || "Creator"}</h2>
-                  {f.tagline && <p className="text-sm font-medium" style={{ color: CS.blue }}>{getLabel(f.tagline)}</p>}
-                  {f.bio && <p className="text-sm text-muted-foreground">{getLabel(f.bio)}</p>}
-                  {f.tiktokUsername && (
-                    <div className="flex items-center gap-2 pt-1">
-                      <Badge variant="outline" className="text-xs font-normal" style={{ borderColor: CS.light2 }}>
-                        @{f.tiktokUsername}
-                      </Badge>
-                      {f.tiktokProfileUrl && (
-                        <a href={f.tiktokProfileUrl} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 hover:underline" style={{ color: CS.blue }}>
-                          <ExternalLink className="h-3 w-3" /> View Profile
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* ── Personal Details ── */}
-        <SectionCard title="Personal Details" icon={User}
-          editing={isEditing("personal")} onEdit={() => startEdit("personal")}
-          onSave={saveSection} onCancel={cancelEdit} saving={saving}>
-          {isEditing("personal") ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <SelectField label="Pronouns" value={draft.pronouns || ""} options={OPTIONS.pronouns} onChange={v => setDraft({ ...draft, pronouns: v })} />
-              <SelectField label="Gender" value={draft.gender || ""} options={OPTIONS.gender} onChange={v => setDraft({ ...draft, gender: v })} />
-              <SelectField label="Age Range" value={draft.age || ""} options={OPTIONS.age} onChange={v => setDraft({ ...draft, age: v })} />
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Birthday</Label>
-                <Input type="date" value={draft.birthday || ""} onChange={e => setDraft({ ...draft, birthday: e.target.value })} className="h-9 text-sm" style={{ borderColor: CS.light2 }} />
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <DisplayField label="Pronouns" value={getLabel(f.pronouns)} />
-              <DisplayField label="Gender" value={getLabel(f.gender)} />
-              <DisplayField label="Age Range" value={getLabel(f.age)} />
-              <DisplayField label="Generation" value={getLabel(f.generation)} />
-            </div>
-          )}
-        </SectionCard>
-
-        {/* ── Location & Language ── */}
-        <SectionCard title="Location & Language" icon={MapPin}
-          editing={isEditing("location")} onEdit={() => startEdit("location")}
-          onSave={saveSection} onCancel={cancelEdit} saving={saving}>
-          {isEditing("location") ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <TextField label="City" value={draft.city || ""} onChange={v => setDraft({ ...draft, city: v })} />
-                <SelectField label="Regional Accent" value={draft.regionalAccent || ""} options={OPTIONS.regionalAccent} onChange={v => setDraft({ ...draft, regionalAccent: v })} />
-                <TextField label="First Language" value={draft.firstLanguage || ""} onChange={v => setDraft({ ...draft, firstLanguage: v })} />
-                <TextField label="Heritage" value={draft.heritage || ""} onChange={v => setDraft({ ...draft, heritage: v })} />
-              </div>
-              <SelectField label="Ethnic Background" value={draft.ethnicBackground || ""} options={OPTIONS.ethnicBackground} onChange={v => setDraft({ ...draft, ethnicBackground: v })} />
-              <Separator style={{ backgroundColor: CS.light2 }} />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium" style={{ color: CS.navy }}>Local Dialect</Label>
-                  <p className="text-xs text-muted-foreground">When on, AI will use your heritage and regional language in generated scripts</p>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={avatarUrl || undefined} />
+                    <AvatarFallback style={{ backgroundColor: CS_BORDER, color: CS_BLUE }}>{initials}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="text-2xl font-bold" style={{ color: CS_BLUE }}>
+                      {data.fields.fullName || "No name"}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">{data.fields.email}</p>
+                  </div>
                 </div>
-                <Switch checked={draft.localDialect || false} onCheckedChange={v => setDraft({ ...draft, localDialect: v })} />
+                <DisplayField label="Bio" value={data.fields.bio} />
+                <DisplayField label="Tagline" value={data.fields.tagline} />
               </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <DisplayField label="City" value={f.city} icon={MapPin} />
-                <DisplayField label="Regional Accent" value={getLabel(f.regionalAccent)} />
-                <DisplayField label="First Language" value={f.firstLanguage} icon={Languages} />
-                <DisplayField label="Ethnic Background" value={getLabel(f.ethnicBackground)} />
-                <DisplayField label="Heritage" value={f.heritage} />
-              </div>
-              <Separator style={{ backgroundColor: CS.light2 }} />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium" style={{ color: CS.navy }}>Local Dialect</Label>
-                  <p className="text-xs text-muted-foreground">When on, AI will use your heritage and regional language in generated scripts</p>
-                </div>
-                <Badge style={{ backgroundColor: f.localDialect ? `${CS.blue}15` : `${CS.light2}`, color: f.localDialect ? CS.blue : "#999" }}>
-                  {f.localDialect ? "On" : "Off"}
-                </Badge>
-              </div>
-            </div>
-          )}
-        </SectionCard>
+            )}
+          </SectionCard>
 
-        {/* ── Career ── */}
-        <SectionCard title="Career" icon={Briefcase}
-          editing={isEditing("career")} onEdit={() => startEdit("career")}
-          onSave={saveSection} onCancel={cancelEdit} saving={saving}>
-          {isEditing("career") ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <TextField label="Job Title" value={draft.jobTitle || ""} onChange={v => setDraft({ ...draft, jobTitle: v })} />
-              <SelectField label="Industry" value={draft.industry || ""} options={OPTIONS.industry} onChange={v => setDraft({ ...draft, industry: v })} />
-              <SelectField label="Position" value={draft.position || ""} options={OPTIONS.position} onChange={v => setDraft({ ...draft, position: v })} />
-              <SelectField label="Career Stage" value={draft.careerStage || ""} options={OPTIONS.careerStage} onChange={v => setDraft({ ...draft, careerStage: v })} />
-              <SelectField label="Income" value={draft.income || ""} options={OPTIONS.income} onChange={v => setDraft({ ...draft, income: v })} />
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <DisplayField label="Job Title" value={f.jobTitle} />
-              <DisplayField label="Industry" value={getLabel(f.industry)} />
-              <DisplayField label="Position" value={getLabel(f.position)} />
-              <DisplayField label="Career Stage" value={getLabel(f.careerStage)} />
-              <DisplayField label="Income" value={getLabel(f.income)} />
-            </div>
-          )}
-        </SectionCard>
-
-        {/* ── Creator Goals ── */}
-        <SectionCard title="Creator Goals" icon={Target}
-          editing={isEditing("goals")} onEdit={() => startEdit("goals")}
-          onSave={saveSection} onCancel={cancelEdit} saving={saving}>
-          {isEditing("goals") ? (
-            <div className="space-y-4">
-              <TextField label="My Goal" value={draft.myGoal || ""} onChange={v => setDraft({ ...draft, myGoal: v })} multiline />
-              <SelectField label="Looking For" value={draft.lookingFor || ""} options={OPTIONS.lookingFor} onChange={v => setDraft({ ...draft, lookingFor: v })} />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <DisplayField label="My Goal" value={getLabel(f.myGoal)} />
-              <DisplayField label="Looking For" value={getLabel(f.lookingFor)} />
-            </div>
-          )}
-        </SectionCard>
-
-        {/* ── TikTok Connection (read only) ── */}
-        <Card className="border shadow-sm" style={{ borderColor: CS.light2 }}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md" style={{ backgroundColor: `${CS.red}10` }}>
-                <Globe className="h-4 w-4" style={{ color: CS.red }} />
-              </div>
-              <CardTitle className="text-base font-semibold" style={{ color: CS.navy }}>TikTok Connection</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <DisplayField label="Username" value={f.tiktokUsername ? `@${f.tiktokUsername}` : ""} />
-              <DisplayField label="Followers" value={getLabel(f.followers)} />
-              <div className="space-y-1">
-                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tracks</Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {f.shopBound && <Badge className="text-xs border-0 text-white" style={{ backgroundColor: CS.blue }}>Shop</Badge>}
-                  {f.liveBound && <Badge className="text-xs border-0 text-white" style={{ backgroundColor: CS.red }}>LIVE</Badge>}
-                  {getLabel(f.track) && <Badge variant="outline" className="text-xs" style={{ borderColor: CS.light2 }}>{getLabel(f.track)}</Badge>}
+          {/* Personal Details Section */}
+          <SectionCard
+            title="Personal Details"
+            isEditing={editSection === "personal"}
+            onEdit={() =>
+              startEdit("personal", {
+                age: data.fields.age?.id || "",
+                pronouns: data.fields.pronouns?.id || "",
+                gender: data.fields.gender?.id || "",
+                address: data.fields.address || "",
+                birthday: data.fields.birthday || "",
+              })
+            }
+            onSave={() =>
+              saveSection("personal", {
+                age: "aNbbk",
+                pronouns: "W933n",
+                gender: "ZrMCm",
+                address: "ONDAV",
+                birthday: "A79E9",
+              })
+            }
+            onCancel={cancelEdit}
+            isSaving={saving}
+          >
+            {editSection === "personal" ? (
+              <div className="grid md:grid-cols-2 gap-4">
+                <SelectField label="Age" value={draft.age} onChange={(v) => setDraft({ ...draft, age: v })} options={AGE_OPTIONS} />
+                <SelectField label="Pronouns" value={draft.pronouns} onChange={(v) => setDraft({ ...draft, pronouns: v })} options={PRONOUNS_OPTIONS} />
+                <SelectField label="Gender" value={draft.gender} onChange={(v) => setDraft({ ...draft, gender: v })} options={GENDER_OPTIONS} />
+                <TextField label="Birthday" value={draft.birthday} onChange={(v) => setDraft({ ...draft, birthday: v })} />
+                <div className="md:col-span-2">
+                  <TextField label="Address" value={draft.address} onChange={(v) => setDraft({ ...draft, address: v })} multiline />
                 </div>
               </div>
-              {f.tiktokProfileUrl && (
-                <div className="space-y-1">
-                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Profile</Label>
-                  <a href={f.tiktokProfileUrl} target="_blank" rel="noopener noreferrer" className="text-sm flex items-center gap-1 hover:underline" style={{ color: CS.blue }}>
-                    <ExternalLink className="h-3.5 w-3.5" /> View on TikTok
-                  </a>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                <DisplayField label="Age" value={getLabel(AGE_OPTIONS, data.fields.age)} />
+                <DisplayField label="Pronouns" value={getLabel(PRONOUNS_OPTIONS, data.fields.pronouns)} />
+                <DisplayField label="Gender" value={getLabel(GENDER_OPTIONS, data.fields.gender)} />
+                <DisplayField label="Birthday" value={data.fields.birthday} />
+                <DisplayField label="Generation" value={data.fields.generation} />
+                <div className="md:col-span-2">
+                  <DisplayField label="Address" value={data.fields.address} />
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            )}
+          </SectionCard>
 
+          {/* Location & Language Section */}
+          <SectionCard
+            title="Location & Language"
+            isEditing={editSection === "location"}
+            onEdit={() =>
+              startEdit("location", {
+                city: data.fields.city || "",
+                heritage: data.fields.heritage || "",
+                regionalAccent: data.fields.regionalAccent?.id || "",
+                firstLanguage: data.fields.firstLanguage || "",
+                localDialect: data.fields.localDialect || false,
+                ethnicBackground: data.fields.ethnicBackground?.id || "",
+              })
+            }
+            onSave={() =>
+              saveSection("location", {
+                city: "z4TF1",
+                heritage: "FzvXF",
+                regionalAccent: "TV7Nz",
+                firstLanguage: "3hJpt",
+                localDialect: "aWNgr",
+                ethnicBackground: "iXpQB",
+              })
+            }
+            onCancel={cancelEdit}
+            isSaving={saving}
+          >
+            {editSection === "location" ? (
+              <div className="grid md:grid-cols-2 gap-4">
+                <TextField label="City" value={draft.city} onChange={(v) => setDraft({ ...draft, city: v })} />
+                <TextField label="Heritage" value={draft.heritage} onChange={(v) => setDraft({ ...draft, heritage: v })} />
+                <SelectField label="Regional Accent" value={draft.regionalAccent} onChange={(v) => setDraft({ ...draft, regionalAccent: v })} options={REGIONAL_ACCENT_OPTIONS} />
+                <TextField label="First Language" value={draft.firstLanguage} onChange={(v) => setDraft({ ...draft, firstLanguage: v })} />
+                <div className="md:col-span-2">
+                  <SelectField label="Ethnic Background" value={draft.ethnicBackground} onChange={(v) => setDraft({ ...draft, ethnicBackground: v })} options={ETHNIC_BACKGROUND_OPTIONS} />
+                </div>
+                <div className="md:col-span-2 flex items-center space-x-2">
+                  <Checkbox
+                    id="localDialect"
+                    checked={draft.localDialect}
+                    onCheckedChange={(checked) => setDraft({ ...draft, localDialect: checked })}
+                  />
+                  <Label htmlFor="localDialect" className="text-sm font-normal cursor-pointer">
+                    Use local dialect in AI-generated scripts
+                  </Label>
+                </div>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                <DisplayField label="City" value={data.fields.city} />
+                <DisplayField label="Heritage" value={data.fields.heritage} />
+                <DisplayField label="Regional Accent" value={getLabel(REGIONAL_ACCENT_OPTIONS, data.fields.regionalAccent)} />
+                <DisplayField label="First Language" value={data.fields.firstLanguage} />
+                <DisplayField label="Ethnic Background" value={getLabel(ETHNIC_BACKGROUND_OPTIONS, data.fields.ethnicBackground)} />
+                <DisplayField label="Local Dialect" value={data.fields.localDialect} />
+              </div>
+            )}
+          </SectionCard>
+
+          {/* Career Section */}
+          <SectionCard
+            title="Career"
+            isEditing={editSection === "career"}
+            onEdit={() =>
+              startEdit("career", {
+                jobTitle: data.fields.jobTitle || "",
+                industry: data.fields.industry?.id || "",
+                position: data.fields.position?.id || "",
+                careerStage: data.fields.careerStage?.id || "",
+                income: data.fields.income?.id || "",
+              })
+            }
+            onSave={() =>
+              saveSection("career", {
+                jobTitle: "6aChZ",
+                industry: "aDyIX",
+                position: "1kULp",
+                careerStage: "SCLTv",
+                income: "iwraT",
+              })
+            }
+            onCancel={cancelEdit}
+            isSaving={saving}
+          >
+            {editSection === "career" ? (
+              <div className="grid md:grid-cols-2 gap-4">
+                <TextField label="Job Title" value={draft.jobTitle} onChange={(v) => setDraft({ ...draft, jobTitle: v })} />
+                <SelectField label="Industry" value={draft.industry} onChange={(v) => setDraft({ ...draft, industry: v })} options={INDUSTRY_OPTIONS} />
+                <SelectField label="Position" value={draft.position} onChange={(v) => setDraft({ ...draft, position: v })} options={POSITION_OPTIONS} />
+                <SelectField label="Career Stage" value={draft.careerStage} onChange={(v) => setDraft({ ...draft, careerStage: v })} options={CAREER_STAGE_OPTIONS} />
+                <SelectField label="Income" value={draft.income} onChange={(v) => setDraft({ ...draft, income: v })} options={INCOME_OPTIONS} />
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                <DisplayField label="Job Title" value={data.fields.jobTitle} />
+                <DisplayField label="Industry" value={getLabel(INDUSTRY_OPTIONS, data.fields.industry)} />
+                <DisplayField label="Position" value={getLabel(POSITION_OPTIONS, data.fields.position)} />
+                <DisplayField label="Career Stage" value={getLabel(CAREER_STAGE_OPTIONS, data.fields.careerStage)} />
+                <DisplayField label="Income" value={getLabel(INCOME_OPTIONS, data.fields.income)} />
+              </div>
+            )}
+          </SectionCard>
+
+          {/* Creator Goals Section */}
+          <SectionCard
+            title="Creator Goals"
+            isEditing={editSection === "goals"}
+            onEdit={() =>
+              startEdit("goals", {
+                myGoal: data.fields.myGoal || "",
+                lookingFor: data.fields.lookingFor?.id || "",
+              })
+            }
+            onSave={() =>
+              saveSection("goals", {
+                myGoal: "uNdfV",
+                lookingFor: "VzOte",
+              })
+            }
+            onCancel={cancelEdit}
+            isSaving={saving}
+          >
+            {editSection === "goals" ? (
+              <div className="space-y-4">
+                <TextField label="My Goal" value={draft.myGoal} onChange={(v) => setDraft({ ...draft, myGoal: v })} multiline />
+                <SelectField label="Looking For" value={draft.lookingFor} onChange={(v) => setDraft({ ...draft, lookingFor: v })} options={LOOKING_FOR_OPTIONS} />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <DisplayField label="My Goal" value={data.fields.myGoal} />
+                <DisplayField label="Looking For" value={getLabel(LOOKING_FOR_OPTIONS, data.fields.lookingFor)} />
+              </div>
+            )}
+          </SectionCard>
+
+          {/* TikTok Connection Section (Read-only) */}
+          <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold" style={{ color: CS_BLUE }}>
+                TikTok Connection
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                <DisplayField label="TikTok Username" value={data.fields.tiktokUsername} />
+                <div className="flex gap-4">
+                  <div className="flex items-center gap-2">
+                    {data.fields.shopBound ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-600" />}
+                    <span className="text-sm">Shop</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {data.fields.liveBound ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-600" />}
+                    <span className="text-sm">LIVE</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
