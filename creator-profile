@@ -71,7 +71,7 @@ function getLabel(options, value) {
   return option ? option.label : value.label;
 }
 
-function DisplayField({ label, value ) {
+function DisplayField({ label, value }) {
   return (
     <div className="space-y-1">
       <Label className="text-xs text-muted-foreground">{label}</Label>
