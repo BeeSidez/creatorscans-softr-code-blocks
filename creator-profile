@@ -1,0 +1,453 @@
+import { useRecord, useRecordUpdate, useCurrentRecordId, q } from "@/lib/datasource";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
+import { useState } from "react";
+import { User, MapPin, Briefcase, Target, Globe, Pencil, Check, X, ExternalLink, Languages } from "lucide-react";
+
+const select = q.select({
+  fullName: "PXdkq",
+  avatar: "8L9hV",
+  bio: "on8OZ",
+  tagline: "v2Gu1",
+  tiktokUsername: "uZ8z0",
+  tiktokProfileUrl: "f2AHE",
+  followers: "wMXX0",
+  pronouns: "W933n",
+  gender: "ZrMCm",
+  birthday: "A79E9",
+  generation: "UiS1H",
+  age: "aNbbk",
+  city: "z4TF1",
+  regionalAccent: "TV7Nz",
+  firstLanguage: "3hJpt",
+  ethnicBackground: "iXpQB",
+  heritage: "FzvXF",
+  localDialect: "aWNgr",
+  jobTitle: "6aChZ",
+  industry: "aDyIX",
+  position: "1kULp",
+  careerStage: "SCLTv",
+  income: "iwraT",
+  myGoal: "uNdfV",
+  lookingFor: "VzOte",
+  shopBound: "bTOzJ",
+  liveBound: "sZ3R2",
+  track: "QbvGk",
+});
+
+const CS = {
+  blue: "#294ff6",
+  blue2: "#4466f8",
+  blue3: "#5e7bf6",
+  blue4: "#7a93ff",
+  blue5: "#879cf7",
+  navy: "#000f4d",
+  navy2: "#001364",
+  navy3: "#152237",
+  light1: "#f8fbff",
+  light2: "#eef4fd",
+  light3: "#fafbff",
+  lavender: "#d8d8ff",
+  red: "#fe2c55",
+};
+
+const OPTIONS = {
+  pronouns: ["She", "Her", "He", "Him", "They", "Them"],
+  gender: ["Female", "Male"],
+  age: ["18-24", "25-34", "35-44", "45-54", "55+"],
+  regionalAccent: ["London / South East", "Midlands", "North West", "North East", "Yorkshire", "Scottish", "Welsh", "Northern Irish", "Other"],
+  ethnicBackground: ["English, Welsh, Scottish, Northern Irish or British", "Irish", "Gypsy or Irish Traveller", "Roma", "Any other White background", "White and Black Caribbean", "White and Black African", "White and Asian", "Any other Mixed or Multiple background", "Indian", "Pakistani", "Bangladeshi", "Chinese", "Any other Asian background", "African", "Caribbean", "Any other Black, Black British or Caribbean background", "Arab", "Any other ethnic group"],
+  industry: ["Accounting And Planning", "Arts And Craft", "Automotive", "Beauty", "Computer Software", "Design", "Education", "Entertainment", "E-commerce", "Fashion", "Financial Services", "Food And Beverages", "Government", "Health Wellness And Fitness", "Health Care", "Higher Education", "Hospitality", "Law", "Marketing And Advertising", "Media", "Music", "Pharmaceuticals", "Photography", "Public Relations And Communications", "Real Estate", "Research", "Retail", "Social Services", "Technology", "Transport", "The Arts"],
+  position: ["Student", "Graduate", "First job", "Supervisor", "Manager", "Senior Manger", "Head of", "Senior VP", "VP", "Director", "C-suite", "Founder", "Sabbatical", "Freelancer", "Transitioning", "Not applicable", "CEO of my household", "Self-employed"],
+  careerStage: ["Studying", "Full-time employed", "Part-time employed", "Self-employed", "Unemployed", "Starting a new role", "Developing in my current role", "Exploring new opportunities", "Starting a business", "Starting a side hustle", "Scaling a business", "Scaling a side hustle", "On parental leave", "Retired"],
+  lookingFor: ["Extra income", "Full-time creator income", "Build my personal brand", "Grow my audience", "Learn content creation", "Promote my own business", "Promote my own products", "Find brand deals", "Build a community", "Have fun / creative outlet", "Career change into content", "Network with other creators", "Content coaching & feedback", "Help with bans & violations", "Content creation education", "AI for content creation", "Content planning & strategy", "Community & accountability"],
+  income: ["Not applicable", "Up to £12,500", "£12,501 to £29,999", "£30,000 to £49,999", "£50,000 to £69,999", "£70,000 to £89,999", "£90,000 to £109,999", "£110,000 to £150,000", "Over £150,000"],
+};
+
+const getLabel = (val: any): string => {
+  if (!val) return "";
+  if (typeof val === "object" && val.label) return val.label;
+  return String(val);
+};
+
+function DisplayField({ label, value, icon: Icon }: { label: string; value: string; icon?: any }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-1.5">
+        {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
+        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</Label>
+      </div>
+      <p className="text-sm" style={{ color: CS.navy }}>{value || <span className="text-muted-foreground italic">Not set</span>}</p>
+    </div>
+  );
+}
+
+function SectionCard({ title, icon: Icon, editing, onEdit, onSave, onCancel, saving, children }: {
+  title: string; icon: any; editing: boolean;
+  onEdit: () => void; onSave: () => void; onCancel: () => void;
+  saving: boolean; children: React.ReactNode;
+}) {
+  return (
+    <Card className="border shadow-sm" style={{ borderColor: CS.light2 }}>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md" style={{ backgroundColor: `${CS.blue}10` }}>
+              <Icon className="h-4 w-4" style={{ color: CS.blue }} />
+            </div>
+            <CardTitle className="text-base font-semibold" style={{ color: CS.navy }}>{title}</CardTitle>
+          </div>
+          {!editing ? (
+            <Button variant="ghost" size="sm" onClick={onEdit} className="text-xs gap-1.5 hover:bg-transparent" style={{ color: CS.blue }}>
+              <Pencil className="h-3.5 w-3.5" /> Edit
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button size="sm" onClick={onSave} disabled={saving} className="text-xs gap-1 text-white border-0" style={{ backgroundColor: CS.blue }}>
+                <Check className="h-3.5 w-3.5" /> {saving ? "Saving..." : "Save"}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onCancel} disabled={saving} className="text-xs gap-1">
+                <X className="h-3.5 w-3.5" /> Cancel
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+}
+
+function SelectField({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="h-9 text-sm" style={{ borderColor: CS.light2 }}>
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map(opt => (
+            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function TextField({ label, value, onChange, multiline = false }: { label: string; value: string; onChange: (v: string) => void; multiline?: boolean }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</Label>
+      {multiline ? (
+        <Textarea value={value} onChange={e => onChange(e.target.value)} className="text-sm min-h-[80px] resize-none" style={{ borderColor: CS.light2 }} />
+      ) : (
+        <Input value={value} onChange={e => onChange(e.target.value)} className="h-9 text-sm" style={{ borderColor: CS.light2 }} />
+      )}
+    </div>
+  );
+}
+
+export default function Block() {
+  const recordId = useCurrentRecordId();
+  const { data, status } = useRecord({ recordId, select });
+  const { update } = useRecordUpdate();
+  const { toast } = useToast();
+
+  // Section edit states
+  const [editSection, setEditSection] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [draft, setDraft] = useState<Record<string, any>>({});
+
+  if (status === "pending") {
+    return (
+      <div className="container py-12">
+        <div className="content flex items-center justify-center min-h-[300px]">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: CS.blue, borderTopColor: "transparent" }} />
+            <span className="text-sm text-muted-foreground">Loading profile...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "error" || !data) {
+    return (
+      <div className="container py-12">
+        <div className="content flex items-center justify-center min-h-[300px]">
+          <div className="text-sm text-destructive">Error loading profile</div>
+        </div>
+      </div>
+    );
+  }
+
+  const f = data.fields;
+  const avatarUrl = Array.isArray(f.avatar) && f.avatar.length > 0 ? f.avatar[0].url : null;
+  const initials = (f.fullName || "C").charAt(0).toUpperCase();
+
+  const startEdit = (section: string) => {
+    const sectionFields: Record<string, string[]> = {
+      header: ["fullName", "bio", "tagline"],
+      personal: ["pronouns", "gender", "age", "birthday"],
+      location: ["city", "regionalAccent", "firstLanguage", "ethnicBackground", "heritage", "localDialect"],
+      career: ["jobTitle", "industry", "position", "careerStage", "income"],
+      goals: ["myGoal", "lookingFor"],
+    };
+    const fields = sectionFields[section] || [];
+    const d: Record<string, any> = {};
+    fields.forEach(key => {
+      const val = f[key];
+      if (key === "localDialect") {
+        d[key] = val || false;
+      } else if (key === "birthday" && val) {
+        d[key] = new Date(val).toISOString().split("T")[0];
+      } else {
+        d[key] = getLabel(val);
+      }
+    });
+    setDraft(d);
+    setEditSection(section);
+  };
+
+  const cancelEdit = () => {
+    setEditSection(null);
+    setDraft({});
+  };
+
+  const saveSection = async () => {
+    setSaving(true);
+    try {
+      const fieldMap: Record<string, string> = {
+        fullName: "PXdkq", bio: "on8OZ", tagline: "v2Gu1",
+        pronouns: "W933n", gender: "ZrMCm", age: "aNbbk", birthday: "A79E9",
+        city: "z4TF1", regionalAccent: "TV7Nz", firstLanguage: "3hJpt",
+        ethnicBackground: "iXpQB", heritage: "FzvXF", localDialect: "aWNgr",
+        jobTitle: "6aChZ", industry: "aDyIX", position: "1kULp",
+        careerStage: "SCLTv", income: "iwraT",
+        myGoal: "uNdfV", lookingFor: "VzOte",
+      };
+      const updates: Record<string, any> = {};
+      Object.entries(draft).forEach(([key, value]) => {
+        if (fieldMap[key]) {
+          updates[fieldMap[key]] = value;
+        }
+      });
+      await update({ recordId, fields: updates });
+      toast({ title: "Profile updated", description: "Your changes have been saved." });
+      setEditSection(null);
+      setDraft({});
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to save changes. Please try again.", variant: "destructive" });
+    }
+    setSaving(false);
+  };
+
+  const isEditing = (section: string) => editSection === section;
+
+  return (
+    <div className="container py-8">
+      <div className="content space-y-5 max-w-3xl mx-auto">
+        <Toaster />
+
+        {/* ── Profile Header ── */}
+        <SectionCard title="Profile" icon={User}
+          editing={isEditing("header")} onEdit={() => startEdit("header")}
+          onSave={saveSection} onCancel={cancelEdit} saving={saving}>
+          <div className="flex flex-col sm:flex-row gap-5 items-start">
+            <div className="flex-shrink-0">
+              <div className="rounded-full p-0.5" style={{ background: `linear-gradient(135deg, ${CS.blue} 0%, ${CS.blue4} 100%)` }}>
+                <Avatar className="h-20 w-20 border-2 border-white">
+                  <AvatarImage src={avatarUrl || undefined} alt={f.fullName || "Creator"} />
+                  <AvatarFallback className="text-xl font-bold" style={{ backgroundColor: CS.light2, color: CS.navy }}>{initials}</AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
+            <div className="flex-1 space-y-3 w-full">
+              {isEditing("header") ? (
+                <>
+                  <TextField label="Full Name" value={draft.fullName || ""} onChange={v => setDraft({ ...draft, fullName: v })} />
+                  <TextField label="Bio" value={draft.bio || ""} onChange={v => setDraft({ ...draft, bio: v })} multiline />
+                  <TextField label="Tagline" value={draft.tagline || ""} onChange={v => setDraft({ ...draft, tagline: v })} />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold" style={{ color: CS.navy }}>{f.fullName || "Creator"}</h2>
+                  {f.tagline && <p className="text-sm font-medium" style={{ color: CS.blue }}>{getLabel(f.tagline)}</p>}
+                  {f.bio && <p className="text-sm text-muted-foreground">{getLabel(f.bio)}</p>}
+                  {f.tiktokUsername && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <Badge variant="outline" className="text-xs font-normal" style={{ borderColor: CS.light2 }}>
+                        @{f.tiktokUsername}
+                      </Badge>
+                      {f.tiktokProfileUrl && (
+                        <a href={f.tiktokProfileUrl} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 hover:underline" style={{ color: CS.blue }}>
+                          <ExternalLink className="h-3 w-3" /> View Profile
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* ── Personal Details ── */}
+        <SectionCard title="Personal Details" icon={User}
+          editing={isEditing("personal")} onEdit={() => startEdit("personal")}
+          onSave={saveSection} onCancel={cancelEdit} saving={saving}>
+          {isEditing("personal") ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <SelectField label="Pronouns" value={draft.pronouns || ""} options={OPTIONS.pronouns} onChange={v => setDraft({ ...draft, pronouns: v })} />
+              <SelectField label="Gender" value={draft.gender || ""} options={OPTIONS.gender} onChange={v => setDraft({ ...draft, gender: v })} />
+              <SelectField label="Age Range" value={draft.age || ""} options={OPTIONS.age} onChange={v => setDraft({ ...draft, age: v })} />
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Birthday</Label>
+                <Input type="date" value={draft.birthday || ""} onChange={e => setDraft({ ...draft, birthday: e.target.value })} className="h-9 text-sm" style={{ borderColor: CS.light2 }} />
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <DisplayField label="Pronouns" value={getLabel(f.pronouns)} />
+              <DisplayField label="Gender" value={getLabel(f.gender)} />
+              <DisplayField label="Age Range" value={getLabel(f.age)} />
+              <DisplayField label="Generation" value={getLabel(f.generation)} />
+            </div>
+          )}
+        </SectionCard>
+
+        {/* ── Location & Language ── */}
+        <SectionCard title="Location & Language" icon={MapPin}
+          editing={isEditing("location")} onEdit={() => startEdit("location")}
+          onSave={saveSection} onCancel={cancelEdit} saving={saving}>
+          {isEditing("location") ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <TextField label="City" value={draft.city || ""} onChange={v => setDraft({ ...draft, city: v })} />
+                <SelectField label="Regional Accent" value={draft.regionalAccent || ""} options={OPTIONS.regionalAccent} onChange={v => setDraft({ ...draft, regionalAccent: v })} />
+                <TextField label="First Language" value={draft.firstLanguage || ""} onChange={v => setDraft({ ...draft, firstLanguage: v })} />
+                <TextField label="Heritage" value={draft.heritage || ""} onChange={v => setDraft({ ...draft, heritage: v })} />
+              </div>
+              <SelectField label="Ethnic Background" value={draft.ethnicBackground || ""} options={OPTIONS.ethnicBackground} onChange={v => setDraft({ ...draft, ethnicBackground: v })} />
+              <Separator style={{ backgroundColor: CS.light2 }} />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium" style={{ color: CS.navy }}>Local Dialect</Label>
+                  <p className="text-xs text-muted-foreground">When on, AI will use your heritage and regional language in generated scripts</p>
+                </div>
+                <Switch checked={draft.localDialect || false} onCheckedChange={v => setDraft({ ...draft, localDialect: v })} />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <DisplayField label="City" value={f.city} icon={MapPin} />
+                <DisplayField label="Regional Accent" value={getLabel(f.regionalAccent)} />
+                <DisplayField label="First Language" value={f.firstLanguage} icon={Languages} />
+                <DisplayField label="Ethnic Background" value={getLabel(f.ethnicBackground)} />
+                <DisplayField label="Heritage" value={f.heritage} />
+              </div>
+              <Separator style={{ backgroundColor: CS.light2 }} />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium" style={{ color: CS.navy }}>Local Dialect</Label>
+                  <p className="text-xs text-muted-foreground">When on, AI will use your heritage and regional language in generated scripts</p>
+                </div>
+                <Badge style={{ backgroundColor: f.localDialect ? `${CS.blue}15` : `${CS.light2}`, color: f.localDialect ? CS.blue : "#999" }}>
+                  {f.localDialect ? "On" : "Off"}
+                </Badge>
+              </div>
+            </div>
+          )}
+        </SectionCard>
+
+        {/* ── Career ── */}
+        <SectionCard title="Career" icon={Briefcase}
+          editing={isEditing("career")} onEdit={() => startEdit("career")}
+          onSave={saveSection} onCancel={cancelEdit} saving={saving}>
+          {isEditing("career") ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <TextField label="Job Title" value={draft.jobTitle || ""} onChange={v => setDraft({ ...draft, jobTitle: v })} />
+              <SelectField label="Industry" value={draft.industry || ""} options={OPTIONS.industry} onChange={v => setDraft({ ...draft, industry: v })} />
+              <SelectField label="Position" value={draft.position || ""} options={OPTIONS.position} onChange={v => setDraft({ ...draft, position: v })} />
+              <SelectField label="Career Stage" value={draft.careerStage || ""} options={OPTIONS.careerStage} onChange={v => setDraft({ ...draft, careerStage: v })} />
+              <SelectField label="Income" value={draft.income || ""} options={OPTIONS.income} onChange={v => setDraft({ ...draft, income: v })} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <DisplayField label="Job Title" value={f.jobTitle} />
+              <DisplayField label="Industry" value={getLabel(f.industry)} />
+              <DisplayField label="Position" value={getLabel(f.position)} />
+              <DisplayField label="Career Stage" value={getLabel(f.careerStage)} />
+              <DisplayField label="Income" value={getLabel(f.income)} />
+            </div>
+          )}
+        </SectionCard>
+
+        {/* ── Creator Goals ── */}
+        <SectionCard title="Creator Goals" icon={Target}
+          editing={isEditing("goals")} onEdit={() => startEdit("goals")}
+          onSave={saveSection} onCancel={cancelEdit} saving={saving}>
+          {isEditing("goals") ? (
+            <div className="space-y-4">
+              <TextField label="My Goal" value={draft.myGoal || ""} onChange={v => setDraft({ ...draft, myGoal: v })} multiline />
+              <SelectField label="Looking For" value={draft.lookingFor || ""} options={OPTIONS.lookingFor} onChange={v => setDraft({ ...draft, lookingFor: v })} />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <DisplayField label="My Goal" value={getLabel(f.myGoal)} />
+              <DisplayField label="Looking For" value={getLabel(f.lookingFor)} />
+            </div>
+          )}
+        </SectionCard>
+
+        {/* ── TikTok Connection (read only) ── */}
+        <Card className="border shadow-sm" style={{ borderColor: CS.light2 }}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-md" style={{ backgroundColor: `${CS.red}10` }}>
+                <Globe className="h-4 w-4" style={{ color: CS.red }} />
+              </div>
+              <CardTitle className="text-base font-semibold" style={{ color: CS.navy }}>TikTok Connection</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <DisplayField label="Username" value={f.tiktokUsername ? `@${f.tiktokUsername}` : ""} />
+              <DisplayField label="Followers" value={getLabel(f.followers)} />
+              <div className="space-y-1">
+                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tracks</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {f.shopBound && <Badge className="text-xs border-0 text-white" style={{ backgroundColor: CS.blue }}>Shop</Badge>}
+                  {f.liveBound && <Badge className="text-xs border-0 text-white" style={{ backgroundColor: CS.red }}>LIVE</Badge>}
+                  {getLabel(f.track) && <Badge variant="outline" className="text-xs" style={{ borderColor: CS.light2 }}>{getLabel(f.track)}</Badge>}
+                </div>
+              </div>
+              {f.tiktokProfileUrl && (
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Profile</Label>
+                  <a href={f.tiktokProfileUrl} target="_blank" rel="noopener noreferrer" className="text-sm flex items-center gap-1 hover:underline" style={{ color: CS.blue }}>
+                    <ExternalLink className="h-3.5 w-3.5" /> View on TikTok
+                  </a>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+      </div>
+    </div>
+  );
+}
