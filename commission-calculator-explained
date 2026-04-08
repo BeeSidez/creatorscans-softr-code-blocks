@@ -1,310 +1,317 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function Block() {
   const categories = [
-    { name: "Beauty & Cosmetics", rate: "8-15%", avg: "£25", subtext: "High-converting category" },
-    { name: "Fashion & Apparel", rate: "5-12%", avg: "£40", subtext: "Volume-based earnings" },
-    { name: "Home & Kitchen", rate: "5-10%", avg: "£35", subtext: "Steady demand" },
-    { name: "Electronics & Gadgets", rate: "3-8%", avg: "£75", subtext: "Higher ticket items" },
-    { name: "Health & Wellness", rate: "10-20%", avg: "£30", subtext: "Premium commissions" },
-    { name: "Jewelry & Accessories", rate: "10-15%", avg: "£20", subtext: "Impulse purchases" },
-    { name: "Pet Supplies", rate: "8-12%", avg: "£28", subtext: "Growing niche" },
-    { name: "Baby & Kids", rate: "7-12%", avg: "£32", subtext: "Loyal audience" },
+    { name: "Beauty & Cosmetics", rate: "8-15%", avg: "£25", pct: 75 },
+    { name: "Fashion & Apparel", rate: "5-12%", avg: "£40", pct: 55 },
+    { name: "Home & Kitchen", rate: "5-10%", avg: "£35", pct: 45 },
+    { name: "Electronics & Gadgets", rate: "3-8%", avg: "£75", pct: 30 },
+    { name: "Health & Wellness", rate: "10-20%", avg: "£30", pct: 85 },
+    { name: "Jewelry & Accessories", rate: "10-15%", avg: "£20", pct: 65 },
+    { name: "Pet Supplies", rate: "8-12%", avg: "£28", pct: 55 },
+    { name: "Baby & Kids", rate: "7-12%", avg: "£32", pct: 50 },
   ];
 
   const monetizationMethods = [
     {
-      icon: "💼",
       name: "TikTok Shop",
       earnings: "£200-£5,000/mo",
       pros: "Passive income, no upfront costs, works with any follower count",
       cons: "Requires consistent product content, commission-based only",
+      color: "#294ff6",
+      iconBg: "rgba(41,79,246,0.12)",
     },
     {
-      icon: "🤝",
       name: "Brand Deals",
       earnings: "£500-£10,000/post",
       pros: "Highest per-post earnings, one-time payment",
       cons: "Requires 10K+ followers, inconsistent deal flow",
+      color: "#5e7bf6",
+      iconBg: "rgba(94,123,246,0.12)",
     },
     {
-      icon: "💰",
       name: "Creator Fund",
       earnings: "£20-£200/mo",
       pros: "Fully passive, no extra work required",
       cons: "Lowest earnings, requires 100K+ monthly views",
+      color: "#7a93ff",
+      iconBg: "rgba(122,147,255,0.12)",
     },
   ];
 
   const strategies = [
     {
       title: "Choose High-Converting Products",
-      description: "Look for products with 4.5+ star ratings, low price points (£15-£50), and visual appeal. Trending items convert 5× better than generic products.",
+      description: "Look for products with 4.5+ star ratings, low price points (£15-£50), and visual appeal. Trending items convert 5x better than generic products.",
     },
     {
       title: "Create Authentic Product Reviews",
-      description: "Show real unboxings and demonstrations. Videos with \"honest review\" or \"testing this viral product\" in captions get 40% higher engagement.",
+      description: "Show real unboxings and demonstrations. Videos with 'honest review' in captions get 40% higher engagement.",
     },
     {
       title: "Go LIVE for Higher Conversions",
-      description: "LIVE shopping sessions convert at 10-15% (vs 2-3% for regular videos). Demonstrate products in real-time and answer questions immediately.",
+      description: "LIVE shopping sessions convert at 10-15% (vs 2-3% for regular videos). Demonstrate products in real-time.",
     },
     {
       title: "Pin Product Links Prominently",
-      description: "Use the \"Add Link\" feature to pin products to your videos. Place links within first 3 seconds for maximum visibility and clicks.",
+      description: "Use the 'Add Link' feature to pin products. Place links within first 3 seconds for maximum clicks.",
     },
     {
       title: "Bundle Multiple Products",
-      description: "Promote 3-5 related products in one video (e.g., \"complete skincare routine\"). Increases average order value by 60%.",
+      description: "Promote 3-5 related products in one video. Increases average order value by 60%.",
     },
     {
       title: "Time Your Posts Strategically",
-      description: "Post product content 2-3 days before weekends. Friday-Sunday shopping peaks drive 2× more sales than weekdays.",
+      description: "Post product content 2-3 days before weekends. Friday-Sunday shopping peaks drive 2x more sales.",
     },
     {
       title: "Leverage Trending Sounds",
-      description: "Use viral sounds relevant to your product demo. Trending audio increases views by 200-500%, driving more clicks.",
+      description: "Use viral sounds relevant to your demo. Trending audio increases views by 200-500%, driving more clicks.",
     },
     {
-      title: "Create \"Before & After\" Content",
-      description: "Transformation content (makeup, cleaning products, organization) has 8× higher conversion rates than static product shots.",
+      title: "Create Before & After Content",
+      description: "Transformation content has 8x higher conversion rates than static product shots.",
     },
   ];
 
   const earningsTiers = [
-    {
-      name: "Nano Creator",
-      followers: "1K-10K followers",
-      earnings: "£50-£200/month",
-      sales: "5-15 sales/month",
-      content: "3-5 product videos/week",
-      bgColor: "bg-white",
-    },
-    {
-      name: "Micro Creator",
-      followers: "10K-50K followers",
-      earnings: "£200-£800/month",
-      sales: "15-50 sales/month",
-      content: "5-10 product videos/week + occasional LIVE",
-      bgColor: "bg-white",
-    },
-    {
-      name: "Mid-Tier Creator",
-      followers: "50K-500K followers",
-      earnings: "£800-£5,000/month",
-      sales: "50-200 sales/month",
-      content: "Daily content + 2-3 LIVE sessions/week",
-      bgColor: "bg-purple-50",
-      highlight: true,
-    },
-    {
-      name: "Macro Creator",
-      followers: "500K-1M followers",
-      earnings: "£5,000-£15,000/month",
-      sales: "200-500 sales/month",
-      content: "Multiple daily posts + LIVE shopping events",
-      bgColor: "bg-cyan-50",
-      highlight: true,
-    },
-    {
-      name: "Mega Creator",
-      followers: "1M+ followers",
-      earnings: "£15,000-£50,000+/month",
-      sales: "500-2,000+ sales/month",
-      content: "Full-time content + dedicated LIVE shopping strategy",
-      bgColor: "bg-white",
-    },
+    { name: "Nano Creator", followers: "1K-10K", earnings: "£50-£200/mo", sales: "5-15 sales/mo", content: "3-5 videos/week", barPct: 10 },
+    { name: "Micro Creator", followers: "10K-50K", earnings: "£200-£800/mo", sales: "15-50 sales/mo", content: "5-10 videos/week + LIVE", barPct: 25 },
+    { name: "Mid-Tier Creator", followers: "50K-500K", earnings: "£800-£5,000/mo", sales: "50-200 sales/mo", content: "Daily + 2-3 LIVEs/week", barPct: 50, featured: true },
+    { name: "Macro Creator", followers: "500K-1M", earnings: "£5,000-£15,000/mo", sales: "200-500 sales/mo", content: "Multiple daily + LIVE events", barPct: 75, featured: true },
+    { name: "Mega Creator", followers: "1M+", earnings: "£15,000-£50,000+/mo", sales: "500-2,000+ sales/mo", content: "Full-time + LIVE strategy", barPct: 100 },
   ];
 
   return (
-    <div className="container py-8 bg-gradient-to-br from-white via-blue-50/30 to-white">
-      <div className="content">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Card 1: Commission Rates by Product Category */}
-          <Card className="bg-white shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl" style={{ color: "#001364" }}>
-                <img 
-                  src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770814473/creatorscans_icons_3_nv1erg.png" 
-                  alt="Product" 
-                  className="w-12 h-12"
-                />
-                Commission Rates by Product Category
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Average commission rates vary significantly by product type:
-              </p>
-              <div className="space-y-3">
-                {categories.map((category, index) => (
-                  <div key={index} className="border-b border-gray-100 pb-3 last:border-0">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="font-bold text-sm" style={{ color: "#001364" }}>
-                        {category.name}
-                      </span>
-                      <div className="text-right">
-                        <span className="font-semibold text-sm" style={{ color: "#5e7bf6" }}>
-                          {category.rate}
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-12">
+        <div className="content">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Card 1: Commission Rates by Product Category */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770814473/creatorscans_icons_3_nv1erg.png"
+                    alt="Product"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Commission Rates by Product Category</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Average rates vary by product type</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {categories.map((category, index) => (
+                    <div key={index}>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>
+                          {category.name}
                         </span>
-                        <span className="text-xs text-muted-foreground ml-2">
-                          | Avg: {category.avg}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm" style={{ color: '#294ff6' }}>
+                            {category.rate}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            Avg: {category.avg}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${category.pct}%`,
+                            background: `linear-gradient(90deg, #294ff6, #5e7bf6)`,
+                          }}
+                        />
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground italic">
-                      {category.subtext}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Card 2: TikTok Shop vs. Other Monetization Methods */}
-          <Card className="bg-white shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl" style={{ color: "#001364" }}>
-                <img 
-                  src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png" 
-                  alt="Comparison" 
-                  className="w-12 h-12"
-                />
-                TikTok Shop vs. Other Monetization Methods
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-5">
-                {monetizationMethods.map((method, index) => (
-                  <div key={index} className="border-b border-gray-100 pb-4 last:border-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">{method.icon}</span>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-base" style={{ color: "#001364" }}>
-                          {method.name}
-                        </h3>
-                        <p className="font-bold text-sm" style={{ color: "#5e7bf6" }}>
-                          {method.earnings}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="ml-10 space-y-1">
-                      <p className="text-xs">
-                        <span className="font-semibold text-green-600">Pros:</span>{" "}
-                        <span className="text-muted-foreground">{method.pros}</span>
-                      </p>
-                      <p className="text-xs">
-                        <span className="font-semibold text-red-600">Cons:</span>{" "}
-                        <span className="text-muted-foreground">{method.cons}</span>
-                      </p>
-                    </div>
+            {/* Card 2: TikTok Shop vs. Other Monetization Methods */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png"
+                    alt="Comparison"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">TikTok Shop vs. Other Methods</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Compare monetization strategies</p>
                   </div>
-                ))}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Card 3: Maximizing Your TikTok Shop Earnings */}
-          <Card className="bg-white shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl" style={{ color: "#001364" }}>
-                <img 
-                  src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png" 
-                  alt="Growth" 
-                  className="w-12 h-12"
-                />
-                Maximizing Your TikTok Shop Earnings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Proven strategies to earn more from TikTok Shop:
-              </p>
-              <ol className="space-y-4">
-                {strategies.map((strategy, index) => (
-                  <li key={index} className="flex gap-3">
-                    <span 
-                      className="font-bold text-sm flex-shrink-0" 
-                      style={{ color: "#5e7bf6" }}
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {monetizationMethods.map((method, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl p-4 transition-all"
+                      style={{ backgroundColor: method.iconBg, border: `1px solid ${method.color}15` }}
                     >
-                      {index + 1}.
-                    </span>
-                    <div>
-                      <h4 className="font-bold text-sm mb-1" style={{ color: "#001364" }}>
-                        {strategy.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {strategy.description}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </CardContent>
-          </Card>
-
-          {/* Card 4: Realistic Earnings Examples */}
-          <Card className="bg-white shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl" style={{ color: "#001364" }}>
-                <img 
-                  src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" 
-                  alt="Earnings" 
-                  className="w-12 h-12"
-                />
-                Realistic Earnings Examples
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Here's what you can realistically earn based on follower count and effort:
-              </p>
-              <div className="space-y-3">
-                {earningsTiers.map((tier, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg border ${tier.bgColor} ${
-                      tier.highlight ? "border-current" : "border-gray-200"
-                    }`}
-                    style={tier.highlight ? { borderColor: "#5e7bf6" } : {}}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 
-                          className="font-bold text-base" 
-                          style={{ color: "#001364" }}
-                        >
-                          {tier.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {tier.followers}
-                        </p>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: method.color }}>
+                            <span className="text-white text-xs font-bold">{index + 1}</span>
+                          </div>
+                          <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>
+                            {method.name}
+                          </h4>
+                        </div>
+                        <span className="font-bold text-sm px-3 py-1 rounded-full" style={{ backgroundColor: `${method.color}15`, color: method.color }}>
+                          {method.earnings}
+                        </span>
                       </div>
-                      <p 
-                        className="text-sm font-bold" 
-                        style={{ color: "#5e7bf6" }}
-                      >
-                        {tier.earnings}
-                      </p>
+                      <div className="space-y-1.5 ml-11">
+                        <div className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: '#294ff6' }} />
+                          <p className="text-xs text-muted-foreground">{method.pros}</p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: '#eef4fd' }} />
+                          <p className="text-xs text-muted-foreground">{method.cons}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1 text-xs">
-                      <p style={{ color: "#001364" }}>
-                        📊 {tier.sales}
-                      </p>
-                      <p style={{ color: "#001364" }}>
-                        📹 {tier.content}
-                      </p>
-                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: Maximizing Your TikTok Shop Earnings */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png"
+                    alt="Growth"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Maximizing Your TikTok Shop Earnings</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>8 proven strategies to earn more</p>
                   </div>
-                ))}
+                </div>
               </div>
-              <div className="mt-4 p-3 bg-blue-50 rounded-md border border-blue-200">
-                <p className="text-xs text-muted-foreground italic">
-                  <span className="font-semibold" style={{ color: "#001364" }}>Note:</span> These estimates assume 8% average commission rate and £35 average product price. Actual earnings depend on niche, product selection, and content quality.
-                </p>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {strategies.map((strategy, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl p-4 transition-all"
+                      style={{ backgroundColor: index % 2 === 0 ? 'rgba(41,79,246,0.04)' : 'rgba(94,123,246,0.04)', border: '1px solid rgba(41,79,246,0.06)' }}
+                    >
+                      <div className="flex gap-3">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: index < 4 ? '#294ff6' : '#7a93ff' }}>
+                          <span className="text-white text-xs font-bold">{index + 1}</span>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm mb-1" style={{ color: '#000f4d' }}>
+                            {strategy.title}
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {strategy.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: Realistic Earnings Examples */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png"
+                    alt="Earnings"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Realistic Earnings Examples</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Based on follower count and effort</p>
+                  </div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {earningsTiers.map((tier, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl p-4 transition-all"
+                      style={{
+                        backgroundColor: tier.featured ? 'rgba(41,79,246,0.06)' : '#f8fbff',
+                        border: tier.featured ? '1px solid rgba(41,79,246,0.15)' : '1px solid #eef4fd',
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className="w-2 h-full min-h-[40px] rounded-full"
+                            style={{
+                              background: tier.featured
+                                ? 'linear-gradient(180deg, #294ff6, #5e7bf6)'
+                                : 'linear-gradient(180deg, #7a93ff, #879cf7)',
+                            }}
+                          />
+                          <div>
+                            <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>
+                              {tier.name}
+                            </h4>
+                            <p className="text-xs text-muted-foreground">{tier.followers} followers</p>
+                          </div>
+                        </div>
+                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>
+                          {tier.earnings}
+                        </span>
+                      </div>
+
+                      {/* Earnings bar */}
+                      <div className="ml-4 mb-2">
+                        <div className="h-1.5 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${tier.barPct}%`,
+                              background: tier.featured
+                                ? 'linear-gradient(90deg, #294ff6, #5e7bf6)'
+                                : 'linear-gradient(90deg, #7a93ff, #879cf7)',
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="ml-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <span>{tier.sales}</span>
+                        <span>{tier.content}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 rounded-xl p-4 flex items-start gap-3" style={{ backgroundColor: '#eef4fd' }}>
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: '#294ff6' }}>
+                    <span className="text-white text-xs font-bold">i</span>
+                  </div>
+                  <p className="text-xs" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                    These estimates assume 8% average commission rate and £35 average product price. Actual earnings depend on niche, product selection, and content quality.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
         </div>
       </div>
     </div>
