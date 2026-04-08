@@ -1,0 +1,271 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+export default function Block() {
+  const conversionData = [
+    { diamonds: "100", gbp: "£0.36" },
+    { diamonds: "500", gbp: "£1.80" },
+    { diamonds: "1,000", gbp: "£3.60" },
+    { diamonds: "5,000", gbp: "£18.00" },
+    { diamonds: "10,000", gbp: "£36.00", isMinimum: true },
+    { diamonds: "20,000", gbp: "£72.00" },
+    { diamonds: "50,000", gbp: "£180.00" },
+    { diamonds: "100,000", gbp: "£360.00" },
+  ];
+
+  const strategies = [
+    "Go LIVE during peak hours when your audience is most active",
+    "Engage directly with viewers to build gifting relationships",
+    "Create gift goals or challenges to encourage participation",
+    "Thank gifters immediately and read their usernames aloud",
+    "Stream consistently at the same times to build routine viewers",
+    "Collaborate with other creators for cross-audience exposure",
+    "Use interactive content like Q&As and games",
+    "Promote upcoming LIVE sessions in your regular videos",
+  ];
+
+  const tiers = [
+    {
+      name: "Beginner",
+      followers: "1K-10K followers",
+      diamonds: "1,000-10,000 diamonds",
+      earnings: "£3.60-£36.00/month",
+      bgColor: "bg-white",
+    },
+    {
+      name: "Growing",
+      followers: "10K-50K followers",
+      diamonds: "10,000-50,000 diamonds",
+      earnings: "£36.00-£180.00/month",
+      bgColor: "bg-purple-50",
+      highlight: true,
+    },
+    {
+      name: "Established",
+      followers: "50K-100K",
+      diamonds: "50,000-200,000 diamonds",
+      earnings: "£180.00-£720.00/month",
+      bgColor: "bg-cyan-50",
+      highlight: true,
+    },
+    {
+      name: "Top Streamer",
+      followers: "100K+",
+      diamonds: "200,000-1M+ diamonds",
+      earnings: "£720.00-£3,600.00+/month",
+      bgColor: "bg-white",
+    },
+  ];
+
+  return (
+    <div className="container py-8 bg-gradient-to-br from-white via-blue-50/30 to-white">
+      <div className="content">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Card 1: Understanding TikTok Diamonds */}
+          <Card className="bg-white shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-xl" style={{ color: "#001364" }}>
+                <img 
+                  src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/59_fo4vnl.png" 
+                  alt="Diamond" 
+                  className="w-12 h-12"
+                />
+                Understanding TikTok Diamonds
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-1 text-sm" style={{ color: "#001364" }}>
+                  What are diamonds?
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Virtual currency creators receive from LIVE gifts
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-1 text-sm" style={{ color: "#001364" }}>
+                  How are they earned?
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Viewers send gifts during LIVE streams
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-1 text-sm" style={{ color: "#001364" }}>
+                  Creator share
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  50% of gift value (TikTok keeps 50%)
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-1 text-sm" style={{ color: "#001364" }}>
+                  Cash value
+                </h3>
+                <p className="text-sm font-semibold" style={{ color: "#5e7bf6" }}>
+                  £0.0036 per diamond
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-1 text-sm" style={{ color: "#001364" }}>
+                  Withdrawal minimum
+                </h3>
+                <p className="text-sm font-semibold" style={{ color: "#5e7bf6" }}>
+                  £36.00 (10,000 diamonds)
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-1 text-sm" style={{ color: "#001364" }}>
+                  Payout timeline
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  7-14 business days after request
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 2: Diamond Conversion Table */}
+          <Card className="bg-white shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-xl" style={{ color: "#001364" }}>
+                <img 
+                  src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" 
+                  alt="Table" 
+                  className="w-12 h-12"
+                />
+                Diamond Conversion Table
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {conversionData.map((row, index) => (
+                  <div
+                    key={index}
+                    className={`flex justify-between items-center py-2.5 px-4 rounded-md transition-colors ${
+                      row.isMinimum
+                        ? "bg-blue-50 border border-blue-200"
+                        : "hover:bg-gray-50"
+                    }`}
+                  >
+                    <span
+                      className="text-sm font-medium"
+                      style={{ color: "#001364" }}
+                    >
+                      {row.diamonds} diamonds
+                      {row.isMinimum && (
+                        <span
+                          className="ml-2 text-xs font-normal"
+                          style={{ color: "#5e7bf6" }}
+                        >
+                          (min. withdrawal)
+                        </span>
+                      )}
+                    </span>
+                    <span
+                      className="text-sm font-semibold"
+                      style={{ color: "#5e7bf6" }}
+                    >
+                      {row.gbp}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 3: Maximize Diamond Earnings */}
+          <Card className="bg-white shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-xl" style={{ color: "#001364" }}>
+                <img 
+                  src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png" 
+                  alt="Growth" 
+                  className="w-12 h-12"
+                />
+                Maximize Diamond Earnings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Proven strategies to earn more diamonds from LIVE streams:
+              </p>
+              <ol className="space-y-3">
+                {strategies.map((strategy, index) => (
+                  <li key={index} className="flex gap-3">
+                    <span 
+                      className="font-semibold text-sm flex-shrink-0" 
+                      style={{ color: "#5e7bf6" }}
+                    >
+                      {index + 1}.
+                    </span>
+                    <span className="text-sm" style={{ color: "#001364" }}>
+                      {strategy}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
+
+          {/* Card 4: Earnings by Streamer Tier */}
+          <Card className="bg-white shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-xl" style={{ color: "#001364" }}>
+                <img 
+                  src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png" 
+                  alt="Earnings" 
+                  className="w-12 h-12"
+                />
+                Earnings by Streamer Tier
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Typical monthly diamond earnings by creator level:
+              </p>
+              <div className="space-y-3">
+                {tiers.map((tier, index) => (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-lg border ${tier.bgColor} ${
+                      tier.highlight ? "border-current" : "border-gray-200"
+                    }`}
+                    style={tier.highlight ? { borderColor: "#5e7bf6" } : {}}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 
+                          className="font-bold text-base" 
+                          style={{ color: "#001364" }}
+                        >
+                          {tier.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {tier.followers}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm mb-1" style={{ color: "#001364" }}>
+                      {tier.diamonds}
+                    </p>
+                    <p 
+                      className="text-sm font-semibold" 
+                      style={{ color: "#5e7bf6" }}
+                    >
+                      {tier.earnings}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
