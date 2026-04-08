@@ -1,0 +1,168 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+
+export default function Block() {
+  const [diamonds, setDiamonds] = useState('');
+  const [currency, setCurrency] = useState('GBP');
+  const [results, setResults] = useState(null);
+
+  const GBP_PER_DIAMOND = 0.0036;
+  const GBP_TO_USD = 1.36;
+  const USD_PER_DIAMOND = GBP_PER_DIAMOND * GBP_TO_USD;
+  const COINS_PER_DIAMOND = 2;
+
+  const handleCalculate = () => {
+    const diamondCount = parseFloat(diamonds);
+    if (isNaN(diamondCount) || diamondCount <= 0) return;
+
+    const gbpValue = diamondCount * GBP_PER_DIAMOND;
+    const usdValue = diamondCount * USD_PER_DIAMOND;
+    const coinEquivalent = diamondCount * COINS_PER_DIAMOND;
+    const diamondsPerPound = 1 / GBP_PER_DIAMOND;
+
+    setResults({
+      diamonds: diamondCount,
+      gbpValue,
+      usdValue,
+      coinEquivalent,
+      payoutRate: GBP_PER_DIAMOND,
+      diamondsPerPound,
+      analysis: `${diamondCount.toLocaleString()} TikTok diamonds are worth approximately £${gbpValue.toFixed(2)}. This represents ${gbpValue >= 100 ? 'a substantial' : 'an'} amount that creators can earn through LIVE gifts.`
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-white">
+      <div className="container py-12">
+        <div className="content max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/59_fo4vnl.png" alt="Brand Icon" className="w-[60px] h-[60px]" />
+              <h1 className="text-4xl md:text-5xl font-bold text-[#001364]">
+                TikTok Diamond Calculator
+              </h1>
+            </div>
+            <p className="text-lg text-[#001364]/70">
+              Calculate your LIVE gift earnings instantly
+            </p>
+          </div>
+
+          {/* Input Card */}
+          <Card className="mb-8 border-none shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl text-[#001364]">Enter Your Diamonds</CardTitle>
+              <CardDescription>Input the number of diamonds you've earned</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#001364]">Number of Diamonds</label>
+                <Input
+                  type="number"
+                  placeholder="e.g., 100000"
+                  value={diamonds}
+                  onChange={(e) => setDiamonds(e.target.value)}
+                  className="text-lg h-14 border-2 focus:border-[#5e7bf6] transition-colors"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#001364]">Currency</label>
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger className="h-14 border-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="GBP">GBP (£)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                onClick={handleCalculate}
+                disabled={!diamonds || parseFloat(diamonds) <= 0}
+                className="w-full h-14 text-lg bg-[#5e7bf6] hover:bg-[#5e7bf6]/90 text-white font-semibold shadow-md transition-all"
+              >
+                Calculate Earnings
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Results */}
+          {results && (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              {/* Main Values */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card className="border-none shadow-lg bg-gradient-to-br from-white to-blue-50/50">
+                  <CardHeader>
+                    <CardDescription className="text-[#001364]/60">GBP Value</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-5xl font-bold text-[#5e7bf6]">
+                      £{results.gbpValue.toFixed(2)}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-lg bg-gradient-to-br from-white to-blue-50/50">
+                  <CardHeader>
+                    <CardDescription className="text-[#001364]/60">USD Value</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-5xl font-bold text-[#5e7bf6]">
+                      ${results.usdValue.toFixed(2)}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Detailed Breakdown */}
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-xl text-[#001364]">Detailed Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center py-3 border-b">
+                    <span className="text-[#001364]/70 font-medium">Equivalent Coins</span>
+                    <span className="text-2xl font-bold text-[#001364]">{results.coinEquivalent.toLocaleString()}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-3 border-b">
+                    <span className="text-[#001364]/70 font-medium">Payout Rate</span>
+                    <span className="text-2xl font-bold text-[#001364]">£{results.payoutRate.toFixed(4)} per diamond</span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-3 border-b">
+                    <span className="text-[#001364]/70 font-medium">Diamonds per Pound</span>
+                    <span className="text-2xl font-bold text-[#001364]">{Math.round(results.diamondsPerPound).toLocaleString()}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-3">
+                    <span className="text-[#001364]/70 font-medium">Coin Equivalent</span>
+                    <span className="text-2xl font-bold text-[#001364]">{results.coinEquivalent.toLocaleString()} coins</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Analysis */}
+              <Card className="border-none shadow-lg bg-gradient-to-br from-[#5e7bf6]/5 to-white">
+                <CardHeader>
+                  <CardTitle className="text-xl text-[#001364]">Conversion Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-lg text-[#001364]/80 leading-relaxed">
+                    {results.analysis}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
