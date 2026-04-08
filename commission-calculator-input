@@ -1,19 +1,42 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { PoundSterling, TrendingUp, Calendar, Calculator, Info } from 'lucide-react';
+import { PoundSterling, TrendingUp, Calendar, Calculator, Info, ChevronDown } from 'lucide-react';
+
+const currencies = [
+  { code: 'GBP', symbol: '£', label: 'GBP (£)', rate: 1 },
+  { code: 'USD', symbol: '$', label: 'USD ($)', rate: 1.27 },
+  { code: 'EUR', symbol: '€', label: 'EUR (€)', rate: 1.17 },
+  { code: 'AUD', symbol: 'A$', label: 'AUD (A$)', rate: 1.93 },
+  { code: 'CAD', symbol: 'C$', label: 'CAD (C$)', rate: 1.72 },
+  { code: 'INR', symbol: '₹', label: 'INR (₹)', rate: 106.5 },
+];
 
 export default function Block() {
   const [productPrice, setProductPrice] = useState(50);
   const [commissionRate, setCommissionRate] = useState(5);
   const [monthlySales, setMonthlySales] = useState(20);
+  const [currency, setCurrency] = useState(currencies[0]);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [animatedEPS, setAnimatedEPS] = useState(0);
   const [animatedMonthly, setAnimatedMonthly] = useState(0);
   const [animatedAnnual, setAnimatedAnnual] = useState(0);
   const animFrameRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const earningsPerSale = (productPrice * commissionRate) / 100;
   const monthlyEarnings = earningsPerSale * monthlySales;
   const annualEarnings = monthlyEarnings * 12;
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowCurrencyDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const startEPS = animatedEPS;
@@ -44,8 +67,22 @@ export default function Block() {
     };
   }, [earningsPerSale, monthlyEarnings, annualEarnings]);
 
+  const convert = (val) => val * currency.rate;
+
   const formatCurrency = (val) => {
-    return '£' + val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const converted = convert(val);
+    if (currency.rate >= 50) {
+      return currency.symbol + Math.round(converted).toLocaleString('en-GB');
+    }
+    return currency.symbol + converted.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const formatWhole = (val) => {
+    const converted = val * currency.rate;
+    if (currency.rate >= 50) {
+      return currency.symbol + Math.round(converted).toLocaleString('en-GB');
+    }
+    return currency.symbol + Math.round(converted).toLocaleString('en-GB');
   };
 
   const sliderTrackStyle = (value, min, max) => {
@@ -64,13 +101,56 @@ export default function Block() {
           <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
             {/* Card Header */}
             <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
-                  <Calculator className="w-5 h-5" style={{ color: '#7a93ff' }} />
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                    <Calculator className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Calculate Commission Earnings</h2>
+                    <p className="text-sm" style={{ color: '#7a93ff' }}>Adjust the sliders to see your projected earnings</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">Calculate Commission Earnings</h2>
-                  <p className="text-sm" style={{ color: '#7a93ff' }}>Adjust the sliders to see your projected earnings</p>
+
+                {/* Currency Selector */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all"
+                    style={{
+                      backgroundColor: 'rgba(41,79,246,0.2)',
+                      border: '1px solid rgba(122,147,255,0.3)',
+                      color: '#7a93ff',
+                    }}
+                  >
+                    <span className="font-bold text-white">{currency.symbol}</span>
+                    <span>{currency.code}</span>
+                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#7a93ff', transform: showCurrencyDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                  </button>
+
+                  {showCurrencyDropdown && (
+                    <div
+                      className="absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-50"
+                      style={{ backgroundColor: '#152237', border: '1px solid rgba(122,147,255,0.2)', minWidth: '140px' }}
+                    >
+                      {currencies.map((c) => (
+                        <button
+                          key={c.code}
+                          onClick={() => { setCurrency(c); setShowCurrencyDropdown(false); }}
+                          className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 transition-colors"
+                          style={{
+                            color: currency.code === c.code ? 'white' : '#7a93ff',
+                            backgroundColor: currency.code === c.code ? 'rgba(41,79,246,0.3)' : 'transparent',
+                          }}
+                          onMouseEnter={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'rgba(41,79,246,0.15)'; }}
+                          onMouseLeave={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'transparent'; }}
+                        >
+                          <span className="font-bold" style={{ color: 'white', width: '24px' }}>{c.symbol}</span>
+                          <span>{c.code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -81,7 +161,7 @@ export default function Block() {
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Product Price</label>
                   <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
-                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>£{productPrice}</span>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{formatWhole(productPrice)}</span>
                   </div>
                 </div>
                 <input
@@ -95,8 +175,8 @@ export default function Block() {
                   style={sliderTrackStyle(productPrice, 5, 500)}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>£5</span>
-                  <span>£500</span>
+                  <span>{formatWhole(5)}</span>
+                  <span>{formatWhole(500)}</span>
                 </div>
               </div>
 
@@ -156,7 +236,7 @@ export default function Block() {
                 {/* Earnings Per Sale */}
                 <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
                   <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
-                    <PoundSterling className="w-5 h-5" style={{ color: '#294ff6' }} />
+                    <span className="text-lg font-bold" style={{ color: '#294ff6' }}>{currency.symbol}</span>
                   </div>
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Per Sale</p>
                   <p className="text-3xl font-bold" style={{ color: '#294ff6' }}>{formatCurrency(animatedEPS)}</p>
@@ -197,8 +277,8 @@ export default function Block() {
                   />
                 </div>
                 <div className="flex justify-between mt-1.5">
-                  <span className="text-xs text-muted-foreground">£0</span>
-                  <span className="text-xs text-muted-foreground">£5,000+</span>
+                  <span className="text-xs text-muted-foreground">{currency.symbol}0</span>
+                  <span className="text-xs text-muted-foreground">{formatWhole(5000)}+</span>
                 </div>
               </div>
             </CardContent>
@@ -230,10 +310,10 @@ export default function Block() {
                   </thead>
                   <tbody>
                     {[
-                      { name: 'Product Price', desc: 'Your product selling price on TikTok Shop', example: '£35', required: true },
+                      { name: 'Product Price', desc: 'Your product selling price on TikTok Shop', example: formatWhole(35), required: true },
                       { name: 'Units Sold', desc: 'Number of products sold', example: '500', required: true },
                       { name: 'TikTok Commission', desc: 'TikTok Shop commission rate (2-8%)', example: '5%', required: false },
-                      { name: 'Product Cost', desc: 'Your cost per unit including shipping', example: '£15', required: false },
+                      { name: 'Product Cost', desc: 'Your cost per unit including shipping', example: formatWhole(15), required: false },
                     ].map((row, i) => (
                       <tr key={i} className="transition-colors" style={{ borderBottom: '1px solid #eef4fd' }}>
                         <td className="py-4 px-4">
