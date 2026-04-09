@@ -1,0 +1,308 @@
+import { useState, useEffect, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Calculator, Info, ChevronDown, TrendingUp, Video } from 'lucide-react';
+
+const currencies = [
+  { code: 'GBP', symbol: '\u00a3', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '\u20ac', rate: 1.17 },
+  { code: 'AUD', symbol: 'A$', rate: 1.93 },
+  { code: 'CAD', symbol: 'C$', rate: 1.72 },
+  { code: 'INR', symbol: '\u20b9', rate: 106.5 },
+];
+
+const niches = [
+  { name: 'Finance & Business', rpm: 0.05 },
+  { name: 'Technology', rpm: 0.04 },
+  { name: 'Education', rpm: 0.035 },
+  { name: 'Health & Fitness', rpm: 0.035 },
+  { name: 'Beauty', rpm: 0.03 },
+  { name: 'Lifestyle', rpm: 0.025 },
+  { name: 'Entertainment', rpm: 0.02 },
+  { name: 'Gaming', rpm: 0.025 },
+];
+
+export default function Block() {
+  const [monthlyViews, setMonthlyViews] = useState(500000);
+  const [engagementRate, setEngagementRate] = useState(5);
+  const [nicheIndex, setNicheIndex] = useState(5);
+  const [currency, setCurrency] = useState(currencies[0]);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [showNicheDropdown, setShowNicheDropdown] = useState(false);
+  const currencyRef = useRef(null);
+  const nicheRef = useRef(null);
+
+  const niche = niches[nicheIndex];
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (currencyRef.current && !currencyRef.current.contains(e.target)) setShowCurrencyDropdown(false);
+      if (nicheRef.current && !nicheRef.current.contains(e.target)) setShowNicheDropdown(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Engagement multiplier
+  const engMultiplier = engagementRate >= 8 ? 1.5 : engagementRate >= 5 ? 1.2 : engagementRate >= 3 ? 1.0 : 0.8;
+
+  // Legacy Fund: (monthlyViews / 1000) * 0.025 * engMultiplier
+  const legacyFundGBP = (monthlyViews / 1000) * 0.025 * engMultiplier;
+
+  // Creator Rewards: (monthlyViews / 1000) * niche.rpm * engMultiplier * 15
+  const creatorRewardsGBP = (monthlyViews / 1000) * niche.rpm * engMultiplier * 15;
+
+  // Annual projection (Rewards)
+  const annualRewardsGBP = creatorRewardsGBP * 12;
+
+  const convert = (val) => val * currency.rate;
+
+  const fmt = (val) => {
+    const c = convert(val);
+    if (currency.rate >= 50) return currency.symbol + Math.round(c).toLocaleString('en-GB');
+    return currency.symbol + Math.round(c).toLocaleString('en-GB');
+  };
+
+  const fmtDec = (val) => {
+    const c = convert(val);
+    if (currency.rate >= 50) return currency.symbol + Math.round(c).toLocaleString('en-GB');
+    return currency.symbol + c.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const sliderTrack = (value, min, max) => {
+    const p = ((value - min) / (max - min)) * 100;
+    return { background: `linear-gradient(to right, #294ff6 0%, #5e7bf6 ${p}%, #eef4fd ${p}%, #eef4fd 100%)` };
+  };
+
+  // Comparison bar widths
+  const maxVal = Math.max(legacyFundGBP, creatorRewardsGBP);
+  const legacyBarPct = maxVal > 0 ? (legacyFundGBP / maxVal) * 100 : 0;
+  const rewardsBarPct = maxVal > 0 ? (creatorRewardsGBP / maxVal) * 100 : 0;
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-5xl mx-auto space-y-8">
+
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            {/* Header */}
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                    <Calculator className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Creator Fund Calculator</h2>
+                    <p className="text-sm" style={{ color: '#7a93ff' }}>Legacy Fund vs Creator Rewards</p>
+                  </div>
+                </div>
+
+                {/* Currency */}
+                <div className="relative" ref={currencyRef}>
+                  <button onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)} className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'rgba(41,79,246,0.2)', border: '1px solid rgba(122,147,255,0.3)', color: '#7a93ff' }}>
+                    <span className="font-bold text-white">{currency.symbol}</span>
+                    <span>{currency.code}</span>
+                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#7a93ff', transform: showCurrencyDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                  </button>
+                  {showCurrencyDropdown && (
+                    <div className="absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-50" style={{ backgroundColor: '#152237', border: '1px solid rgba(122,147,255,0.2)', minWidth: '140px' }}>
+                      {currencies.map((c) => (
+                        <button key={c.code} onClick={() => { setCurrency(c); setShowCurrencyDropdown(false); }} className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 transition-colors" style={{ color: currency.code === c.code ? 'white' : '#7a93ff', backgroundColor: currency.code === c.code ? 'rgba(41,79,246,0.3)' : 'transparent' }} onMouseEnter={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'rgba(41,79,246,0.15)'; }} onMouseLeave={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'transparent'; }}>
+                          <span className="font-bold" style={{ color: 'white', width: '24px' }}>{c.symbol}</span>
+                          <span>{c.code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <CardContent className="p-8 space-y-7">
+              {/* Monthly Video Views */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Monthly Video Views</label>
+                  <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{monthlyViews.toLocaleString('en-GB')}</span>
+                  </div>
+                </div>
+                <input type="range" min="10000" max="10000000" step="10000" value={monthlyViews} onChange={(e) => setMonthlyViews(Number(e.target.value))} className="cs-slider" style={sliderTrack(monthlyViews, 10000, 10000000)} />
+                <div className="flex justify-between text-xs text-muted-foreground"><span>10K</span><span>10M</span></div>
+              </div>
+
+              {/* Engagement Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Engagement Rate</label>
+                  <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{engagementRate}%</span>
+                  </div>
+                </div>
+                <input type="range" min="1" max="20" step="0.5" value={engagementRate} onChange={(e) => setEngagementRate(Number(e.target.value))} className="cs-slider" style={sliderTrack(engagementRate, 1, 20)} />
+                <div className="flex justify-between text-xs text-muted-foreground"><span>1%</span><span>20%</span></div>
+              </div>
+
+              {/* Content Niche Dropdown */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Content Niche</label>
+                <div className="relative" ref={nicheRef}>
+                  <button onClick={() => setShowNicheDropdown(!showNicheDropdown)} className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#eef4fd', color: '#000f4d' }}>
+                    <span>{niche.name}</span>
+                    <ChevronDown className="w-4 h-4" style={{ color: '#5e7bf6', transform: showNicheDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                  </button>
+                  {showNicheDropdown && (
+                    <div className="absolute left-0 right-0 top-full mt-1 rounded-xl shadow-lg overflow-hidden z-50 max-h-[250px] overflow-y-auto" style={{ backgroundColor: '#f8fbff', border: '1px solid #eef4fd' }}>
+                      {niches.map((n, i) => (
+                        <button key={n.name} onClick={() => { setNicheIndex(i); setShowNicheDropdown(false); }} className="w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center justify-between" style={{ color: '#000f4d', backgroundColor: nicheIndex === i ? 'rgba(41,79,246,0.08)' : 'transparent' }} onMouseEnter={(e) => { if (nicheIndex !== i) e.target.style.backgroundColor = 'rgba(41,79,246,0.04)'; }} onMouseLeave={(e) => { if (nicheIndex !== i) e.target.style.backgroundColor = 'transparent'; }}>
+                          <span>{n.name}</span>
+                          <span className="text-xs font-medium" style={{ color: '#7a93ff' }}>RPM {n.rpm}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-px" style={{ backgroundColor: '#eef4fd' }} />
+
+              {/* Big Hero Result - Creator Rewards Monthly */}
+              <div className="rounded-2xl p-8 text-center" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-3" style={{ backgroundColor: 'rgba(41,79,246,0.2)', border: '1px solid rgba(122,147,255,0.3)' }}>
+                  <TrendingUp className="w-3.5 h-3.5" style={{ color: '#7a93ff' }} />
+                  <span className="text-xs font-semibold" style={{ color: '#7a93ff' }}>Creator Rewards Program</span>
+                </div>
+                <p className="text-xs font-medium uppercase tracking-widest mb-2" style={{ color: '#7a93ff' }}>Estimated Monthly Earnings</p>
+                <p className="text-5xl md:text-6xl font-bold text-white mb-1">{fmt(creatorRewardsGBP)}</p>
+                <p className="text-sm" style={{ color: 'rgba(122,147,255,0.7)' }}>Annual projection: {fmt(annualRewardsGBP)}</p>
+              </div>
+
+              {/* 3 Result Cards */}
+              <div className="grid sm:grid-cols-3 gap-4">
+                {/* Legacy Fund Monthly */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(122,147,255,0.06)', border: '1px solid rgba(122,147,255,0.12)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(122,147,255,0.12)' }}>
+                    <Video className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Legacy Fund / Month</p>
+                  <p className="text-2xl font-bold" style={{ color: '#7a93ff' }}>{fmt(legacyFundGBP)}</p>
+                </div>
+
+                {/* Creator Rewards Monthly */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.15)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <TrendingUp className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Creator Rewards / Month</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{fmt(creatorRewardsGBP)}</p>
+                </div>
+
+                {/* Annual Projection */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(68,102,248,0.06)', border: '1px solid rgba(68,102,248,0.15)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(68,102,248,0.12)' }}>
+                    <Calculator className="w-5 h-5" style={{ color: '#4466f8' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Annual (Rewards)</p>
+                  <p className="text-2xl font-bold" style={{ color: '#4466f8' }}>{fmt(annualRewardsGBP)}</p>
+                </div>
+              </div>
+
+              {/* Comparison Bar */}
+              <div className="rounded-xl p-5" style={{ backgroundColor: '#eef4fd' }}>
+                <p className="text-xs font-semibold uppercase tracking-wide mb-4" style={{ color: '#000f4d' }}>Legacy Fund vs Creator Rewards</p>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium" style={{ color: '#000f4d' }}>Legacy Fund</span>
+                      <span className="text-sm font-bold" style={{ color: '#7a93ff' }}>{fmt(legacyFundGBP)}/mo</span>
+                    </div>
+                    <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}>
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.max(legacyBarPct, 2)}%`, background: 'linear-gradient(90deg, #7a93ff, #879cf7)' }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium" style={{ color: '#000f4d' }}>Creator Rewards</span>
+                      <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{fmt(creatorRewardsGBP)}/mo</span>
+                    </div>
+                    <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}>
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.max(rewardsBarPct, 2)}%`, background: 'linear-gradient(90deg, #294ff6, #5e7bf6)' }} />
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <TrendingUp className="w-3.5 h-3.5" style={{ color: '#294ff6' }} />
+                  <span className="text-xs font-medium" style={{ color: '#294ff6' }}>
+                    Creator Rewards pays {legacyFundGBP > 0 ? Math.round(creatorRewardsGBP / legacyFundGBP) : 0}x more than Legacy Fund
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Inputs Explained */}
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                  <Info className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Calculator Inputs Explained</h2>
+                  <p className="text-sm" style={{ color: '#7a93ff' }}>Understanding the factors that affect your earnings</p>
+                </div>
+              </div>
+            </div>
+            <CardContent className="p-8">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #eef4fd' }}>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Input</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Description</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: 'Monthly Video Views', desc: 'Total views across all videos in the past 30 days', example: '500,000', required: true },
+                      { name: 'Engagement Rate', desc: 'Average engagement (likes + comments + shares / views)', example: '5%', required: true },
+                      { name: 'Content Niche', desc: 'Your primary content category (affects RPM rate)', example: 'Lifestyle', required: true },
+                    ].map((row, i) => (
+                      <tr key={i} className="transition-colors" style={{ borderBottom: '1px solid #eef4fd' }}>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{row.name}</span>
+                            {row.required && <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: '#d8d8ff', color: '#5e7bf6' }}>Required</span>}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-sm" style={{ color: 'rgba(0,15,77,0.6)' }}>{row.desc}</td>
+                        <td className="py-4 px-4 font-bold text-sm" style={{ color: '#294ff6' }}>{row.example}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-6 flex items-start gap-3 rounded-xl p-4" style={{ backgroundColor: '#eef4fd' }}>
+                <Info className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#5e7bf6' }} />
+                <p className="text-sm" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                  The legacy Creator Fund pays approximately $0.02-$0.04 per 1,000 views from a shared pool. The Creator Rewards Program pays significantly more for videos over 1 minute long, with rates varying by niche and engagement. For the most accurate results, use your 30-day average metrics from TikTok Analytics.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .cs-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 4px; outline: none; cursor: pointer; }
+        .cs-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 50%; background: white; border: 3px solid #294ff6; box-shadow: 0 2px 8px rgba(41,79,246,0.3); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+        .cs-slider::-webkit-slider-thumb:hover { transform: scale(1.15); box-shadow: 0 2px 12px rgba(41,79,246,0.45); }
+        .cs-slider::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: white; border: 3px solid #294ff6; box-shadow: 0 2px 8px rgba(41,79,246,0.3); cursor: pointer; }
+      `}</style>
+    </div>
+  );
+}

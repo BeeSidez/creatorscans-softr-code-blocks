@@ -1,0 +1,141 @@
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
+
+const faqs = [
+  {
+    question: 'How much does TikTok Creator Fund pay per 1,000 views?',
+    answer: 'The legacy Creator Fund pays approximately \u00a30.016-\u00a30.032 per 1,000 views. The Creator Rewards Program pays \u00a30.32-\u00a30.79 per 1,000 qualified views for videos over 1 minute. Rewards rates vary by niche, engagement, and audience location.'
+  },
+  {
+    question: 'What are the requirements to join the TikTok Creator Fund?',
+    answer: 'You need 10,000+ followers, 100,000+ video views in the last 30 days, be 18+ years old, reside in an eligible country, have an account in good standing, and post original content only. Reposts and duplicated content do not qualify.'
+  },
+  {
+    question: 'How much can I realistically earn from Creator Fund per month?',
+    answer: 'With 500,000 monthly views at average RPM: Legacy Fund earns roughly \u00a38-\u00a316/month, while Creator Rewards earns roughly \u00a3160-\u00a3395/month. Most creators earn significantly more from brand deals than from the Creator Fund alone.'
+  },
+  {
+    question: 'Why are my Creator Fund earnings so low?',
+    answer: 'The legacy Creator Fund uses a shared pool that gets split among more creators over time. Low engagement rates, an oversaturated niche, or a non-US/UK audience can all lower your RPM. Switching to Creator Rewards (for 1min+ videos) can increase earnings by 15-20x.'
+  },
+  {
+    question: 'What is the difference between Creator Fund and Creator Rewards Program?',
+    answer: 'The legacy Creator Fund pays \u00a30.016-\u00a30.032 per 1,000 views from a fixed shared pool. The Creator Rewards Program pays \u00a30.32-\u00a30.79 per 1,000 qualified views based on individual performance for videos 1 minute or longer. Rewards pays up to 20x more than the legacy Fund.'
+  },
+  {
+    question: 'Is TikTok Creator Fund worth joining in 2026?',
+    answer: 'On its own, Creator Fund earnings are modest. But combined with Creator Rewards (for 1min+ content), it becomes more worthwhile. Most creators should focus primarily on brand deals and TikTok Shop commissions for higher returns, while treating Fund payments as supplemental passive income.'
+  },
+  {
+    question: 'How often does TikTok Creator Fund pay creators?',
+    answer: 'Payments are calculated daily based on your qualified views. Earnings can be withdrawn after 30 days. A minimum withdrawal threshold applies, and payouts are processed to your linked PayPal or bank account within 7-14 business days.'
+  },
+  {
+    question: 'Can I earn from Creator Fund and do brand deals simultaneously?',
+    answer: 'Yes, all TikTok monetization methods work alongside each other. There are no restrictions on combining income streams. You can earn from Creator Fund, Creator Rewards, brand deals, LIVE gifts, and TikTok Shop commissions at the same time.'
+  },
+  {
+    question: 'Which content niches earn the highest Creator Fund RPM?',
+    answer: 'Finance and business earn the highest at \u00a30.032-\u00a30.047 per 1,000 views, followed by technology at \u00a30.024-\u00a30.040 per 1,000 views, and education at \u00a30.024-\u00a30.032 per 1,000 views. Entertainment and gaming typically earn the lowest RPM rates.'
+  },
+  {
+    question: 'Does Creator Fund affect video reach or algorithm performance?',
+    answer: 'TikTok has stated that Creator Fund enrollment does not impact algorithm distribution or video reach. However, some creators report anecdotal changes in performance after joining. The Creator Rewards Program is designed to better incentivize longer-form, high-quality content.'
+  },
+];
+
+export default function Block() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const highlightValues = (text) => {
+    const parts = text.split(/(\u00a3[0-9,]+\.?[0-9]*(?:-\u00a3[0-9,]+\.?[0-9]*)?(?:\+?\/(?:month|post|stream))?|[0-9]+-[0-9]+x|[0-9]+x|10,000\+?|100,000\+?|500,000|[0-9]+K|[0-9]+-[0-9]+%|[0-9]+%|1min\+?|30 days|7-14 business days)/g);
+    return parts.map((part, i) => {
+      if (part.match(/(\u00a3|[0-9]+x|[0-9]+K|10,000|100,000|500,000|[0-9]+%|1min|30 days|7-14 business days)/)) {
+        return <span key={i} className="font-semibold" style={{ color: '#294ff6' }}>{part}</span>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-4xl mx-auto">
+          {/* Section header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.12)' }}>
+              <span className="text-sm font-semibold" style={{ color: '#294ff6' }}>FAQ</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: '#000f4d' }}>
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to know about Creator Fund and Creator Rewards earnings
+            </p>
+          </div>
+
+          {/* FAQ Items */}
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+
+              return (
+                <div
+                  key={index}
+                  className="rounded-xl overflow-hidden transition-all duration-300 shadow-sm"
+                  style={{
+                    backgroundColor: '#f8fbff',
+                    border: isOpen ? '1px solid rgba(41,79,246,0.2)' : '1px solid transparent',
+                  }}
+                >
+                  <button
+                    onClick={() => toggleFaq(index)}
+                    className="w-full px-6 py-5 flex items-center justify-between gap-4 text-left transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="w-1 h-6 rounded-full transition-all duration-300 flex-shrink-0"
+                        style={{ backgroundColor: isOpen ? '#294ff6' : '#eef4fd' }}
+                      />
+                      <span className="font-semibold text-base md:text-lg leading-relaxed" style={{ color: '#000f4d' }}>
+                        {faq.question}
+                      </span>
+                    </div>
+                    <div
+                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300"
+                      style={{ backgroundColor: isOpen ? 'rgba(41,79,246,0.12)' : '#eef4fd' }}
+                    >
+                      {isOpen ? (
+                        <Minus className="w-4 h-4" style={{ color: '#294ff6' }} />
+                      ) : (
+                        <Plus className="w-4 h-4" style={{ color: '#7a93ff' }} />
+                      )}
+                    </div>
+                  </button>
+
+                  <div
+                    className="overflow-hidden transition-all duration-300 ease-in-out"
+                    style={{ maxHeight: isOpen ? '500px' : '0', opacity: isOpen ? 1 : 0 }}
+                  >
+                    <div className="px-6 pb-6 pt-0 ml-5">
+                      <div className="pl-4" style={{ borderLeft: '2px solid #eef4fd' }}>
+                        <p className="text-foreground leading-relaxed">
+                          {highlightValues(faq.answer)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

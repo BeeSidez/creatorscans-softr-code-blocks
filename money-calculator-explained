@@ -1,0 +1,175 @@
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function Block() {
+  const incomeStreams = [
+    { name: 'Creator Fund/Rewards', rate: '£0.016-£0.79/1K views', desc: 'Passive view-based income', color: '#294ff6' },
+    { name: 'Brand Deals', rate: '£79-£39,000+/post', desc: 'Highest earning potential', color: '#4466f8' },
+    { name: 'LIVE Gifts', rate: '£4-£3,900+/stream', desc: 'Real-time audience support', color: '#5e7bf6' },
+    { name: 'TikTok Shop Affiliate', rate: '5-20% commission', desc: 'Product recommendations', color: '#7a93ff' },
+    { name: 'TikTok Shop Seller', rate: '90-95% of sales', desc: 'Sell your own products', color: '#879cf7' },
+  ];
+
+  const earningsTiers = [
+    { range: '1K-5K Followers', earnings: '£40-£240/month', barPct: 5 },
+    { range: '5K-10K Followers', earnings: '£79-£395/month', barPct: 10 },
+    { range: '10K-50K Followers', earnings: '£395-£2,360/month', barPct: 20 },
+    { range: '50K-100K Followers', earnings: '£2,360-£7,870/month', barPct: 40, featured: true },
+    { range: '100K-500K Followers', earnings: '£7,870-£39,370/month', barPct: 65, featured: true },
+    { range: '500K-1M Followers', earnings: '£39,370-£118,100/month', barPct: 85 },
+    { range: '1M+ Followers', earnings: '£78,700-£393,700+/month', barPct: 100 },
+  ];
+
+  const strategies = [
+    'Diversify income across 3-5 revenue streams minimum',
+    'Prioritize brand deals over Creator Fund for highest ROI',
+    'Create 1+ minute videos to qualify for Creator Rewards',
+    'Go LIVE 2-4 times weekly during peak audience hours',
+    'Promote affiliate products that genuinely fit your niche',
+    'Negotiate usage rights separately from base rates',
+    'Build an email list for direct monetization opportunities',
+    'Repurpose content to YouTube for additional ad revenue',
+  ];
+
+  const requirements = [
+    { name: 'LIVE Gifts', req: '1,000 followers, 18+ years old', note: 'Lowest barrier to entry', color: '#294ff6' },
+    { name: 'TikTok Shop Affiliate', req: 'No follower minimum', note: 'Apply through TikTok Shop Seller Centre', color: '#4466f8' },
+    { name: 'Creator Fund/Rewards', req: '10,000 followers + 100,000 views in 30 days', note: '18+ and eligible country required', color: '#5e7bf6' },
+    { name: 'Brand Deals', req: 'No official minimum', note: 'Most brands prefer 5,000+ with 5%+ engagement', color: '#7a93ff' },
+  ];
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-12">
+        <div className="content">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Card 1: Income Streams */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="Income" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">TikTok Income Streams</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>All the ways creators earn in 2026</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {incomeStreams.map((stream, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ backgroundColor: `${stream.color}08`, border: `1px solid ${stream.color}12` }}>
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-2 h-8 rounded-full" style={{ backgroundColor: stream.color }} />
+                          <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{stream.name}</h4>
+                        </div>
+                        <span className="font-bold text-sm" style={{ color: stream.color }}>{stream.rate}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground ml-4">{stream.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Earnings by Follower Count */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png" alt="Tiers" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Earnings by Follower Count</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>All streams combined, monthly estimates</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {earningsTiers.map((tier, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{tier.range}</span>
+                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>{tier.earnings}</span>
+                      </div>
+                      <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                        <div className="h-full rounded-full" style={{ width: `${tier.barPct}%`, background: tier.featured ? 'linear-gradient(90deg, #294ff6, #5e7bf6)' : 'linear-gradient(90deg, #7a93ff, #879cf7)' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: Maximize Earnings */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png" alt="Growth" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Maximize Your Earnings</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Strategies used by top-earning creators</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {strategies.map((strategy, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ backgroundColor: i % 2 === 0 ? 'rgba(41,79,246,0.04)' : 'rgba(94,123,246,0.04)', border: '1px solid rgba(41,79,246,0.06)' }}>
+                      <div className="flex gap-3">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: i < 4 ? '#294ff6' : '#7a93ff' }}>
+                          <span className="text-white text-xs font-bold">{i + 1}</span>
+                        </div>
+                        <p className="text-sm leading-relaxed" style={{ color: '#000f4d' }}>{strategy}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: Monetization Requirements */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770814473/creatorscans_icons_3_nv1erg.png" alt="Requirements" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Monetization Requirements</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Minimum requirements for each income stream</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {requirements.map((req, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ backgroundColor: `${req.color}08`, border: `1px solid ${req.color}12` }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: req.color }}>
+                          <span className="text-white text-xs font-bold">{i + 1}</span>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm mb-0.5" style={{ color: '#000f4d' }}>{req.name}</h4>
+                          <p className="text-sm font-medium" style={{ color: req.color }}>{req.req}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{req.note}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 rounded-xl p-4 flex items-start gap-3" style={{ backgroundColor: '#eef4fd' }}>
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: '#294ff6' }}>
+                    <span className="text-white text-xs font-bold">i</span>
+                  </div>
+                  <p className="text-xs" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                    Brand deals are typically 50-70% of total creator income. Diversifying across all streams is key to sustainable earnings.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

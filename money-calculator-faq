@@ -1,0 +1,109 @@
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
+
+const faqs = [
+  {
+    question: 'How much money can you make on TikTok?',
+    answer: 'TikTok earnings vary hugely by follower count and income mix. Creators with 10K-50K followers typically earn £395-£2,360/month, while those with 100K+ can earn £7,870-£39,370+/month. Most income comes from brand deals (50-70%), followed by TikTok Shop (15-30%), LIVE gifts (10-20%), and Creator Fund (5-10%).'
+  },
+  {
+    question: 'What are all the ways to make money on TikTok?',
+    answer: 'There are 5 main income streams: Creator Fund/Rewards (view-based payments), brand deals (sponsored content), LIVE gifts (diamonds from streaming), TikTok Shop affiliate (product commissions), and TikTok Shop seller (selling your own products). Most successful creators use 3-5 of these simultaneously.'
+  },
+  {
+    question: 'How much does TikTok pay per 1,000 views?',
+    answer: 'The legacy Creator Fund pays £0.016-£0.032 per 1,000 views. The Creator Rewards Program pays £0.32-£0.79 per 1,000 qualified views for videos over 1 minute. However, most creator income comes from brand deals, which pay £79-£3,940+ per sponsored post depending on follower count.'
+  },
+  {
+    question: 'How many followers do you need to make money on TikTok?',
+    answer: 'It depends on the income stream. LIVE gifts require only 1,000 followers. TikTok Shop affiliate has no follower minimum. Creator Fund needs 10,000 followers plus 100,000 views in 30 days. Brand deals have no official minimum but most brands prefer 5,000+ with strong engagement.'
+  },
+  {
+    question: 'Do TikTokers get paid for likes?',
+    answer: 'Not directly. TikTok does not pay per like. However, likes contribute to engagement rate, which affects your Creator Fund RPM and makes you more attractive for brand deals. Higher engagement rates can command 1.5-2x higher sponsorship rates.'
+  },
+  {
+    question: 'How much do TikTok brand deals pay?',
+    answer: 'Brand deal rates scale with followers and engagement: Nano (1K-5K) earn £40-£197/post, Micro (5K-10K) earn £79-£395/post, Mid-tier (50K-100K) earn £1,970-£3,940/post, and Mega (500K-1M) earn £11,810-£27,560/post. High-value niches like finance and tech pay 2-3x more.'
+  },
+  {
+    question: 'Is TikTok a good way to make money?',
+    answer: 'Yes, TikTok is one of the fastest platforms for creators to monetize. The algorithm allows unknown creators to go viral, and engagement rates are higher than other platforms. However, most income comes from brand deals and commerce, not Creator Fund. Diversifying income streams is key.'
+  },
+  {
+    question: 'How much do LIVE gifts pay on TikTok?',
+    answer: 'LIVE gift earnings depend on your viewer count and streaming frequency. Creators with 10K-50K followers typically earn £40-£157/stream. With consistent streaming (4x/week), that is £630-£2,520/month. TikTok takes 50% of all gift value before you receive your diamonds.'
+  },
+  {
+    question: 'How much can I make from TikTok Shop?',
+    answer: 'TikTok Shop affiliate commissions range from 5-20% depending on category. Beauty and fashion typically pay 10-20%. A creator with 50K followers promoting a £40 product at 15% commission could earn £395-£1,180/month. Success depends heavily on niche and product-audience fit.'
+  },
+  {
+    question: 'What niches make the most money on TikTok?',
+    answer: 'Finance and business command the highest rates (2-3x average), followed by technology (1.5-2.5x), health and wellness (1.5-2x), and beauty (1x average). Entertainment and gaming typically earn below average on brand deals but can compensate with high LIVE gift engagement.'
+  },
+  {
+    question: 'How do I maximize my TikTok earnings?',
+    answer: 'Diversify across 3-5 income streams, prioritize brand deals for highest ROI, create videos over 1 minute for Creator Rewards, go LIVE 2-4 times weekly, promote affiliate products relevant to your niche, and negotiate usage rights separately from base rates.'
+  },
+];
+
+export default function Block() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const highlightValues = (text) => {
+    const parts = text.split(/(£[0-9,]+\.?[0-9]*(?:-£[0-9,]+\.?[0-9]*)?(?:\+?\/(?:month|post|stream))?|[0-9]+-[0-9]+%|[0-9]+%|[0-9]+K-[0-9]+K|[0-9]+K\+?|[0-9]+-[0-9]+x|50-70%|15-30%|10-20%|5-10%|[0-9]+,000)/g);
+    return parts.map((part, i) => {
+      if (part.match(/(£|%|[0-9]+x|[0-9]+K|[0-9]+,000)/)) {
+        return <span key={i} className="font-semibold" style={{ color: '#294ff6' }}>{part}</span>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.12)' }}>
+              <span className="text-sm font-semibold" style={{ color: '#294ff6' }}>FAQ</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: '#000f4d' }}>Frequently Asked Questions</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Everything you need to know about making money on TikTok</p>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+              return (
+                <div key={index} className="rounded-xl overflow-hidden transition-all duration-300 shadow-sm" style={{ backgroundColor: '#f8fbff', border: isOpen ? '1px solid rgba(41,79,246,0.2)' : '1px solid transparent' }}>
+                  <button onClick={() => toggleFaq(index)} className="w-full px-6 py-5 flex items-center justify-between gap-4 text-left transition-colors" aria-expanded={isOpen}>
+                    <div className="flex items-center gap-4">
+                      <div className="w-1 h-6 rounded-full transition-all duration-300 flex-shrink-0" style={{ backgroundColor: isOpen ? '#294ff6' : '#eef4fd' }} />
+                      <span className="font-semibold text-base md:text-lg leading-relaxed" style={{ color: '#000f4d' }}>{faq.question}</span>
+                    </div>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300" style={{ backgroundColor: isOpen ? 'rgba(41,79,246,0.12)' : '#eef4fd' }}>
+                      {isOpen ? <Minus className="w-4 h-4" style={{ color: '#294ff6' }} /> : <Plus className="w-4 h-4" style={{ color: '#7a93ff' }} />}
+                    </div>
+                  </button>
+                  <div className="overflow-hidden transition-all duration-300 ease-in-out" style={{ maxHeight: isOpen ? '500px' : '0', opacity: isOpen ? 1 : 0 }}>
+                    <div className="px-6 pb-6 pt-0 ml-5">
+                      <div className="pl-4" style={{ borderLeft: '2px solid #eef4fd' }}>
+                        <p className="text-foreground leading-relaxed">{highlightValues(faq.answer)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
