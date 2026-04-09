@@ -1,22 +1,43 @@
+import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 
+const currencies = [
+  { code: 'GBP', symbol: '£', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '€', rate: 1.17 },
+];
+
 export default function Block() {
+  const [currencyIdx, setCurrencyIdx] = useState(0);
+  const currency = currencies[currencyIdx];
+
+  const fmt = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    if (v >= 1000) return currency.symbol + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (v >= 1) return currency.symbol + v.toFixed(0);
+    return currency.symbol + v.toFixed(2);
+  };
+  const fmtDec = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    return currency.symbol + v.toFixed(2);
+  };
+
   const incomeStreams = [
-    { name: 'Creator Fund/Rewards', rate: '£0.016-£0.79/1K views', desc: 'Passive view-based income', color: '#294ff6' },
-    { name: 'Brand Deals', rate: '£79-£39,000+/post', desc: 'Highest earning potential', color: '#4466f8' },
-    { name: 'LIVE Gifts', rate: '£4-£3,900+/stream', desc: 'Real-time audience support', color: '#5e7bf6' },
-    { name: 'TikTok Shop Affiliate', rate: '5-20% commission', desc: 'Product recommendations', color: '#7a93ff' },
-    { name: 'TikTok Shop Seller', rate: '90-95% of sales', desc: 'Sell your own products', color: '#879cf7' },
+    { name: 'Creator Fund/Rewards', rateLow: 0.016, rateHigh: 0.79, rateSuffix: '/1K views', desc: 'Passive view-based income', color: '#294ff6' },
+    { name: 'Brand Deals', rateLow: 79, rateHigh: 39000, ratePlus: true, rateSuffix: '/post', desc: 'Highest earning potential', color: '#4466f8' },
+    { name: 'LIVE Gifts', rateLow: 4, rateHigh: 3900, ratePlus: true, rateSuffix: '/stream', desc: 'Real-time audience support', color: '#5e7bf6' },
+    { name: 'TikTok Shop Affiliate', rateText: '5-20% commission', desc: 'Product recommendations', color: '#7a93ff' },
+    { name: 'TikTok Shop Seller', rateText: '90-95% of sales', desc: 'Sell your own products', color: '#879cf7' },
   ];
 
   const earningsTiers = [
-    { range: '1K-5K Followers', earnings: '£40-£240/month', barPct: 5 },
-    { range: '5K-10K Followers', earnings: '£79-£395/month', barPct: 10 },
-    { range: '10K-50K Followers', earnings: '£395-£2,360/month', barPct: 20 },
-    { range: '50K-100K Followers', earnings: '£2,360-£7,870/month', barPct: 40, featured: true },
-    { range: '100K-500K Followers', earnings: '£7,870-£39,370/month', barPct: 65, featured: true },
-    { range: '500K-1M Followers', earnings: '£39,370-£118,100/month', barPct: 85 },
-    { range: '1M+ Followers', earnings: '£78,700-£393,700+/month', barPct: 100 },
+    { range: '1K-5K Followers', earningsLow: 40, earningsHigh: 240, barPct: 5 },
+    { range: '5K-10K Followers', earningsLow: 79, earningsHigh: 395, barPct: 10 },
+    { range: '10K-50K Followers', earningsLow: 395, earningsHigh: 2360, barPct: 20 },
+    { range: '50K-100K Followers', earningsLow: 2360, earningsHigh: 7870, barPct: 40, featured: true },
+    { range: '100K-500K Followers', earningsLow: 7870, earningsHigh: 39370, barPct: 65, featured: true },
+    { range: '500K-1M Followers', earningsLow: 39370, earningsHigh: 118100, barPct: 85 },
+    { range: '1M+ Followers', earningsLow: 78700, earningsHigh: 393700, earningsPlus: true, barPct: 100 },
   ];
 
   const strategies = [
@@ -37,10 +58,40 @@ export default function Block() {
     { name: 'Brand Deals', req: 'No official minimum', note: 'Most brands prefer 5,000+ with 5%+ engagement', color: '#7a93ff' },
   ];
 
+  const fmtFlex = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    if (v >= 1000) return currency.symbol + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (v >= 1) return currency.symbol + v.toFixed(0);
+    if (v >= 0.1) return currency.symbol + v.toFixed(2);
+    return currency.symbol + parseFloat(v.toFixed(3)).toString();
+  };
+
+  const formatRate = (stream) => {
+    if (stream.rateText) return stream.rateText;
+    return fmtFlex(stream.rateLow) + '-' + fmtFlex(stream.rateHigh) + (stream.ratePlus ? '+' : '') + stream.rateSuffix;
+  };
+
   return (
     <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
       <div className="container py-12">
         <div className="content">
+
+          {/* Currency Switcher Row */}
+          <div className="flex justify-end mb-4">
+            <select
+              value={currencyIdx}
+              onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+              className="px-2 py-1 rounded-lg text-xs font-medium cursor-pointer"
+              style={{ backgroundColor: 'rgba(41,79,246,0.1)', border: '1px solid rgba(41,79,246,0.2)', color: '#294ff6', outline: 'none' }}
+            >
+              {currencies.map((c, idx) => (
+                <option key={c.code} value={idx} style={{ backgroundColor: '#f8fbff', color: '#000f4d' }}>
+                  {c.symbol} {c.code}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* Card 1: Income Streams */}
@@ -63,7 +114,7 @@ export default function Block() {
                           <div className="w-2 h-8 rounded-full" style={{ backgroundColor: stream.color }} />
                           <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{stream.name}</h4>
                         </div>
-                        <span className="font-bold text-sm" style={{ color: stream.color }}>{stream.rate}</span>
+                        <span className="font-bold text-sm" style={{ color: stream.color }}>{formatRate(stream)}</span>
                       </div>
                       <p className="text-xs text-muted-foreground ml-4">{stream.desc}</p>
                     </div>
@@ -89,7 +140,9 @@ export default function Block() {
                     <div key={i}>
                       <div className="flex justify-between items-center mb-1.5">
                         <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{tier.range}</span>
-                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>{tier.earnings}</span>
+                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>
+                          {fmt(tier.earningsLow)}-{fmt(tier.earningsHigh)}{tier.earningsPlus ? '+' : ''}/month
+                        </span>
                       </div>
                       <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
                         <div className="h-full rounded-full" style={{ width: `${tier.barPct}%`, background: tier.featured ? 'linear-gradient(90deg, #294ff6, #5e7bf6)' : 'linear-gradient(90deg, #7a93ff, #879cf7)' }} />

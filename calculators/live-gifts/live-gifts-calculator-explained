@@ -1,12 +1,33 @@
+import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 
+const currencies = [
+  { code: 'GBP', symbol: '£', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '€', rate: 1.17 },
+];
+
 export default function Block() {
+  const [currencyIdx, setCurrencyIdx] = useState(0);
+  const currency = currencies[currencyIdx];
+
+  const fmt = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    if (v >= 1000) return currency.symbol + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (v >= 1) return currency.symbol + v.toFixed(0);
+    return currency.symbol + v.toFixed(2);
+  };
+  const fmtDec = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    return currency.symbol + v.toFixed(2);
+  };
+
   const earningsTiers = [
-    { followers: '1K-5K', perStream: '\u00a34-\u00a320', monthly: '\u00a363-\u00a3315', barPct: 8 },
-    { followers: '5K-10K', perStream: '\u00a316-\u00a340', monthly: '\u00a3252-\u00a3630', barPct: 15 },
-    { followers: '10K-50K', perStream: '\u00a340-\u00a3157', monthly: '\u00a3630-\u00a32,520', barPct: 35 },
-    { followers: '50K-100K', perStream: '\u00a3157-\u00a3395', monthly: '\u00a32,520-\u00a36,300', barPct: 60, featured: true },
-    { followers: '100K+', perStream: '\u00a3395-\u00a31,575+', monthly: '\u00a36,300-\u00a325,200+', barPct: 100, featured: true },
+    { followers: '1K-5K', perStreamLow: 4, perStreamHigh: 20, monthlyLow: 63, monthlyHigh: 315, barPct: 8 },
+    { followers: '5K-10K', perStreamLow: 16, perStreamHigh: 40, monthlyLow: 252, monthlyHigh: 630, barPct: 15 },
+    { followers: '10K-50K', perStreamLow: 40, perStreamHigh: 157, monthlyLow: 630, monthlyHigh: 2520, barPct: 35 },
+    { followers: '50K-100K', perStreamLow: 157, perStreamHigh: 395, monthlyLow: 2520, monthlyHigh: 6300, barPct: 60, featured: true },
+    { followers: '100K+', perStreamLow: 395, perStreamHigh: 1575, perStreamPlus: true, monthlyLow: 6300, monthlyHigh: 25200, monthlyPlus: true, barPct: 100, featured: true },
   ];
 
   const contentTypes = [
@@ -32,31 +53,63 @@ export default function Block() {
   const incomeMethods = [
     {
       method: 'LIVE Gifts',
-      earnings: '\u00a340-\u00a33,940+ per stream',
+      earningsLow: 40, earningsHigh: 3940, earningsPlus: true, earningsSuffix: ' per stream',
       requirement: 'Requires only 1K followers',
       note: 'Active but highest per-hour',
       color: '#294ff6',
     },
     {
       method: 'Brand Deals',
-      earnings: '\u00a379-\u00a339,370+ per post',
+      earningsLow: 79, earningsHigh: 39370, earningsPlus: true, earningsSuffix: ' per post',
       requirement: 'Requires negotiation',
       note: 'One-time payments',
       color: '#5e7bf6',
     },
     {
       method: 'Creator Fund',
-      earnings: '\u00a30.016-\u00a30.032 per 1K views',
+      earningsLow: 0.016, earningsHigh: 0.032, earningsSuffix: ' per 1K views',
       requirement: 'Requires 10K followers',
       note: 'Passive',
       color: '#7a93ff',
     },
   ];
 
+  const fmtFlex = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    if (v >= 1000) return currency.symbol + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (v >= 1) return currency.symbol + v.toFixed(0);
+    if (v >= 0.1) return currency.symbol + v.toFixed(2);
+    return currency.symbol + parseFloat(v.toFixed(3)).toString();
+  };
+
+  const formatIncomeRate = (item) => {
+    if (item.earningsLow < 1) {
+      return fmtFlex(item.earningsLow) + '-' + fmtFlex(item.earningsHigh) + (item.earningsPlus ? '+' : '') + item.earningsSuffix;
+    }
+    return fmt(item.earningsLow) + '-' + fmt(item.earningsHigh) + (item.earningsPlus ? '+' : '') + item.earningsSuffix;
+  };
+
   return (
     <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
       <div className="container py-12">
         <div className="content">
+
+          {/* Currency Switcher Row */}
+          <div className="flex justify-end mb-4">
+            <select
+              value={currencyIdx}
+              onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+              className="px-2 py-1 rounded-lg text-xs font-medium cursor-pointer"
+              style={{ backgroundColor: 'rgba(41,79,246,0.1)', border: '1px solid rgba(41,79,246,0.2)', color: '#294ff6', outline: 'none' }}
+            >
+              {currencies.map((c, idx) => (
+                <option key={c.code} value={idx} style={{ backgroundColor: '#f8fbff', color: '#000f4d' }}>
+                  {c.symbol} {c.code}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* Card 1: LIVE Earnings by Follower Count */}
@@ -97,10 +150,14 @@ export default function Block() {
                           />
                           <div>
                             <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{tier.followers} followers</h4>
-                            <p className="text-xs text-muted-foreground">{tier.perStream}/stream</p>
+                            <p className="text-xs text-muted-foreground">
+                              {fmt(tier.perStreamLow)}-{fmt(tier.perStreamHigh)}{tier.perStreamPlus ? '+' : ''}/stream
+                            </p>
                           </div>
                         </div>
-                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>{tier.monthly}/mo</span>
+                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>
+                          {fmt(tier.monthlyLow)}-{fmt(tier.monthlyHigh)}{tier.monthlyPlus ? '+' : ''}/mo
+                        </span>
                       </div>
 
                       <div className="ml-4 mb-1">
@@ -245,7 +302,7 @@ export default function Block() {
                     >
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{item.method}</h4>
-                        <span className="font-bold text-sm" style={{ color: item.color }}>{item.earnings}</span>
+                        <span className="font-bold text-sm" style={{ color: item.color }}>{formatIncomeRate(item)}</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <span
