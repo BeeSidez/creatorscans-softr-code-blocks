@@ -1,0 +1,201 @@
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function Block() {
+  const followerTiers = [
+    { tier: 'Nano (1K-5K)', rate: '\u00a340-\u00a3197', barPct: 5 },
+    { tier: 'Micro (5K-10K)', rate: '\u00a379-\u00a3395', barPct: 10 },
+    { tier: 'Small (10K-50K)', rate: '\u00a3395-\u00a31,970', barPct: 25 },
+    { tier: 'Mid-tier (50K-100K)', rate: '\u00a31,970-\u00a33,940', barPct: 40, featured: true },
+    { tier: 'Macro (100K-500K)', rate: '\u00a33,940-\u00a311,810', barPct: 65, featured: true },
+    { tier: 'Mega (500K-1M)', rate: '\u00a311,810-\u00a327,560', barPct: 85 },
+    { tier: 'Celebrity (1M+)', rate: '\u00a327,560-\u00a378,740+', barPct: 100 },
+  ];
+
+  const nicheRates = [
+    { niche: 'Finance/Investing', range: '2-3x average', barPct: 100, color: '#294ff6' },
+    { niche: 'Technology/SaaS', range: '1.5-2.5x average', barPct: 83, color: '#4466f8' },
+    { niche: 'Health/Wellness', range: '1.5-2x average', barPct: 66, color: '#5e7bf6' },
+    { niche: 'Business/B2B', range: '1.5-2x average', barPct: 66, color: '#5e7bf6' },
+    { niche: 'Beauty/Fashion', range: '1x average', barPct: 40, color: '#7a93ff' },
+    { niche: 'Fitness', range: '1x average', barPct: 40, color: '#7a93ff' },
+    { niche: 'Entertainment', range: '0.7-1x average', barPct: 28, color: '#879cf7' },
+    { niche: 'Gaming', range: '0.5-0.8x average', barPct: 22, color: '#879cf7' },
+  ];
+
+  const negotiationTips = [
+    'Always start 20-30% higher than your target rate',
+    'Lead with engagement rate, not follower count',
+    'Ask about usage rights before quoting a price',
+    'Create a professional media kit with analytics',
+    'Offer package deals for multiple deliverables',
+    'Set clear revision policies and timelines',
+    'Get payment terms in writing (net 30, 50% upfront)',
+    'Track performance to justify future rate increases',
+  ];
+
+  const packages = [
+    {
+      name: 'Base Package',
+      items: ['1 TikTok video', 'Caption with disclosure', '30-day organic usage'],
+      color: '#294ff6',
+      tag: 'Standard',
+    },
+    {
+      name: 'Standard Add-ons (+25-50%)',
+      items: ['Instagram Story', 'Link in bio', 'Behind-the-scenes content'],
+      color: '#4466f8',
+      tag: '+25-50%',
+    },
+    {
+      name: 'Premium Add-ons (+50-100%)',
+      items: ['Paid ad rights', 'Whitelisting', 'Exclusivity', 'Multiple videos'],
+      color: '#5e7bf6',
+      tag: '+50-100%',
+    },
+    {
+      name: 'Rush Fee (+25-50%)',
+      items: ['Turnaround under 48 hours'],
+      color: '#7a93ff',
+      tag: '+25-50%',
+    },
+  ];
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-12">
+        <div className="content">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Card 1: Rates by Follower Count */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="Rates" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Rates by Follower Count</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Per sponsored post, 2026 benchmarks</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {followerTiers.map((tier, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{tier.tier}</span>
+                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>{tier.rate}</span>
+                      </div>
+                      <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                        <div className="h-full rounded-full" style={{ width: `${tier.barPct}%`, background: tier.featured ? 'linear-gradient(90deg, #294ff6, #5e7bf6)' : 'linear-gradient(90deg, #7a93ff, #879cf7)' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Rates by Niche */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png" alt="Niches" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Rates by Niche</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Niche multiplier compared to average</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {nicheRates.map((item, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{item.niche}</span>
+                        <span className="font-bold text-sm" style={{ color: item.color }}>{item.range}</span>
+                      </div>
+                      <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                        <div className="h-full rounded-full" style={{ width: `${item.barPct}%`, backgroundColor: item.color }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: Negotiation Tips */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png" alt="Tips" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Negotiation Tips</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Maximize your brand deal value</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {negotiationTips.map((tip, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ backgroundColor: i % 2 === 0 ? 'rgba(41,79,246,0.04)' : 'rgba(94,123,246,0.04)', border: '1px solid rgba(41,79,246,0.06)' }}>
+                      <div className="flex gap-3">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: i < 4 ? '#294ff6' : '#7a93ff' }}>
+                          <span className="text-white text-xs font-bold">{i + 1}</span>
+                        </div>
+                        <p className="text-sm leading-relaxed" style={{ color: '#000f4d' }}>{tip}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: What to Include */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770814473/creatorscans_icons_3_nv1erg.png" alt="Packages" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">What to Include</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Deliverable packages and pricing tiers</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {packages.map((pkg, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ backgroundColor: `${pkg.color}08`, border: `1px solid ${pkg.color}12` }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 h-full min-h-[40px] rounded-full flex-shrink-0" style={{ backgroundColor: pkg.color }} />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{pkg.name}</h4>
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${pkg.color}18`, color: pkg.color }}>{pkg.tag}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {pkg.items.map((item, j) => (
+                              <span key={j} className="text-xs px-2.5 py-1 rounded-full" style={{ backgroundColor: '#eef4fd', color: 'rgba(0,15,77,0.7)' }}>{item}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 rounded-xl p-4 flex items-start gap-3" style={{ backgroundColor: '#eef4fd' }}>
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: '#294ff6' }}>
+                    <span className="text-white text-xs font-bold">i</span>
+                  </div>
+                  <p className="text-xs" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                    Always outline deliverables, timelines, and usage rights in writing before starting work. A clear scope prevents scope creep and protects both parties.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

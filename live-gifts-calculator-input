@@ -1,0 +1,317 @@
+import { useState, useEffect, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Calculator, Info, TrendingUp, ChevronDown, Radio, Clock, Calendar } from 'lucide-react';
+
+const currencies = [
+  { code: 'GBP', symbol: '\u00a3', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '\u20ac', rate: 1.17 },
+  { code: 'AUD', symbol: 'A$', rate: 1.93 },
+  { code: 'CAD', symbol: 'C$', rate: 1.72 },
+  { code: 'INR', symbol: '\u20b9', rate: 106.5 },
+];
+
+const AVG_GIFT_VALUE_GBP = 0.80;
+const CREATOR_SHARE = 0.5;
+const WEEKS_PER_MONTH = 4.33;
+
+export default function Block() {
+  const [viewers, setViewers] = useState(100);
+  const [duration, setDuration] = useState(60);
+  const [streamsPerWeek, setStreamsPerWeek] = useState(4);
+  const [giftRate, setGiftRate] = useState(5);
+  const [currency, setCurrency] = useState(currencies[0]);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [animatedMonthly, setAnimatedMonthly] = useState(0);
+  const animFrameRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  // Calculations
+  const giftersPerStream = viewers * (giftRate / 100);
+  const durationMultiplier = duration / 60;
+  const grossPerStream = giftersPerStream * AVG_GIFT_VALUE_GBP * durationMultiplier;
+  const creatorPerStream = grossPerStream * CREATOR_SHARE;
+  const weeklyEarnings = creatorPerStream * streamsPerWeek;
+  const monthlyEarnings = weeklyEarnings * WEEKS_PER_MONTH;
+  const annualEarnings = monthlyEarnings * 12;
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowCurrencyDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Animate monthly value
+  useEffect(() => {
+    const start = animatedMonthly;
+    const target = monthlyEarnings * currency.rate;
+    const animDuration = 400;
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / animDuration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      setAnimatedMonthly(start + (target - start) * ease);
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    animFrameRef.current = requestAnimationFrame(animate);
+    return () => { if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current); };
+  }, [monthlyEarnings, currency.rate]);
+
+  const fmt = (val) => {
+    const c = val * currency.rate;
+    if (currency.rate >= 50) return currency.symbol + Math.round(c).toLocaleString('en-GB');
+    return currency.symbol + c.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const fmtAnimated = (val) => {
+    if (currency.rate >= 50) return currency.symbol + Math.round(val).toLocaleString('en-GB');
+    return currency.symbol + val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const sliderTrack = (value, min, max) => {
+    const p = ((value - min) / (max - min)) * 100;
+    return { background: `linear-gradient(to right, #294ff6 0%, #5e7bf6 ${p}%, #eef4fd ${p}%, #eef4fd 100%)` };
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-5xl mx-auto space-y-8">
+
+          {/* Calculator Card */}
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            {/* Header */}
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                    <Radio className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">LIVE Gift Earnings Calculator</h2>
+                    <p className="text-sm" style={{ color: '#7a93ff' }}>Estimate your streaming income from viewer gifts</p>
+                  </div>
+                </div>
+
+                {/* Currency Selector */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium"
+                    style={{ backgroundColor: 'rgba(41,79,246,0.2)', border: '1px solid rgba(122,147,255,0.3)', color: '#7a93ff' }}
+                  >
+                    <span className="font-bold text-white">{currency.symbol}</span>
+                    <span>{currency.code}</span>
+                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#7a93ff', transform: showCurrencyDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                  </button>
+
+                  {showCurrencyDropdown && (
+                    <div className="absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-50" style={{ backgroundColor: '#152237', border: '1px solid rgba(122,147,255,0.2)', minWidth: '140px' }}>
+                      {currencies.map((c) => (
+                        <button
+                          key={c.code}
+                          onClick={() => { setCurrency(c); setShowCurrencyDropdown(false); }}
+                          className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 transition-colors"
+                          style={{ color: currency.code === c.code ? 'white' : '#7a93ff', backgroundColor: currency.code === c.code ? 'rgba(41,79,246,0.3)' : 'transparent' }}
+                          onMouseEnter={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'rgba(41,79,246,0.15)'; }}
+                          onMouseLeave={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'transparent'; }}
+                        >
+                          <span className="font-bold" style={{ color: 'white', width: '24px' }}>{c.symbol}</span>
+                          <span>{c.code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <CardContent className="p-8 space-y-7">
+              {/* Average Concurrent Viewers */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Average Concurrent Viewers</label>
+                  <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{viewers.toLocaleString('en-GB')}</span>
+                  </div>
+                </div>
+                <input type="range" min="10" max="10000" step="10" value={viewers} onChange={(e) => setViewers(Number(e.target.value))} className="cs-slider" style={sliderTrack(viewers, 10, 10000)} />
+                <div className="flex justify-between text-xs text-muted-foreground"><span>10</span><span>10,000</span></div>
+              </div>
+
+              {/* Stream Duration */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Stream Duration (minutes)</label>
+                  <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{duration} min</span>
+                  </div>
+                </div>
+                <input type="range" min="15" max="180" step="15" value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="cs-slider" style={sliderTrack(duration, 15, 180)} />
+                <div className="flex justify-between text-xs text-muted-foreground"><span>15 min</span><span>180 min</span></div>
+              </div>
+
+              {/* Streams Per Week */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Streams Per Week</label>
+                  <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{streamsPerWeek}</span>
+                  </div>
+                </div>
+                <input type="range" min="0" max="7" step="1" value={streamsPerWeek} onChange={(e) => setStreamsPerWeek(Number(e.target.value))} className="cs-slider" style={sliderTrack(streamsPerWeek, 0, 7)} />
+                <div className="flex justify-between text-xs text-muted-foreground"><span>0</span><span>7</span></div>
+              </div>
+
+              {/* Gift Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Gift Rate (% of viewers who gift)</label>
+                  <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{giftRate}%</span>
+                  </div>
+                </div>
+                <input type="range" min="1" max="15" step="0.5" value={giftRate} onChange={(e) => setGiftRate(Number(e.target.value))} className="cs-slider" style={sliderTrack(giftRate, 1, 15)} />
+                <div className="flex justify-between text-xs text-muted-foreground"><span>1%</span><span>15%</span></div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-px" style={{ backgroundColor: '#eef4fd' }} />
+
+              {/* Main Result - Monthly Earnings */}
+              <div className="rounded-2xl p-8 text-center" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <p className="text-xs font-medium uppercase tracking-widest mb-2" style={{ color: '#7a93ff' }}>Estimated Monthly Earnings</p>
+                <p className="text-5xl md:text-6xl font-bold text-white mb-3">{fmtAnimated(animatedMonthly)}</p>
+                <p className="text-sm" style={{ color: 'rgba(122,147,255,0.7)' }}>
+                  Based on {streamsPerWeek} streams/week with {viewers.toLocaleString('en-GB')} avg viewers
+                </p>
+              </div>
+
+              {/* Secondary Results */}
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <Radio className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Per Stream</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{fmt(creatorPerStream)}</p>
+                </div>
+
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <Calendar className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Weekly</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{fmt(weeklyEarnings)}</p>
+                </div>
+
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <TrendingUp className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Annual Projection</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{fmt(annualEarnings)}</p>
+                </div>
+              </div>
+
+              {/* Streams this week progress bar */}
+              <div className="rounded-xl p-4" style={{ backgroundColor: '#eef4fd' }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-muted-foreground">Streams this week</span>
+                  <span className="text-xs font-semibold" style={{ color: '#000f4d' }}>
+                    {streamsPerWeek} / 7 streams
+                  </span>
+                </div>
+                <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-500 ease-out"
+                    style={{
+                      width: `${(streamsPerWeek / 7) * 100}%`,
+                      background: streamsPerWeek >= 5
+                        ? 'linear-gradient(90deg, #294ff6 0%, #5e7bf6 50%, #7a93ff 100%)'
+                        : streamsPerWeek >= 3
+                        ? 'linear-gradient(90deg, #4466f8 0%, #7a93ff 100%)'
+                        : 'linear-gradient(90deg, #7a93ff 0%, #879cf7 100%)',
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between mt-1.5">
+                  <span className="text-xs text-muted-foreground">0 streams</span>
+                  <span className="text-xs text-muted-foreground">7 streams (daily)</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Calculator Inputs Explained */}
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                  <Info className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Calculator Inputs Explained</h2>
+                  <p className="text-sm" style={{ color: '#7a93ff' }}>Understanding each metric and how it affects your earnings</p>
+                </div>
+              </div>
+            </div>
+            <CardContent className="p-8">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #eef4fd' }}>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Input</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Description</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: 'Concurrent Viewers', desc: 'Average number of viewers watching your stream at the same time', example: '100' },
+                      { name: 'Stream Duration', desc: 'How long each LIVE session lasts in minutes. Longer streams attract more gifts', example: '60 min' },
+                      { name: 'Streams Per Week', desc: 'Number of times you go LIVE each week. Consistency builds a gifting audience', example: '4' },
+                      { name: 'Gift Rate %', desc: 'Percentage of viewers who send at least one gift during a stream', example: '5%' },
+                    ].map((row, i) => (
+                      <tr key={i} className="transition-colors" style={{ borderBottom: '1px solid #eef4fd' }}>
+                        <td className="py-4 px-4">
+                          <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{row.name}</span>
+                        </td>
+                        <td className="py-4 px-4 text-sm" style={{ color: 'rgba(0,15,77,0.6)' }}>{row.desc}</td>
+                        <td className="py-4 px-4 font-bold text-sm" style={{ color: '#294ff6' }}>{row.example}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-6 flex items-start gap-3 rounded-xl p-4" style={{ backgroundColor: '#eef4fd' }}>
+                <Info className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#5e7bf6' }} />
+                <p className="text-sm" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                  TikTok takes approximately 50% of all gift value. You earn diamonds worth {currency.symbol}{(0.0036 * currency.rate).toFixed(4)} each, redeemable once you reach the minimum balance of {currency.symbol}{Math.round(36 * currency.rate)} ({(10000).toLocaleString('en-GB')} diamonds).
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .cs-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 4px; outline: none; cursor: pointer; }
+        .cs-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 50%; background: white; border: 3px solid #294ff6; box-shadow: 0 2px 8px rgba(41,79,246,0.3); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+        .cs-slider::-webkit-slider-thumb:hover { transform: scale(1.15); box-shadow: 0 2px 12px rgba(41,79,246,0.45); }
+        .cs-slider::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: white; border: 3px solid #294ff6; box-shadow: 0 2px 8px rgba(41,79,246,0.3); cursor: pointer; }
+      `}</style>
+    </div>
+  );
+}
