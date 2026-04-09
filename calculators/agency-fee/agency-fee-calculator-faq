@@ -1,0 +1,141 @@
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
+
+const faqs = [
+  {
+    question: 'How much do TikTok Shop agencies typically charge?',
+    answer: 'Most agencies charge 15-30% of your commission earnings. Some charge fixed monthly retainers ranging from \u00a3200 to \u00a32,000 per month, while others use hybrid models combining a lower percentage with a small retainer. The exact fee depends on the services provided and your GMV level.'
+  },
+  {
+    question: 'Is an agency worth it for TikTok Shop?',
+    answer: 'Only if they deliver higher commission rates or significantly more GMV than you could get solo. Calculate whether the extra revenue they bring exceeds their fee. For example, if an agency charges 20% but negotiates you from 8% to 15% commission, the net gain may justify the cost. If your earnings stay the same with or without them, they are not worth it.'
+  },
+  {
+    question: 'Can I negotiate my agency fee?',
+    answer: 'Yes. As your GMV grows, you have more leverage to negotiate lower fees. Top performers often negotiate down to 10-15%. If your monthly GMV consistently exceeds \u00a350,000, you are in a strong position to renegotiate terms or request performance-based adjustments.'
+  },
+  {
+    question: 'What should an agency do for their fee?',
+    answer: 'A good agency should negotiate higher commission rates with sellers, source brand deals and partnerships, manage seller relationships on your behalf, handle contracts and admin work, and provide analytics and strategy support. If your agency is not actively doing these things, you may be overpaying.'
+  },
+  {
+    question: 'How do I calculate if my agency is worth it?',
+    answer: 'Compare your net earnings with the agency versus what you estimate you would earn solo. Track your commission rate before and after joining the agency. If the agency negotiated you from 8% to 15% commission on \u00a325,000 GMV, that is \u00a31,750 extra per month. If their fee is \u00a3500 per month, the net benefit is \u00a31,250. If the numbers do not add up, reconsider the arrangement.'
+  },
+  {
+    question: 'What is a fair agency split?',
+    answer: '15-20% of your commission is standard for good agencies that actively deliver value. Below 15% is excellent and typically reserved for high-GMV creators. Above 25% is expensive and needs to be justified by significant value such as exclusive brand deals or dramatically higher commission rates. Anything above 30% should be a red flag.'
+  },
+  {
+    question: 'Do all TikTok Shop creators use agencies?',
+    answer: 'No. Many successful creators, especially those with direct seller relationships, operate independently. Agencies are most useful for creators scaling quickly, new to TikTok Shop, or those who want to focus purely on content creation without handling the business side. As you gain experience and build your own relationships, the value of an agency often decreases.'
+  },
+  {
+    question: 'Can I switch agencies?',
+    answer: 'Yes. Check your contract for notice periods, which are typically 30-90 days. Some agencies have exclusivity clauses that prevent you from working with other agencies or directly with sellers during the contract period, so review your agreement carefully before signing. When switching, ensure there is no overlap period where you are paying two agencies.'
+  },
+];
+
+export default function Block() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const highlightValues = (text) => {
+    const parts = text.split(/(\u00a3[0-9,]+\.?[0-9]*|\u00a3[0-9,]+|[0-9]+-[0-9]+%|[0-9]+%|[0-9]+-[0-9]+ days|[0-9]+K\+|[0-9]+-[0-9]+x|[0-9]+x)/g);
+    return parts.map((part, i) => {
+      if (part.match(/(\u00a3[0-9,]+\.?[0-9]*|\u00a3[0-9,]+|[0-9]+-[0-9]+%|[0-9]+%|[0-9]+-[0-9]+ days|[0-9]+K\+|[0-9]+-[0-9]+x|[0-9]+x)/)) {
+        return <span key={i} className="font-semibold" style={{ color: '#294ff6' }}>{part}</span>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-4xl mx-auto">
+          {/* Section header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.12)' }}>
+              <span className="text-sm font-semibold" style={{ color: '#294ff6' }}>FAQ</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: '#000f4d' }}>
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to know about TikTok Shop agency fees and whether an agency is right for you
+            </p>
+          </div>
+
+          {/* FAQ Items */}
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+
+              return (
+                <div
+                  key={index}
+                  className="rounded-xl overflow-hidden transition-all duration-300 shadow-sm"
+                  style={{
+                    backgroundColor: '#f8fbff',
+                    border: isOpen ? '1px solid rgba(41,79,246,0.2)' : '1px solid transparent',
+                  }}
+                >
+                  <button
+                    onClick={() => toggleFaq(index)}
+                    className="w-full px-6 py-5 flex items-center justify-between gap-4 text-left transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Left accent bar */}
+                      <div
+                        className="w-1 h-6 rounded-full transition-all duration-300 flex-shrink-0"
+                        style={{
+                          backgroundColor: isOpen ? '#294ff6' : '#eef4fd',
+                        }}
+                      />
+                      <span className="font-semibold text-base md:text-lg leading-relaxed" style={{ color: '#000f4d' }}>
+                        {faq.question}
+                      </span>
+                    </div>
+                    <div
+                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300"
+                      style={{
+                        backgroundColor: isOpen ? 'rgba(41,79,246,0.12)' : '#eef4fd',
+                      }}
+                    >
+                      {isOpen ? (
+                        <Minus className="w-4 h-4" style={{ color: '#294ff6' }} />
+                      ) : (
+                        <Plus className="w-4 h-4" style={{ color: '#7a93ff' }} />
+                      )}
+                    </div>
+                  </button>
+
+                  <div
+                    className="overflow-hidden transition-all duration-300 ease-in-out"
+                    style={{
+                      maxHeight: isOpen ? '500px' : '0',
+                      opacity: isOpen ? 1 : 0,
+                    }}
+                  >
+                    <div className="px-6 pb-6 pt-0 ml-5">
+                      <div className="pl-4" style={{ borderLeft: '2px solid #eef4fd' }}>
+                        <p className="text-foreground leading-relaxed">
+                          {highlightValues(faq.answer)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,141 @@
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
+
+const faqs = [
+  {
+    question: 'How can I estimate what another creator is earning on TikTok Shop?',
+    answer: 'You can estimate earnings by finding their GMV (Gross Merchandise Value) from TikTok Shop leaderboards or third-party analytics tools, then applying typical commission rates of 5-20%, subtracting an estimated refund rate of 5-10%, and accounting for any agency fees of 15-30%. This calculator automates that process for you.'
+  },
+  {
+    question: 'Where can I find a creator\'s GMV data?',
+    answer: 'The best sources are the TikTok Shop Creator Leaderboard, which ranks creators by sales volume, and third-party analytics platforms like Kalodata or FastMoss. Some creator profiles also display shop performance indicators. Product pages may show affiliated creators and their relative sales contribution.'
+  },
+  {
+    question: 'What are typical commission rates for TikTok Shop creators?',
+    answer: 'New affiliates usually start at 5-7% default rates. Established creators with proven sales negotiate 8-12%. Top performers earn 12-20% through boosted or exclusive rates. Brand ambassadors with premium partnerships can earn 15-25% or more. The rate depends on the category, the seller, and the creator\'s negotiating power.'
+  },
+  {
+    question: 'How accurate are these income estimates?',
+    answer: 'These estimates provide a reasonable range based on industry averages, but actual earnings can vary significantly. Commission rates, agency terms, and refund rates differ between creators. Use these figures as a benchmark for competitive research rather than exact numbers. The true value is in understanding the relative earning potential across different GMV levels.'
+  },
+  {
+    question: 'Why is net earnings so much lower than the GMV figure?',
+    answer: 'GMV represents total sales value, but the creator only earns a small commission percentage of that, typically 5-20%. From that commission, refunds reduce earnings by 5-10%, and if the creator has an agency, another 15-30% of commission is taken. A creator with 100,000 GMV at 10% commission, 8% refunds, and 20% agency fee would net around 7,360, which is only 7.4% of the original GMV.'
+  },
+  {
+    question: 'How do agency fees work for TikTok creators?',
+    answer: 'Agencies typically take 15-30% of a creator\'s commission earnings, not a percentage of GMV. In exchange, agencies provide brand deals, negotiate higher commission rates, handle contracts, and offer strategic guidance. The agency fee is calculated after commissions are earned, so it only applies to what the creator has already made.'
+  },
+  {
+    question: 'Do all TikTok Shop creators have agencies?',
+    answer: 'No. Many creators operate independently, especially at the nano and micro levels. Agencies typically work with mid-tier to macro creators who generate enough revenue to justify the partnership. If a creator does not have an agency, set the agency fee slider to 0% in the calculator. Independent creators keep more per sale but may miss out on brand deals and negotiated rates.'
+  },
+  {
+    question: 'How can I benchmark my own performance against competitors?',
+    answer: 'Start by identifying creators in your niche with similar follower counts. Look up their GMV on leaderboards or analytics tools. Use this calculator to estimate their net earnings, then compare against your own. Focus on commission rates (are you negotiating enough?), refund rates (is your product selection causing returns?), and overall GMV growth. Track these comparisons monthly to identify trends.'
+  }
+];
+
+export default function Block() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const highlightValues = (text) => {
+    const parts = text.split(/([\u00a3$\u20ac][0-9,]+\.?[0-9]*|[0-9]+-[0-9]+%|[0-9]+\.?[0-9]*%|[0-9]+-[0-9]+ days|[0-9]+K\+|[0-9]+-[0-9]+x|[0-9]+x)/g);
+    return parts.map((part, i) => {
+      if (part.match(/([\u00a3$\u20ac][0-9,]+\.?[0-9]*|[0-9]+-[0-9]+%|[0-9]+\.?[0-9]*%|[0-9]+-[0-9]+ days|[0-9]+K\+|[0-9]+-[0-9]+x|[0-9]+x)/)) {
+        return <span key={i} className="font-semibold" style={{ color: '#294ff6' }}>{part}</span>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-4xl mx-auto">
+          {/* Section header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.12)' }}>
+              <span className="text-sm font-semibold" style={{ color: '#294ff6' }}>FAQ</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: '#000f4d' }}>
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to know about estimating creator earnings and competitive benchmarking
+            </p>
+          </div>
+
+          {/* FAQ Items */}
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+
+              return (
+                <div
+                  key={index}
+                  className="rounded-xl overflow-hidden transition-all duration-300 shadow-sm"
+                  style={{
+                    backgroundColor: '#f8fbff',
+                    border: isOpen ? '1px solid rgba(41,79,246,0.2)' : '1px solid transparent',
+                  }}
+                >
+                  <button
+                    onClick={() => toggleFaq(index)}
+                    className="w-full px-6 py-5 flex items-center justify-between gap-4 text-left transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Left accent bar */}
+                      <div
+                        className="w-1 h-6 rounded-full transition-all duration-300 flex-shrink-0"
+                        style={{
+                          backgroundColor: isOpen ? '#294ff6' : '#eef4fd',
+                        }}
+                      />
+                      <span className="font-semibold text-base md:text-lg leading-relaxed" style={{ color: '#000f4d' }}>
+                        {faq.question}
+                      </span>
+                    </div>
+                    <div
+                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300"
+                      style={{
+                        backgroundColor: isOpen ? 'rgba(41,79,246,0.12)' : '#eef4fd',
+                      }}
+                    >
+                      {isOpen ? (
+                        <Minus className="w-4 h-4" style={{ color: '#294ff6' }} />
+                      ) : (
+                        <Plus className="w-4 h-4" style={{ color: '#7a93ff' }} />
+                      )}
+                    </div>
+                  </button>
+
+                  <div
+                    className="overflow-hidden transition-all duration-300 ease-in-out"
+                    style={{
+                      maxHeight: isOpen ? '500px' : '0',
+                      opacity: isOpen ? 1 : 0,
+                    }}
+                  >
+                    <div className="px-6 pb-6 pt-0 ml-5">
+                      <div className="pl-4" style={{ borderLeft: '2px solid #eef4fd' }}>
+                        <p className="text-foreground leading-relaxed">
+                          {highlightValues(faq.answer)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,503 @@
+import { useState, useEffect, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { TrendingUp, Calculator, Info, ArrowDown, DollarSign, Users, RotateCcw, Building2 } from 'lucide-react';
+
+const currencies = [
+  { code: 'GBP', symbol: '\u00a3', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '\u20ac', rate: 1.17 },
+];
+
+export default function Block() {
+  const [gmv, setGmv] = useState(50000);
+  const [commissionRate, setCommissionRate] = useState(10);
+  const [agencyFee, setAgencyFee] = useState(20);
+  const [refundRate, setRefundRate] = useState(8);
+  const [currencyIdx, setCurrencyIdx] = useState(0);
+  const [animatedNet, setAnimatedNet] = useState(0);
+  const [animatedGmv, setAnimatedGmv] = useState(0);
+  const [animatedGross, setAnimatedGross] = useState(0);
+  const [animatedAgency, setAnimatedAgency] = useState(0);
+  const animFrameRef = useRef(null);
+
+  const currency = currencies[currencyIdx];
+
+  const grossCommission = gmv * (commissionRate / 100);
+  const afterRefunds = grossCommission * (1 - refundRate / 100);
+  const agencyCut = afterRefunds * (agencyFee / 100);
+  const netCreatorEarnings = afterRefunds - agencyCut;
+
+  useEffect(() => {
+    const startNet = animatedNet;
+    const startGmv = animatedGmv;
+    const startGross = animatedGross;
+    const startAgency = animatedAgency;
+    const duration = 400;
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+
+      setAnimatedNet(startNet + (netCreatorEarnings - startNet) * ease);
+      setAnimatedGmv(startGmv + (gmv - startGmv) * ease);
+      setAnimatedGross(startGross + (grossCommission - startGross) * ease);
+      setAnimatedAgency(startAgency + (agencyCut - startAgency) * ease);
+
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    animFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [netCreatorEarnings, gmv, grossCommission, agencyCut]);
+
+  const convert = (val) => val * currency.rate;
+
+  const formatCurrency = (val) => {
+    const converted = convert(val);
+    if (currency.rate >= 50) {
+      return currency.symbol + Math.round(converted).toLocaleString('en-GB');
+    }
+    return currency.symbol + converted.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const formatWhole = (val) => {
+    const converted = val * currency.rate;
+    return currency.symbol + Math.round(converted).toLocaleString('en-GB');
+  };
+
+  const sliderTrackStyle = (value, min, max) => {
+    const pct = ((value - min) / (max - min)) * 100;
+    return {
+      background: `linear-gradient(to right, #294ff6 0%, #5e7bf6 ${pct}%, #eef4fd ${pct}%, #eef4fd 100%)`,
+    };
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-5xl mx-auto space-y-8">
+
+          {/* Calculator Card */}
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            {/* Card Header */}
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                    <Calculator className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Income Spy Calculator</h2>
+                    <p className="text-sm" style={{ color: '#7a93ff' }}>Estimate any creator's real earnings from their GMV</p>
+                  </div>
+                </div>
+
+                {/* Currency Selector */}
+                <select
+                  value={currencyIdx}
+                  onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+                  className="px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+                  style={{ backgroundColor: 'rgba(41,79,246,0.2)', border: '1px solid rgba(122,147,255,0.3)', color: 'white', outline: 'none' }}
+                >
+                  {currencies.map((c, idx) => (
+                    <option key={c.code} value={idx} style={{ backgroundColor: '#152237', color: 'white' }}>
+                      {c.symbol} {c.code}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <CardContent className="p-8 space-y-8">
+              {/* Input: Creator's GMV */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Creator's GMV</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{formatWhole(gmv)}</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="1000"
+                  max="1000000"
+                  step="1000"
+                  value={gmv}
+                  onChange={(e) => setGmv(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(gmv, 1000, 1000000)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{formatWhole(1000)}</span>
+                  <span>{formatWhole(1000000)}</span>
+                </div>
+              </div>
+
+              {/* Input: Estimated Commission Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Estimated Commission Rate</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{commissionRate}%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="2"
+                  max="30"
+                  step="0.5"
+                  value={commissionRate}
+                  onChange={(e) => setCommissionRate(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(commissionRate, 2, 30)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>2%</span>
+                  <span>30%</span>
+                </div>
+              </div>
+
+              {/* Input: Estimated Agency Fee */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Estimated Agency Fee</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{agencyFee}%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  step="1"
+                  value={agencyFee}
+                  onChange={(e) => setAgencyFee(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(agencyFee, 0, 50)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>0%</span>
+                  <span>50%</span>
+                </div>
+              </div>
+
+              {/* Input: Estimated Refund Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Estimated Refund Rate</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{refundRate}%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="20"
+                  step="1"
+                  value={refundRate}
+                  onChange={(e) => setRefundRate(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(refundRate, 0, 20)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>0%</span>
+                  <span>20%</span>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-px" style={{ backgroundColor: '#eef4fd' }} />
+
+              {/* Hero Result Card */}
+              <div className="rounded-2xl p-6 text-center" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.25)' }}>
+                  <TrendingUp className="w-6 h-6" style={{ color: '#7a93ff' }} />
+                </div>
+                <p className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: '#7a93ff' }}>This creator is probably earning</p>
+                <p className="text-4xl md:text-5xl font-bold text-white mb-1">{formatCurrency(animatedNet)}</p>
+                <p className="text-sm" style={{ color: 'rgba(122,147,255,0.6)' }}>per month after all deductions</p>
+              </div>
+
+              {/* 4 Result Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* GMV */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <DollarSign className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">GMV</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{formatWhole(animatedGmv)}</p>
+                </div>
+
+                {/* Gross Commission */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <TrendingUp className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Gross Commission</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{formatWhole(animatedGross)}</p>
+                </div>
+
+                {/* Agency Cut */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <Building2 className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Agency Cut</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{formatWhole(animatedAgency)}</p>
+                </div>
+
+                {/* Net Creator Earnings */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <Users className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Net Earnings</p>
+                  <p className="text-2xl font-bold" style={{ color: '#000f4d' }}>{formatWhole(animatedNet)}</p>
+                </div>
+              </div>
+
+              {/* Earnings Funnel */}
+              <div className="rounded-xl p-6" style={{ backgroundColor: '#eef4fd' }}>
+                <p className="text-xs font-semibold uppercase tracking-wide text-center mb-5" style={{ color: '#000f4d' }}>Earnings Funnel Breakdown</p>
+                <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap">
+                  {/* GMV */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-2" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                      <DollarSign className="w-6 h-6" style={{ color: '#294ff6' }} />
+                    </div>
+                    <p className="text-lg font-bold" style={{ color: '#294ff6' }}>{formatWhole(gmv)}</p>
+                    <p className="text-xs text-muted-foreground">GMV</p>
+                  </div>
+
+                  {/* Arrow: Commission */}
+                  <div className="flex flex-col items-center px-1">
+                    <div className="text-xs font-semibold px-2 py-1 rounded-full mb-1" style={{ backgroundColor: 'rgba(41,79,246,0.1)', color: '#294ff6' }}>{commissionRate}%</div>
+                    <div className="w-8 h-0.5 rounded-full" style={{ backgroundColor: '#294ff6' }} />
+                  </div>
+
+                  {/* Commission */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-2" style={{ backgroundColor: 'rgba(94,123,246,0.12)' }}>
+                      <TrendingUp className="w-6 h-6" style={{ color: '#5e7bf6' }} />
+                    </div>
+                    <p className="text-lg font-bold" style={{ color: '#5e7bf6' }}>{formatWhole(grossCommission)}</p>
+                    <p className="text-xs text-muted-foreground">Commission</p>
+                  </div>
+
+                  {/* Arrow: Refunds */}
+                  <div className="flex flex-col items-center px-1">
+                    <div className="text-xs font-semibold px-2 py-1 rounded-full mb-1" style={{ backgroundColor: 'rgba(220,38,38,0.08)', color: '#dc2626' }}>-{refundRate}%</div>
+                    <div className="w-8 h-0.5 rounded-full" style={{ backgroundColor: '#dc2626' }} />
+                  </div>
+
+                  {/* After Refunds */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-2" style={{ backgroundColor: 'rgba(122,147,255,0.12)' }}>
+                      <RotateCcw className="w-6 h-6" style={{ color: '#7a93ff' }} />
+                    </div>
+                    <p className="text-lg font-bold" style={{ color: '#7a93ff' }}>{formatWhole(afterRefunds)}</p>
+                    <p className="text-xs text-muted-foreground">After Refunds</p>
+                  </div>
+
+                  {/* Arrow: Agency */}
+                  <div className="flex flex-col items-center px-1">
+                    <div className="text-xs font-semibold px-2 py-1 rounded-full mb-1" style={{ backgroundColor: 'rgba(220,38,38,0.08)', color: '#dc2626' }}>-{agencyFee}%</div>
+                    <div className="w-8 h-0.5 rounded-full" style={{ backgroundColor: '#dc2626' }} />
+                  </div>
+
+                  {/* Net Earnings */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-2" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                      <Users className="w-6 h-6" style={{ color: '#7a93ff' }} />
+                    </div>
+                    <p className="text-lg font-bold" style={{ color: '#000f4d' }}>{formatWhole(netCreatorEarnings)}</p>
+                    <p className="text-xs text-muted-foreground">Net Earnings</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Vertical Funnel Breakdown */}
+              <div className="rounded-xl p-6" style={{ backgroundColor: '#eef4fd' }}>
+                <p className="text-xs font-semibold uppercase tracking-wide text-center mb-5" style={{ color: '#000f4d' }}>Step-by-Step Deductions</p>
+                <div className="max-w-md mx-auto space-y-0">
+                  {/* Step 1: GMV */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-full rounded-lg p-3" style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.12)' }}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium" style={{ color: '#000f4d' }}>Total GMV</span>
+                        <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{formatWhole(gmv)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Arrow */}
+                  <div className="flex justify-center py-1">
+                    <ArrowDown className="w-4 h-4" style={{ color: '#294ff6' }} />
+                  </div>
+                  {/* Step 2: Commission */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-full rounded-lg p-3" style={{ backgroundColor: 'rgba(94,123,246,0.08)', border: '1px solid rgba(94,123,246,0.12)' }}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium" style={{ color: '#000f4d' }}>Commission ({commissionRate}%)</span>
+                        <span className="text-sm font-bold" style={{ color: '#5e7bf6' }}>{formatWhole(grossCommission)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Arrow */}
+                  <div className="flex justify-center py-1">
+                    <ArrowDown className="w-4 h-4" style={{ color: '#dc2626' }} />
+                  </div>
+                  {/* Step 3: After Refunds */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-full rounded-lg p-3" style={{ backgroundColor: 'rgba(220,38,38,0.04)', border: '1px solid rgba(220,38,38,0.1)' }}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium" style={{ color: '#000f4d' }}>After Refunds (-{refundRate}%)</span>
+                        <span className="text-sm font-bold" style={{ color: '#dc2626' }}>-{formatWhole(grossCommission - afterRefunds)}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs text-muted-foreground">Remaining: {formatWhole(afterRefunds)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Arrow */}
+                  <div className="flex justify-center py-1">
+                    <ArrowDown className="w-4 h-4" style={{ color: '#dc2626' }} />
+                  </div>
+                  {/* Step 4: After Agency */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-full rounded-lg p-3" style={{ backgroundColor: 'rgba(220,38,38,0.04)', border: '1px solid rgba(220,38,38,0.1)' }}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium" style={{ color: '#000f4d' }}>After Agency (-{agencyFee}%)</span>
+                        <span className="text-sm font-bold" style={{ color: '#dc2626' }}>-{formatWhole(agencyCut)}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs text-muted-foreground">Remaining: {formatWhole(netCreatorEarnings)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Arrow */}
+                  <div className="flex justify-center py-1">
+                    <ArrowDown className="w-4 h-4" style={{ color: '#000f4d' }} />
+                  </div>
+                  {/* Step 5: Net Earnings */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-full rounded-lg p-4" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-white">Net Creator Earnings</span>
+                        <span className="text-lg font-bold text-white">{formatWhole(netCreatorEarnings)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Calculator Inputs Explained */}
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                  <Info className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Calculator Inputs Explained</h2>
+                  <p className="text-sm" style={{ color: '#7a93ff' }}>Understand each input to get the most accurate estimates</p>
+                </div>
+              </div>
+            </div>
+
+            <CardContent className="p-8">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #eef4fd' }}>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Input</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Description</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Typical Range</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: "Creator's GMV", desc: 'Gross Merchandise Value - total sales value driven by the creator', example: formatWhole(50000), required: true },
+                      { name: 'Commission Rate', desc: 'The percentage of GMV the creator earns as commission', example: '5-20%', required: true },
+                      { name: 'Agency Fee', desc: 'The percentage an agency takes from the creator\'s commission earnings', example: '15-30%', required: false },
+                      { name: 'Refund Rate', desc: 'The percentage of sales that get returned or refunded', example: '5-15%', required: true },
+                    ].map((row, i) => (
+                      <tr key={i} className="transition-colors" style={{ borderBottom: '1px solid #eef4fd' }}>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{row.name}</span>
+                            {row.required ? (
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: '#d8d8ff', color: '#5e7bf6' }}>Required</span>
+                            ) : (
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: '#eef4fd', color: '#7a93ff' }}>Optional</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-sm" style={{ color: 'rgba(0,15,77,0.6)' }}>{row.desc}</td>
+                        <td className="py-4 px-4 font-bold text-sm" style={{ color: '#294ff6' }}>{row.example}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-6 flex items-start gap-3 rounded-xl p-4" style={{ backgroundColor: '#eef4fd' }}>
+                <Info className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#5e7bf6' }} />
+                <p className="text-sm" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                  These are estimates based on industry averages. Actual creator earnings depend on their specific commission rates, agency terms, and product return rates.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .cs-slider {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 8px;
+          border-radius: 4px;
+          outline: none;
+          cursor: pointer;
+          transition: opacity 0.15s;
+        }
+        .cs-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: white;
+          border: 3px solid #294ff6;
+          box-shadow: 0 2px 8px rgba(41,79,246,0.3);
+          cursor: pointer;
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .cs-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.15);
+          box-shadow: 0 2px 12px rgba(41,79,246,0.45);
+        }
+        .cs-slider::-moz-range-thumb {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: white;
+          border: 3px solid #294ff6;
+          box-shadow: 0 2px 8px rgba(41,79,246,0.3);
+          cursor: pointer;
+        }
+      `}</style>
+    </div>
+  );
+}

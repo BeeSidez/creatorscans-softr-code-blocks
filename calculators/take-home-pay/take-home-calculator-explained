@@ -1,0 +1,214 @@
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+
+const currencies = [
+  { code: 'GBP', symbol: '\u00a3', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '\u20ac', rate: 1.17 },
+];
+
+export default function Block() {
+  const [currencyIdx, setCurrencyIdx] = useState(0);
+  const currency = currencies[currencyIdx];
+
+  const fmt = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    if (v >= 1000) return currency.symbol + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (v >= 1) return currency.symbol + v.toFixed(0);
+    return currency.symbol + v.toFixed(2);
+  };
+
+  const timelineSteps = [
+    { day: 'Day 1', label: 'Customer places order', desc: 'Your affiliate link tracks the sale and commission is recorded as pending.', color: '#294ff6' },
+    { day: 'Day 3-7', label: 'Order delivered', desc: 'Courier delivers the product. The settlement clock starts from confirmed delivery.', color: '#4466f8' },
+    { day: 'Day 7-21', label: 'Return window', desc: 'Buyers can return the product during this period. Duration varies by category.', color: '#5e7bf6' },
+    { day: 'Day 15+', label: 'Payout initiated', desc: 'After delivery confirmation, TikTok begins processing your payout. This is not instant.', color: '#7a93ff' },
+  ];
+
+  const deductions = [
+    {
+      title: 'Refunds (5-10%)',
+      desc: 'Full refunds remove your commission entirely. Partial refunds reduce your commission proportionally. This is the most unpredictable deduction.',
+      color: '#294ff6',
+    },
+    {
+      title: 'Agency Fee (15-30%)',
+      desc: 'Typically taken from your commission earnings, not from the total GMV. Make sure you understand whether your agency takes a cut before or after refunds.',
+      color: '#5e7bf6',
+    },
+    {
+      title: 'TikTok Platform Fee',
+      desc: 'Already factored into the commission rate. TikTok takes their platform fee from the seller, not directly from the affiliate. Your commission rate is what you actually receive.',
+      color: '#7a93ff',
+    },
+  ];
+
+  const benchmarks = [
+    { tier: 'Starting out', gmvLow: 500, gmvHigh: 2000, takeLow: 25, takeHigh: 160, barPct: 10 },
+    { tier: 'Growing', gmvLow: 2000, gmvHigh: 10000, takeLow: 100, takeHigh: 640, barPct: 30 },
+    { tier: 'Established', gmvLow: 10000, gmvHigh: 50000, takeLow: 640, takeHigh: 3200, barPct: 65, featured: true },
+    { tier: 'Top performer', gmvLow: 50000, gmvHigh: 200000, takeLow: 3200, takeHigh: 12800, barPct: 100, featured: true, plus: true },
+  ];
+
+  const tips = [
+    'Negotiate higher commission rates with sellers directly',
+    'Reduce refund rates by promoting quality products you have tested',
+    'Negotiate a lower agency split based on your performance',
+    'Focus on low-return categories (digital, beauty, accessories)',
+    'Increase GMV through consistent content and LIVE sessions',
+    'Track your actual refund rate monthly and optimize',
+    'Consider going agency-free once you have enough direct seller relationships',
+    'Diversify across multiple product categories to smooth GMV',
+  ];
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-12">
+        <div className="content">
+          {/* Currency Switcher */}
+          <div className="flex justify-end mb-4">
+            <select
+              value={currencyIdx}
+              onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+              className="px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+              style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.15)', color: '#294ff6', outline: 'none' }}
+            >
+              {currencies.map((c, idx) => (
+                <option key={c.code} value={idx} style={{ backgroundColor: '#f8fbff', color: '#000f4d' }}>
+                  {c.symbol} {c.code}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Card 1: How TikTok Shop Settlement Works */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="Settlement" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">How TikTok Shop Settlement Works</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>From sale to payout in your account</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {timelineSteps.map((step, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ backgroundColor: `${step.color}08`, border: `1px solid ${step.color}15` }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 min-h-[48px] rounded-full flex-shrink-0" style={{ background: `linear-gradient(180deg, ${step.color}, ${step.color}88)` }} />
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: `${step.color}18`, color: step.color }}>{step.day}</span>
+                            <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{step.label}</h4>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5 rounded-xl p-4 flex items-start gap-3" style={{ backgroundColor: '#eef4fd' }}>
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: '#294ff6' }}>
+                    <span className="text-white text-xs font-bold">i</span>
+                  </div>
+                  <p className="text-xs" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                    Commission is estimated until settlement is final. Your pending balance may change as returns are processed.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Understanding Your Deductions */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png" alt="Deductions" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Understanding Your Deductions</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>What comes out of your gross earnings</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {deductions.map((item, i) => (
+                    <div key={i} className="rounded-xl p-5" style={{ backgroundColor: 'rgba(41,79,246,0.04)', border: `1px solid ${item.color}20` }}>
+                      <div className="flex gap-3">
+                        <div className="w-2 min-h-[48px] rounded-full flex-shrink-0" style={{ background: `linear-gradient(180deg, ${item.color}, ${item.color}88)` }} />
+                        <div>
+                          <h4 className="font-bold text-sm mb-1.5" style={{ color: '#000f4d' }}>{item.title}</h4>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: Monthly Earning Benchmarks */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png" alt="Benchmarks" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Monthly Earning Benchmarks</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Based on 8% commission, 8% refunds, 20% agency</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {benchmarks.map((b, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{b.tier}</span>
+                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>{fmt(b.takeLow)}-{fmt(b.takeHigh)}{b.plus ? '+' : ''}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">GMV: {fmt(b.gmvLow)}-{fmt(b.gmvHigh)}{b.plus ? '+' : ''}</p>
+                      <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                        <div className="h-full rounded-full" style={{ width: `${b.barPct}%`, background: b.featured ? 'linear-gradient(90deg, #294ff6, #5e7bf6)' : 'linear-gradient(90deg, #7a93ff, #879cf7)' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: Tips to Increase Take Home Pay */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770814473/creatorscans_icons_3_nv1erg.png" alt="Tips" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Tips to Increase Take Home Pay</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>8 ways to keep more of what you earn</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {tips.map((tip, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ backgroundColor: i % 2 === 0 ? 'rgba(41,79,246,0.04)' : 'rgba(94,123,246,0.04)', border: '1px solid rgba(41,79,246,0.06)' }}>
+                      <div className="flex gap-3">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: i < 4 ? '#294ff6' : '#7a93ff' }}>
+                          <span className="text-white text-xs font-bold">{i + 1}</span>
+                        </div>
+                        <p className="text-sm leading-relaxed" style={{ color: '#000f4d' }}>{tip}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,322 @@
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+
+const currencies = [
+  { code: 'GBP', symbol: '\u00a3', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '\u20ac', rate: 1.17 },
+];
+
+export default function Block() {
+  const [currencyIdx, setCurrencyIdx] = useState(0);
+  const currency = currencies[currencyIdx];
+
+  const fmt = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    if (v >= 1000) return currency.symbol + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (v >= 1) return currency.symbol + v.toFixed(0);
+    return currency.symbol + v.toFixed(2);
+  };
+
+  const feeStructures = [
+    {
+      title: 'Percentage of Commission',
+      tag: 'Most Common',
+      description: '15-30% of your affiliate commission earnings',
+      example: 'You earn ' + fmt(500) + ' commission, agency takes ' + fmt(100) + ' (at 20%)',
+      color: '#294ff6',
+    },
+    {
+      title: 'Fixed Monthly Retainer',
+      tag: 'Predictable',
+      description: fmt(200) + ' - ' + fmt(2000) + '/month regardless of performance',
+      example: 'Same fee whether you earn ' + fmt(100) + ' or ' + fmt(5000) + ' that month',
+      color: '#5e7bf6',
+    },
+    {
+      title: 'Hybrid Model',
+      tag: 'Balanced',
+      description: 'Lower percentage (10-15%) plus a small retainer (' + fmt(200) + '-' + fmt(500) + '/month)',
+      example: fmt(300) + ' retainer + 12% of commission for shared risk',
+      color: '#7a93ff',
+    },
+    {
+      title: 'Performance Bonus',
+      tag: 'Incentive-based',
+      description: 'Base percentage plus bonus above GMV thresholds',
+      example: '15% standard, drops to 10% above ' + fmt(50000) + ' GMV',
+      color: '#879cf7',
+    },
+  ];
+
+  const gmvLevels = [
+    { gmv: 10000, agencyMonthly: 200, agencyAnnual: 2400, barPct: 20 },
+    { gmv: 25000, agencyMonthly: 500, agencyAnnual: 6000, barPct: 40 },
+    { gmv: 50000, agencyMonthly: 1000, agencyAnnual: 12000, barPct: 65 },
+    { gmv: 100000, agencyMonthly: 2000, agencyAnnual: 24000, barPct: 100 },
+  ];
+
+  const agencyPros = [
+    { text: 'Higher commission rates (negotiated access)', positive: true },
+    { text: 'Brand deal introductions', positive: true },
+    { text: 'Admin and contract handling', positive: true },
+    { text: '15-30% of your commission gone', positive: false },
+  ];
+
+  const soloPros = [
+    { text: 'Keep 100% of commission', positive: true },
+    { text: 'Full control over partnerships', positive: true },
+    { text: 'Must negotiate rates yourself', positive: false },
+    { text: 'More admin work', positive: false },
+  ];
+
+  const leaveSignals = [
+    { text: 'Your agency fee exceeds the extra earnings they generate', flag: false },
+    { text: 'You have enough direct seller relationships', flag: false },
+    { text: 'Your GMV is consistent without agency-sourced deals', flag: false },
+    { text: 'You can negotiate boosted rates on your own', flag: false },
+    { text: 'Agency takes 30%+ but does not demonstrably increase your rate or GMV', flag: true },
+  ];
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-12">
+        <div className="content">
+          {/* Currency Switcher */}
+          <div className="flex justify-end mb-6">
+            <select
+              value={currencyIdx}
+              onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+              className="px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+              style={{ backgroundColor: '#eef4fd', border: '1px solid rgba(41,79,246,0.15)', color: '#000f4d', outline: 'none' }}
+            >
+              {currencies.map((c, idx) => (
+                <option key={c.code} value={idx}>
+                  {c.symbol} {c.code}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Card 1: Typical Agency Fee Structures */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png"
+                    alt="Fee Structures"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Typical Agency Fee Structures</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>How agencies charge for their services</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {feeStructures.map((item, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl p-4 transition-all"
+                      style={{ backgroundColor: 'rgba(41,79,246,0.04)', border: `1px solid ${item.color}20` }}
+                    >
+                      <div className="flex gap-3">
+                        <div
+                          className="w-2 min-h-[48px] rounded-full flex-shrink-0"
+                          style={{ background: `linear-gradient(180deg, ${item.color}, ${item.color}88)` }}
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{item.title}</h4>
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: '#d8d8ff', color: '#5e7bf6' }}>{item.tag}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-1">{item.description}</p>
+                          <p className="text-xs" style={{ color: 'rgba(0,15,77,0.5)' }}>{item.example}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Agency Cost by GMV Level */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png"
+                    alt="GMV Costs"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Agency Cost by GMV Level</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>At 10% commission, 20% agency fee</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-5">
+                  {gmvLevels.map((level, index) => (
+                    <div key={index}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>
+                          {fmt(level.gmv)} GMV
+                        </span>
+                        <span className="font-bold text-sm" style={{ color: '#dc2626' }}>
+                          {fmt(level.agencyMonthly)}/mo
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">Agency takes {fmt(level.agencyAnnual)}/year</p>
+                      <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${level.barPct}%`,
+                            background: 'linear-gradient(90deg, #dc2626, #ef4444)',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: Agency vs Going Solo */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png"
+                    alt="Compare"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Agency vs Going Solo</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Compare the pros and cons of each path</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-5">
+                  {/* With Agency */}
+                  <div>
+                    <h4 className="font-bold text-sm mb-3" style={{ color: '#000f4d' }}>With an Agency</h4>
+                    <div className="space-y-2">
+                      {agencyPros.map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start gap-3 rounded-lg p-3"
+                          style={{
+                            backgroundColor: item.positive ? 'rgba(41,79,246,0.04)' : 'rgba(220,38,38,0.04)',
+                            border: item.positive ? '1px solid rgba(41,79,246,0.06)' : '1px solid rgba(220,38,38,0.08)',
+                          }}
+                        >
+                          <div
+                            className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ backgroundColor: item.positive ? 'rgba(41,79,246,0.12)' : 'rgba(220,38,38,0.12)' }}
+                          >
+                            {item.positive ? (
+                              <span className="text-xs font-bold" style={{ color: '#294ff6' }}>&#10003;</span>
+                            ) : (
+                              <span className="text-xs font-bold" style={{ color: '#dc2626' }}>&#10005;</span>
+                            )}
+                          </div>
+                          <p className="text-sm" style={{ color: '#000f4d' }}>{item.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="h-px" style={{ backgroundColor: '#eef4fd' }} />
+
+                  {/* Without Agency */}
+                  <div>
+                    <h4 className="font-bold text-sm mb-3" style={{ color: '#000f4d' }}>Without an Agency</h4>
+                    <div className="space-y-2">
+                      {soloPros.map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start gap-3 rounded-lg p-3"
+                          style={{
+                            backgroundColor: item.positive ? 'rgba(41,79,246,0.04)' : 'rgba(220,38,38,0.04)',
+                            border: item.positive ? '1px solid rgba(41,79,246,0.06)' : '1px solid rgba(220,38,38,0.08)',
+                          }}
+                        >
+                          <div
+                            className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ backgroundColor: item.positive ? 'rgba(41,79,246,0.12)' : 'rgba(220,38,38,0.12)' }}
+                          >
+                            {item.positive ? (
+                              <span className="text-xs font-bold" style={{ color: '#294ff6' }}>&#10003;</span>
+                            ) : (
+                              <span className="text-xs font-bold" style={{ color: '#dc2626' }}>&#10005;</span>
+                            )}
+                          </div>
+                          <p className="text-sm" style={{ color: '#000f4d' }}>{item.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: When to Leave Your Agency */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770814473/creatorscans_icons_3_nv1erg.png"
+                    alt="Decision"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">When to Leave Your Agency</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Decision framework for going independent</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {leaveSignals.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 rounded-xl p-3 transition-all"
+                      style={{
+                        backgroundColor: item.flag ? 'rgba(220,38,38,0.04)' : 'rgba(41,79,246,0.04)',
+                        border: item.flag ? '1px solid rgba(220,38,38,0.1)' : '1px solid rgba(41,79,246,0.06)',
+                      }}
+                    >
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                        style={{
+                          backgroundColor: item.flag ? 'rgba(220,38,38,0.12)' : 'rgba(41,79,246,0.12)',
+                        }}
+                      >
+                        {item.flag ? (
+                          <span className="text-xs font-bold" style={{ color: '#dc2626' }}>!</span>
+                        ) : (
+                          <span className="text-xs font-bold" style={{ color: '#294ff6' }}>&#10003;</span>
+                        )}
+                      </div>
+                      <p className="text-sm leading-relaxed" style={{ color: item.flag ? '#dc2626' : '#000f4d' }}>
+                        {item.flag && <span className="font-semibold">Red flag: </span>}
+                        {item.text}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
