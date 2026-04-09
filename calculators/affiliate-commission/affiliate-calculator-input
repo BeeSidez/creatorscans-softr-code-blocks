@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, Calendar, Calculator, Info, ChevronDown, MousePointerClick, ShoppingCart, Coins } from 'lucide-react';
+import { TrendingUp, Calendar, Calculator, Info, MousePointerClick, ShoppingCart, Coins } from 'lucide-react';
 
 const currencies = [
   { code: 'GBP', symbol: '\u00a3', rate: 1 },
@@ -13,30 +13,19 @@ export default function Block() {
   const [commissionRate, setCommissionRate] = useState(10);
   const [monthlyClicks, setMonthlyClicks] = useState(1000);
   const [conversionRate, setConversionRate] = useState(3);
-  const [currency, setCurrency] = useState(currencies[0]);
-  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [currencyIdx, setCurrencyIdx] = useState(0);
   const [animatedCommPerSale, setAnimatedCommPerSale] = useState(0);
   const [animatedMonthlySales, setAnimatedMonthlySales] = useState(0);
   const [animatedMonthly, setAnimatedMonthly] = useState(0);
   const [animatedAnnual, setAnimatedAnnual] = useState(0);
   const animFrameRef = useRef(null);
-  const dropdownRef = useRef(null);
+
+  const currency = currencies[currencyIdx];
 
   const commissionPerSale = productPrice * (commissionRate / 100);
   const monthlySales = monthlyClicks * (conversionRate / 100);
   const monthlyEarnings = commissionPerSale * monthlySales;
   const annualEarnings = monthlyEarnings * 12;
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setShowCurrencyDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     const startCPS = animatedCommPerSale;
@@ -115,45 +104,18 @@ export default function Block() {
                 </div>
 
                 {/* Currency Selector */}
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
-                    className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all"
-                    style={{
-                      backgroundColor: 'rgba(41,79,246,0.2)',
-                      border: '1px solid rgba(122,147,255,0.3)',
-                      color: '#7a93ff',
-                    }}
-                  >
-                    <span className="font-bold text-white">{currency.symbol}</span>
-                    <span>{currency.code}</span>
-                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#7a93ff', transform: showCurrencyDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
-                  </button>
-
-                  {showCurrencyDropdown && (
-                    <div
-                      className="absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-50"
-                      style={{ backgroundColor: '#152237', border: '1px solid rgba(122,147,255,0.2)', minWidth: '140px' }}
-                    >
-                      {currencies.map((c) => (
-                        <button
-                          key={c.code}
-                          onClick={() => { setCurrency(c); setShowCurrencyDropdown(false); }}
-                          className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 transition-colors"
-                          style={{
-                            color: currency.code === c.code ? 'white' : '#7a93ff',
-                            backgroundColor: currency.code === c.code ? 'rgba(41,79,246,0.3)' : 'transparent',
-                          }}
-                          onMouseEnter={(e) => { if (currency.code !== c.code) e.currentTarget.style.backgroundColor = 'rgba(41,79,246,0.15)'; }}
-                          onMouseLeave={(e) => { if (currency.code !== c.code) e.currentTarget.style.backgroundColor = 'transparent'; }}
-                        >
-                          <span className="font-bold" style={{ color: 'white', width: '24px' }}>{c.symbol}</span>
-                          <span>{c.code}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <select
+                  value={currencyIdx}
+                  onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+                  className="px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+                  style={{ backgroundColor: 'rgba(41,79,246,0.2)', border: '1px solid rgba(122,147,255,0.3)', color: 'white', outline: 'none' }}
+                >
+                  {currencies.map((c, idx) => (
+                    <option key={c.code} value={idx} style={{ backgroundColor: '#152237', color: 'white' }}>
+                      {c.symbol} {c.code}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

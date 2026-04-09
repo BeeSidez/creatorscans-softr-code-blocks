@@ -1,6 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronDown } from 'lucide-react';
 
 const currencies = [
   { code: 'GBP', symbol: '\u00a3', rate: 1 },
@@ -11,20 +10,8 @@ const currencies = [
 const GBP_PER_DIAMOND = 0.0036;
 
 export default function Block() {
-  const [currency, setCurrency] = useState(currencies[0]);
-  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
-  const dropdownRef = useRef(null);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setShowCurrencyDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const [currencyIdx, setCurrencyIdx] = useState(0);
+  const currency = currencies[currencyIdx];
 
   const formatValue = (gbpVal) => {
     const converted = gbpVal * currency.rate;
@@ -119,35 +106,18 @@ export default function Block() {
                   TikTok Diamonds to {currency.code} Conversion Table
                 </h2>
                 {/* Currency Switcher */}
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
-                    className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all"
-                    style={{ backgroundColor: 'rgba(41,79,246,0.1)', border: '1px solid rgba(41,79,246,0.2)', color: '#294ff6' }}
-                  >
-                    <span className="font-bold">{currency.symbol}</span>
-                    <span>{currency.code}</span>
-                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#294ff6', transform: showCurrencyDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
-                  </button>
-
-                  {showCurrencyDropdown && (
-                    <div className="absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-50" style={{ backgroundColor: '#152237', border: '1px solid rgba(122,147,255,0.2)', minWidth: '140px' }}>
-                      {currencies.map((c) => (
-                        <button
-                          key={c.code}
-                          onClick={() => { setCurrency(c); setShowCurrencyDropdown(false); }}
-                          className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 transition-colors"
-                          style={{ color: currency.code === c.code ? 'white' : '#7a93ff', backgroundColor: currency.code === c.code ? 'rgba(41,79,246,0.3)' : 'transparent' }}
-                          onMouseEnter={(e) => { if (currency.code !== c.code) e.currentTarget.style.backgroundColor = 'rgba(41,79,246,0.15)'; }}
-                          onMouseLeave={(e) => { if (currency.code !== c.code) e.currentTarget.style.backgroundColor = 'transparent'; }}
-                        >
-                          <span className="font-bold" style={{ color: 'white', width: '24px' }}>{c.symbol}</span>
-                          <span>{c.code}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <select
+                  value={currencyIdx}
+                  onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+                  className="px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+                  style={{ backgroundColor: 'rgba(41,79,246,0.1)', border: '1px solid rgba(41,79,246,0.2)', color: '#294ff6', outline: 'none' }}
+                >
+                  {currencies.map((c, idx) => (
+                    <option key={c.code} value={idx} style={{ backgroundColor: '#f8fbff', color: '#000f4d' }}>
+                      {c.symbol} {c.code}
+                    </option>
+                  ))}
+                </select>
               </div>
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 How much are TikTok diamonds worth in {currency.code}? Use our quick reference table below for instant conversions at the 2026 rate of {formatValue(0.0036)} per diamond.
