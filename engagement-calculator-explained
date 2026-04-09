@@ -1,0 +1,199 @@
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function Block() {
+  const engagementTypes = [
+    { type: 'Comments', weight: 'Highest', desc: 'Indicates deep engagement', color: '#294ff6' },
+    { type: 'Shares', weight: 'High', desc: 'Shows content is recommendation-worthy', color: '#294ff6' },
+    { type: 'Saves', weight: 'High', desc: 'Signals valuable, reference content', color: '#4466f8' },
+    { type: 'Likes', weight: 'Medium', desc: 'Quick positive feedback', color: '#5e7bf6' },
+    { type: 'Watch Time', weight: 'Critical', desc: 'Completion rate affects distribution', color: '#294ff6' },
+  ];
+
+  const nicheData = [
+    { niche: 'Comedy/Entertainment', range: '7-12%', barPct: 85, color: '#294ff6' },
+    { niche: 'Pets/Animals', range: '6-10%', barPct: 70, color: '#294ff6' },
+    { niche: 'Beauty/Fashion', range: '5-8%', barPct: 55, color: '#4466f8' },
+    { niche: 'Fitness/Health', range: '5-8%', barPct: 55, color: '#4466f8' },
+    { niche: 'Education/How-to', range: '4-7%', barPct: 45, color: '#5e7bf6' },
+    { niche: 'Finance/Business', range: '3-6%', barPct: 35, color: '#7a93ff' },
+    { niche: 'News/Commentary', range: '2-4%', barPct: 20, color: '#879cf7' },
+  ];
+
+  const strategies = [
+    'Hook viewers in the first 1-2 seconds with compelling openings',
+    'Ask questions to encourage comments and discussion',
+    'Post during your audience\'s peak activity hours',
+    'Respond to comments quickly to boost algorithmic ranking',
+    'Create content that inspires duets and stitches',
+    'Use calls-to-action throughout your videos',
+    'Post consistently to build audience expectations',
+    'Engage with your community outside your own content',
+  ];
+
+  const brandTiers = [
+    {
+      rate: '8%+ Rate',
+      desc: 'Premium partnerships, exclusive campaigns, ambassador programs. Command 50-100% rate premiums.',
+      featured: true,
+      color: '#294ff6',
+    },
+    {
+      rate: '5-8% Rate',
+      desc: 'Standard brand deals, regular partnership opportunities. Competitive rates.',
+      featured: true,
+      color: '#4466f8',
+    },
+    {
+      rate: '3-5% Rate',
+      desc: 'Competitive market. Lower rates or focus on volume.',
+      featured: false,
+      color: '#5e7bf6',
+    },
+    {
+      rate: 'Below 3%',
+      desc: 'Difficult to attract brands. Focus on content quality.',
+      featured: false,
+      color: '#879cf7',
+    },
+  ];
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-12">
+        <div className="content">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Card 1: What Counts as Engagement */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png" alt="Engagement" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">What Counts as Engagement</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Engagement types and their weight in the algorithm</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {engagementTypes.map((item, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ backgroundColor: `${item.color}08`, border: `1px solid ${item.color}12` }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 h-full min-h-[40px] rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{item.type}</h4>
+                            <span className="text-xs px-2.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${item.color}18`, color: item.color }}>{item.weight} weight</span>
+                          </div>
+                          <p className="text-sm" style={{ color: 'rgba(0,15,77,0.6)' }}>{item.desc}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Engagement by Niche */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png" alt="Niches" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Engagement by Niche</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Average engagement rates by content category</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {nicheData.map((item, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{item.niche}</span>
+                        <span className="font-bold text-sm" style={{ color: item.color }}>{item.range}</span>
+                      </div>
+                      <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                        <div className="h-full rounded-full" style={{ width: `${item.barPct}%`, backgroundColor: item.color }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: How to Boost Engagement */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png" alt="Tips" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">How to Boost Engagement</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Proven strategies to increase your engagement rate</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {strategies.map((tip, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ backgroundColor: i % 2 === 0 ? 'rgba(41,79,246,0.04)' : 'rgba(94,123,246,0.04)', border: '1px solid rgba(41,79,246,0.06)' }}>
+                      <div className="flex gap-3">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: i < 4 ? '#294ff6' : '#7a93ff' }}>
+                          <span className="text-white text-xs font-bold">{i + 1}</span>
+                        </div>
+                        <p className="text-sm leading-relaxed" style={{ color: '#000f4d' }}>{tip}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: Engagement and Brand Deals */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770814473/creatorscans_icons_3_nv1erg.png" alt="Brand Deals" className="w-10 h-10" />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Engagement and Brand Deals</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>How your engagement rate affects partnerships</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {brandTiers.map((tier, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ backgroundColor: tier.featured ? `${tier.color}08` : 'rgba(238,244,253,0.6)', border: `1px solid ${tier.featured ? tier.color + '20' : 'rgba(238,244,253,1)'}` }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 h-full min-h-[40px] rounded-full flex-shrink-0" style={{ backgroundColor: tier.color }} />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{tier.rate}</h4>
+                            {tier.featured && (
+                              <span className="text-xs px-2.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${tier.color}18`, color: tier.color }}>Recommended</span>
+                            )}
+                          </div>
+                          <p className="text-sm" style={{ color: 'rgba(0,15,77,0.6)' }}>{tier.desc}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 rounded-xl p-4 flex items-start gap-3" style={{ backgroundColor: '#eef4fd' }}>
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: '#294ff6' }}>
+                    <span className="text-white text-xs font-bold">i</span>
+                  </div>
+                  <p className="text-xs" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                    Engagement rate is the single most important metric brands evaluate. A smaller creator with high engagement consistently outperforms larger creators with low engagement in brand deal negotiations.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

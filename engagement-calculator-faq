@@ -1,0 +1,113 @@
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
+
+const faqs = [
+  {
+    question: 'What is a good engagement rate on TikTok in 2026?',
+    answer: 'A good engagement rate is 5-8%. Excellent is 8%+. Average is 3-5%. Below 3% is considered below average. Rates naturally decrease as follower count grows, so compare against your own tier.'
+  },
+  {
+    question: 'How do you calculate TikTok engagement rate?',
+    answer: 'The standard formula is: (Likes + Comments + Shares) / Followers x 100. Use averages from your last 10-20 posts for accuracy. This is the industry standard formula brands use.'
+  },
+  {
+    question: 'Why is engagement rate important for creators?',
+    answer: 'Engagement rate is the top metric brands evaluate for partnerships. A creator with 50K followers and 8% engagement is more valuable than one with 500K followers and 1% engagement. It directly impacts brand deal rates.'
+  },
+  {
+    question: 'What engagement rate do brands look for?',
+    answer: 'Most brands want 5%+ engagement rate. Premium brands and exclusive campaigns typically require 8%+. Some brands accept 3-5% for large accounts with specific audience demographics.'
+  },
+  {
+    question: 'Why does engagement rate decrease as followers increase?',
+    answer: 'As accounts grow, a larger percentage of followers become passive. Nano creators (1K-5K) average 8-15%, while macro creators (500K+) average 2-4%. This is normal and expected.'
+  },
+  {
+    question: 'How do I improve my TikTok engagement rate?',
+    answer: 'Hook viewers in the first 1-2 seconds, ask questions to encourage comments, post during peak hours, respond to comments quickly, create duet/stitch-worthy content, and post consistently.'
+  },
+  {
+    question: 'Does engagement rate affect the TikTok algorithm?',
+    answer: 'Yes. Higher engagement signals quality content, leading to more distribution. Comments and shares carry the most weight. Watch time and completion rate are also critical factors.'
+  },
+  {
+    question: 'What is the average TikTok engagement rate by follower count?',
+    answer: 'Nano (1K-5K): 8-15%, Micro (5K-50K): 5-8%, Mid-tier (50K-500K): 3-5%, Macro (500K+): 2-4%. These are 2026 industry benchmarks.'
+  },
+  {
+    question: 'Should I calculate engagement by followers or by views?',
+    answer: 'The follower-based formula is the industry standard for brand evaluations. Views-based engagement gives different results and is more useful for content performance analysis. Use followers for brand pitches.'
+  },
+  {
+    question: 'How often should I check my engagement rate?',
+    answer: 'Check weekly or bi-weekly. Track trends over time rather than individual posts. A single viral video can skew averages, so use 10-20 post rolling averages.'
+  },
+  {
+    question: 'What niches have the highest engagement rates on TikTok?',
+    answer: 'Comedy/Entertainment (7-12%), Pets/Animals (6-10%), Beauty/Fashion (5-8%). Finance/Business (3-6%) and News (2-4%) tend to have lower rates but higher brand deal values per engagement point.'
+  },
+  {
+    question: 'Can I have too high an engagement rate?',
+    answer: 'Rates above 20% on accounts with 10K+ followers may indicate bot activity or engagement pods, which brands can detect. Authentic engagement between 5-15% is ideal for most tiers.'
+  },
+];
+
+export default function Block() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const highlightValues = (text) => {
+    const parts = text.split(/([0-9]+-[0-9]+%|[0-9]+\.?[0-9]*%\+?|[0-9]+K-[0-9]+K|[0-9]+K\+?|[0-9]+-[0-9]+x)/g);
+    return parts.map((part, i) => {
+      if (part.match(/(%|[0-9]+x|[0-9]+K)/)) {
+        return <span key={i} className="font-semibold" style={{ color: '#294ff6' }}>{part}</span>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.12)' }}>
+              <span className="text-sm font-semibold" style={{ color: '#294ff6' }}>FAQ</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: '#000f4d' }}>Frequently Asked Questions</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Everything you need to know about TikTok engagement rates and benchmarks</p>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+              return (
+                <div key={index} className="rounded-xl overflow-hidden transition-all duration-300 shadow-sm" style={{ backgroundColor: '#f8fbff', border: isOpen ? '1px solid rgba(41,79,246,0.2)' : '1px solid transparent' }}>
+                  <button onClick={() => toggleFaq(index)} className="w-full px-6 py-5 flex items-center justify-between gap-4 text-left transition-colors" aria-expanded={isOpen}>
+                    <div className="flex items-center gap-4">
+                      <div className="w-1 h-6 rounded-full transition-all duration-300 flex-shrink-0" style={{ backgroundColor: isOpen ? '#294ff6' : '#eef4fd' }} />
+                      <span className="font-semibold text-base md:text-lg leading-relaxed" style={{ color: '#000f4d' }}>{faq.question}</span>
+                    </div>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300" style={{ backgroundColor: isOpen ? 'rgba(41,79,246,0.12)' : '#eef4fd' }}>
+                      {isOpen ? <Minus className="w-4 h-4" style={{ color: '#294ff6' }} /> : <Plus className="w-4 h-4" style={{ color: '#7a93ff' }} />}
+                    </div>
+                  </button>
+                  <div className="overflow-hidden transition-all duration-300 ease-in-out" style={{ maxHeight: isOpen ? '500px' : '0', opacity: isOpen ? 1 : 0 }}>
+                    <div className="px-6 pb-6 pt-0 ml-5">
+                      <div className="pl-4" style={{ borderLeft: '2px solid #eef4fd' }}>
+                        <p className="text-foreground leading-relaxed">{highlightValues(faq.answer)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
