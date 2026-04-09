@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calculator, Info, TrendingUp, ChevronDown, DollarSign, Zap, Target } from 'lucide-react';
+import { Calculator, Info, TrendingUp, DollarSign, Zap, Target } from 'lucide-react';
 
 const currencies = [
   { code: 'GBP', symbol: '\u00a3', rate: 1 },
@@ -31,27 +31,11 @@ export default function Block() {
   const [engagementRate, setEngagementRate] = useState(5);
   const [nicheIndex, setNicheIndex] = useState(0);
   const [deliverableIndex, setDeliverableIndex] = useState(0);
-  const [currency, setCurrency] = useState(currencies[0]);
-  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
-  const [showNicheDropdown, setShowNicheDropdown] = useState(false);
-  const [showDeliverableDropdown, setShowDeliverableDropdown] = useState(false);
-  const currencyRef = useRef(null);
-  const nicheRef = useRef(null);
-  const deliverableRef = useRef(null);
+  const [currencyIdx, setCurrencyIdx] = useState(0);
 
+  const currency = currencies[currencyIdx];
   const niche = niches[nicheIndex];
   const deliverable = deliverables[deliverableIndex];
-
-  // Close dropdowns on outside click
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (currencyRef.current && !currencyRef.current.contains(e.target)) setShowCurrencyDropdown(false);
-      if (nicheRef.current && !nicheRef.current.contains(e.target)) setShowNicheDropdown(false);
-      if (deliverableRef.current && !deliverableRef.current.contains(e.target)) setShowDeliverableDropdown(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
 
   // Engagement multiplier
   const getEngMultiplier = (rate) => {
@@ -121,23 +105,18 @@ export default function Block() {
                 </div>
 
                 {/* Currency */}
-                <div className="relative" ref={currencyRef}>
-                  <button onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)} className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'rgba(41,79,246,0.2)', border: '1px solid rgba(122,147,255,0.3)', color: '#7a93ff' }}>
-                    <span className="font-bold text-white">{currency.symbol}</span>
-                    <span>{currency.code}</span>
-                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#7a93ff', transform: showCurrencyDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
-                  </button>
-                  {showCurrencyDropdown && (
-                    <div className="absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-50" style={{ backgroundColor: '#152237', border: '1px solid rgba(122,147,255,0.2)', minWidth: '140px' }}>
-                      {currencies.map((c) => (
-                        <button key={c.code} onClick={() => { setCurrency(c); setShowCurrencyDropdown(false); }} className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 transition-colors" style={{ color: currency.code === c.code ? 'white' : '#7a93ff', backgroundColor: currency.code === c.code ? 'rgba(41,79,246,0.3)' : 'transparent' }} onMouseEnter={(e) => { if (currency.code !== c.code) e.currentTarget.style.backgroundColor = 'rgba(41,79,246,0.15)'; }} onMouseLeave={(e) => { if (currency.code !== c.code) e.currentTarget.style.backgroundColor = 'transparent'; }}>
-                          <span className="font-bold" style={{ color: 'white', width: '24px' }}>{c.symbol}</span>
-                          <span>{c.code}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <select
+                  value={currencyIdx}
+                  onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+                  className="px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+                  style={{ backgroundColor: 'rgba(41,79,246,0.2)', border: '1px solid rgba(122,147,255,0.3)', color: 'white', outline: 'none' }}
+                >
+                  {currencies.map((c, idx) => (
+                    <option key={c.code} value={idx} style={{ backgroundColor: '#152237', color: 'white' }}>
+                      {c.symbol} {c.code}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -169,43 +148,31 @@ export default function Block() {
               {/* Content Niche Dropdown */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Content Niche</label>
-                <div className="relative" ref={nicheRef}>
-                  <button onClick={() => setShowNicheDropdown(!showNicheDropdown)} className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#eef4fd', color: '#000f4d' }}>
-                    <span>{niche.name} ({niche.multiplier}x)</span>
-                    <ChevronDown className="w-4 h-4" style={{ color: '#5e7bf6', transform: showNicheDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
-                  </button>
-                  {showNicheDropdown && (
-                    <div className="absolute left-0 right-0 top-full mt-1 rounded-xl shadow-lg overflow-hidden z-50 max-h-[280px] overflow-y-auto" style={{ backgroundColor: '#f8fbff', border: '1px solid #eef4fd' }}>
-                      {niches.map((n, i) => (
-                        <button key={n.name} onClick={() => { setNicheIndex(i); setShowNicheDropdown(false); }} className="w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors" style={{ color: '#000f4d', backgroundColor: nicheIndex === i ? 'rgba(41,79,246,0.08)' : 'transparent' }} onMouseEnter={(e) => { if (nicheIndex !== i) e.currentTarget.style.backgroundColor = 'rgba(41,79,246,0.04)'; }} onMouseLeave={(e) => { if (nicheIndex !== i) e.currentTarget.style.backgroundColor = 'transparent'; }}>
-                          <span>{n.name}</span>
-                          <span className="font-semibold" style={{ color: '#294ff6' }}>{n.multiplier}x</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <select
+                  value={nicheIndex}
+                  onChange={(e) => setNicheIndex(Number(e.target.value))}
+                  className="w-full px-4 py-3 rounded-xl text-sm font-medium cursor-pointer"
+                  style={{ backgroundColor: '#eef4fd', color: '#000f4d', border: 'none', outline: 'none' }}
+                >
+                  {niches.map((n, i) => (
+                    <option key={n.name} value={i}>{n.name}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Deliverable Type Dropdown */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Deliverable Type</label>
-                <div className="relative" ref={deliverableRef}>
-                  <button onClick={() => setShowDeliverableDropdown(!showDeliverableDropdown)} className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#eef4fd', color: '#000f4d' }}>
-                    <span>{deliverable.name} ({deliverable.multiplier}x)</span>
-                    <ChevronDown className="w-4 h-4" style={{ color: '#5e7bf6', transform: showDeliverableDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
-                  </button>
-                  {showDeliverableDropdown && (
-                    <div className="absolute left-0 right-0 top-full mt-1 rounded-xl shadow-lg overflow-hidden z-50" style={{ backgroundColor: '#f8fbff', border: '1px solid #eef4fd' }}>
-                      {deliverables.map((d, i) => (
-                        <button key={d.name} onClick={() => { setDeliverableIndex(i); setShowDeliverableDropdown(false); }} className="w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors" style={{ color: '#000f4d', backgroundColor: deliverableIndex === i ? 'rgba(41,79,246,0.08)' : 'transparent' }} onMouseEnter={(e) => { if (deliverableIndex !== i) e.currentTarget.style.backgroundColor = 'rgba(41,79,246,0.04)'; }} onMouseLeave={(e) => { if (deliverableIndex !== i) e.currentTarget.style.backgroundColor = 'transparent'; }}>
-                          <span>{d.name}</span>
-                          <span className="font-semibold" style={{ color: '#294ff6' }}>{d.multiplier}x</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <select
+                  value={deliverableIndex}
+                  onChange={(e) => setDeliverableIndex(Number(e.target.value))}
+                  className="w-full px-4 py-3 rounded-xl text-sm font-medium cursor-pointer"
+                  style={{ backgroundColor: '#eef4fd', color: '#000f4d', border: 'none', outline: 'none' }}
+                >
+                  {deliverables.map((d, i) => (
+                    <option key={d.name} value={i}>{d.name}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Divider */}
