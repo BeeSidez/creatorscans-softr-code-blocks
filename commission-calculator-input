@@ -3,12 +3,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PoundSterling, TrendingUp, Calendar, Calculator, Info, ChevronDown } from 'lucide-react';
 
 const currencies = [
-  { code: 'GBP', symbol: '£', label: 'GBP (£)', rate: 1 },
-  { code: 'USD', symbol: '$', label: 'USD ($)', rate: 1.27 },
-  { code: 'EUR', symbol: '€', label: 'EUR (€)', rate: 1.17 },
-  { code: 'AUD', symbol: 'A$', label: 'AUD (A$)', rate: 1.93 },
-  { code: 'CAD', symbol: 'C$', label: 'CAD (C$)', rate: 1.72 },
-  { code: 'INR', symbol: '₹', label: 'INR (₹)', rate: 106.5 },
+  { code: 'GBP', symbol: '£', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '€', rate: 1.17 },
 ];
 
 export default function Block() {
@@ -142,8 +139,8 @@ export default function Block() {
                             color: currency.code === c.code ? 'white' : '#7a93ff',
                             backgroundColor: currency.code === c.code ? 'rgba(41,79,246,0.3)' : 'transparent',
                           }}
-                          onMouseEnter={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'rgba(41,79,246,0.15)'; }}
-                          onMouseLeave={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'transparent'; }}
+                          onMouseEnter={(e) => { if (currency.code !== c.code) e.currentTarget.style.backgroundColor = 'rgba(41,79,246,0.15)'; }}
+                          onMouseLeave={(e) => { if (currency.code !== c.code) e.currentTarget.style.backgroundColor = 'transparent'; }}
                         >
                           <span className="font-bold" style={{ color: 'white', width: '24px' }}>{c.symbol}</span>
                           <span>{c.code}</span>
