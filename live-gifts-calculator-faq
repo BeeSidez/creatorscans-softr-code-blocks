@@ -1,0 +1,141 @@
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
+
+const faqs = [
+  {
+    question: 'How much can you make from TikTok LIVE gifts?',
+    answer: 'Earnings range from \u00a34-\u00a320 per stream for small creators (1K-5K followers) to \u00a3395-\u00a31,575+ per stream for creators with 100K+ followers. Streaming 4 times per week, mid-tier creators with 10K-50K followers can expect \u00a3630-\u00a32,520 per month from LIVE gifts alone.'
+  },
+  {
+    question: 'What are the requirements to receive LIVE gifts?',
+    answer: 'You need a minimum of 1,000 followers and must be 18 years or older. This is one of the lowest barriers to entry for TikTok monetization. Once eligible, you can start receiving gifts immediately during any LIVE stream.'
+  },
+  {
+    question: 'How do TikTok LIVE gifts work?',
+    answer: 'Viewers purchase coins with real money, then send virtual gifts to creators during LIVE streams. These gifts convert to diamonds at a 2:1 ratio (2 coins = 1 diamond). Each diamond is worth \u00a30.0036. TikTok keeps approximately 50% of the total gift value before it reaches you as diamonds.'
+  },
+  {
+    question: 'What percentage does TikTok take from LIVE gifts?',
+    answer: 'TikTok takes approximately 50% of all gift value. When a viewer sends coins worth \u00a31.00, the creator receives around \u00a30.50 in diamond value. The remaining 50% goes to the creator as diamonds that can be converted to cash.'
+  },
+  {
+    question: 'How often should I go LIVE to maximize earnings?',
+    answer: 'Streaming 3-5 times per week is optimal for most creators. Consistency matters more than frequency. The best performing time slots are 7-10 PM in your audience\'s timezone. Building a regular schedule helps viewers know when to tune in and increases repeat gifting.'
+  },
+  {
+    question: 'What are the best times to go LIVE on TikTok?',
+    answer: '7-10 PM local time for your audience typically performs best. Weekday evenings and weekend afternoons see the highest engagement and gifting rates. Avoid early mornings when fewer viewers are active. Test different times and track which slots generate the most gifts.'
+  },
+  {
+    question: 'Do you need to go LIVE regularly to earn gifts?',
+    answer: 'Consistency is key to building a loyal gifting audience. Sporadic streaming leads to lower gift engagement because viewers forget your schedule. Aim for a regular weekly routine so your audience knows when to join. Creators who stream on a set schedule earn significantly more than those who go LIVE randomly.'
+  },
+  {
+    question: 'Can you earn more from LIVE gifts than Creator Fund?',
+    answer: 'Yes, significantly more. A creator with 50,000 followers might earn \u00a38-\u00a316 per month from the Creator Fund versus \u00a3630-\u00a32,520 per month from LIVE gifts. LIVE gifting provides substantially higher per-hour earnings, though it requires active time streaming rather than passive views.'
+  },
+  {
+    question: 'What type of content works best for LIVE streaming?',
+    answer: 'Q&A sessions, music performances, challenges and games, and tutorials drive the highest engagement and gifting rates. Interactive content that involves viewers directly performs best because it creates a personal connection that encourages gifting. Avoid passive content where viewers have no reason to participate.'
+  },
+  {
+    question: 'When can I withdraw my LIVE gift earnings?',
+    answer: 'You can withdraw once you reach the minimum balance of \u00a336 (10,000 diamonds). Withdrawals typically process within 7-14 business days via PayPal or bank transfer. TikTok does not charge withdrawal fees, though your bank or PayPal may apply their own currency conversion fees.'
+  }
+];
+
+export default function Block() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const highlightValues = (text) => {
+    const parts = text.split(/(\u00a3[0-9,]+\.?[0-9]*\+?|\u00a3[0-9,]+\+?|[0-9,]+\+? diamonds?|[0-9,]+\+? coins?|[0-9,]+\+? followers)/g);
+    return parts.map((part, i) => {
+      if (part.match(/(\u00a3[0-9,]+\.?[0-9]*\+?|\u00a3[0-9,]+\+?|[0-9,]+\+? diamonds?|[0-9,]+\+? coins?|[0-9,]+\+? followers)/)) {
+        return <span key={i} className="font-semibold" style={{ color: '#294ff6' }}>{part}</span>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-4xl mx-auto">
+          {/* Section header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.12)' }}>
+              <span className="text-sm font-semibold" style={{ color: '#294ff6' }}>FAQ</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: '#000f4d' }}>
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to know about TikTok LIVE gifts and streaming earnings
+            </p>
+          </div>
+
+          {/* FAQ Items */}
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+
+              return (
+                <div
+                  key={index}
+                  className="rounded-xl overflow-hidden transition-all duration-300 shadow-sm"
+                  style={{
+                    backgroundColor: '#f8fbff',
+                    border: isOpen ? '1px solid rgba(41,79,246,0.2)' : '1px solid transparent',
+                  }}
+                >
+                  <button
+                    onClick={() => toggleFaq(index)}
+                    className="w-full px-6 py-5 flex items-center justify-between gap-4 text-left transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="w-1 h-6 rounded-full transition-all duration-300 flex-shrink-0"
+                        style={{ backgroundColor: isOpen ? '#294ff6' : '#eef4fd' }}
+                      />
+                      <span className="font-semibold text-base md:text-lg leading-relaxed" style={{ color: '#000f4d' }}>
+                        {faq.question}
+                      </span>
+                    </div>
+                    <div
+                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300"
+                      style={{ backgroundColor: isOpen ? 'rgba(41,79,246,0.12)' : '#eef4fd' }}
+                    >
+                      {isOpen ? (
+                        <Minus className="w-4 h-4" style={{ color: '#294ff6' }} />
+                      ) : (
+                        <Plus className="w-4 h-4" style={{ color: '#7a93ff' }} />
+                      )}
+                    </div>
+                  </button>
+
+                  <div
+                    className="overflow-hidden transition-all duration-300 ease-in-out"
+                    style={{ maxHeight: isOpen ? '500px' : '0', opacity: isOpen ? 1 : 0 }}
+                  >
+                    <div className="px-6 pb-6 pt-0 ml-5">
+                      <div className="pl-4" style={{ borderLeft: '2px solid #eef4fd' }}>
+                        <p className="text-foreground leading-relaxed">
+                          {highlightValues(faq.answer)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

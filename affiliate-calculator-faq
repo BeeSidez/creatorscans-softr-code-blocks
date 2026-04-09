@@ -1,0 +1,133 @@
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
+
+const faqs = [
+  {
+    question: 'How much commission does TikTok Shop affiliate pay?',
+    answer: 'Commissions range from 5% to 30% depending on category. Beauty and skincare pays 15-30%, fashion 10-20%, home and living 8-15%, and electronics 5-10%. Sellers set their own affiliate commission rates, so the same product category can vary between shops.'
+  },
+  {
+    question: 'How do I become a TikTok Shop affiliate?',
+    answer: 'Apply through TikTok Shop Seller Centre. No follower minimum is required. Once approved, browse products in the affiliate marketplace and add affiliate links to your content. You can start promoting products immediately after approval.'
+  },
+  {
+    question: 'When do I get paid for TikTok affiliate sales?',
+    answer: 'Commissions are paid after the buyer receives the product and the return period ends (typically 7-14 days). Payments go to your TikTok Shop Wallet, which you can withdraw to PayPal or your bank account. Minimum withdrawal is typically \u00a310.'
+  },
+  {
+    question: 'What is a good conversion rate for TikTok affiliate links?',
+    answer: 'A conversion rate of 2-5% is typical for successful creators. Top performers achieve 5-8%. Below 2% suggests you need to improve content quality or product-audience fit. Products priced between \u00a315-\u00a380 tend to convert best.'
+  },
+  {
+    question: 'Can I do TikTok affiliate marketing without showing my face?',
+    answer: 'Yes. Many successful affiliates use product-only videos, screen recordings, or voiceover content. The key is authentic demonstration. Hands-only product demos, aesthetic flat lays, and tutorial-style content all perform well without showing your face.'
+  },
+  {
+    question: 'How many products should I promote at once?',
+    answer: 'Focus on 3-5 products maximum at any time. Spreading too thin reduces authenticity and conversion rates. Rotate products every 2-4 weeks based on performance. Your audience trusts your recommendations more when you are selective about what you promote.'
+  }
+];
+
+export default function Block() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const highlightValues = (text) => {
+    const parts = text.split(/(\u00a3[0-9,]+\.?[0-9]*|\u00a3[0-9,]+|[0-9]+-[0-9]+%|[0-9]+%|[0-9]+-[0-9]+ days|[0-9]+K\+|[0-9]+-[0-9]+x|[0-9]+x)/g);
+    return parts.map((part, i) => {
+      if (part.match(/(\u00a3[0-9,]+\.?[0-9]*|\u00a3[0-9,]+|[0-9]+-[0-9]+%|[0-9]+%|[0-9]+-[0-9]+ days|[0-9]+K\+|[0-9]+-[0-9]+x|[0-9]+x)/)) {
+        return <span key={i} className="font-semibold" style={{ color: '#294ff6' }}>{part}</span>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-4xl mx-auto">
+          {/* Section header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.12)' }}>
+              <span className="text-sm font-semibold" style={{ color: '#294ff6' }}>FAQ</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: '#000f4d' }}>
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to know about TikTok Shop affiliate commissions and earnings
+            </p>
+          </div>
+
+          {/* FAQ Items */}
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+
+              return (
+                <div
+                  key={index}
+                  className="rounded-xl overflow-hidden transition-all duration-300 shadow-sm"
+                  style={{
+                    backgroundColor: '#f8fbff',
+                    border: isOpen ? '1px solid rgba(41,79,246,0.2)' : '1px solid transparent',
+                  }}
+                >
+                  <button
+                    onClick={() => toggleFaq(index)}
+                    className="w-full px-6 py-5 flex items-center justify-between gap-4 text-left transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Left accent bar */}
+                      <div
+                        className="w-1 h-6 rounded-full transition-all duration-300 flex-shrink-0"
+                        style={{
+                          backgroundColor: isOpen ? '#294ff6' : '#eef4fd',
+                        }}
+                      />
+                      <span className="font-semibold text-base md:text-lg leading-relaxed" style={{ color: '#000f4d' }}>
+                        {faq.question}
+                      </span>
+                    </div>
+                    <div
+                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300"
+                      style={{
+                        backgroundColor: isOpen ? 'rgba(41,79,246,0.12)' : '#eef4fd',
+                      }}
+                    >
+                      {isOpen ? (
+                        <Minus className="w-4 h-4" style={{ color: '#294ff6' }} />
+                      ) : (
+                        <Plus className="w-4 h-4" style={{ color: '#7a93ff' }} />
+                      )}
+                    </div>
+                  </button>
+
+                  <div
+                    className="overflow-hidden transition-all duration-300 ease-in-out"
+                    style={{
+                      maxHeight: isOpen ? '500px' : '0',
+                      opacity: isOpen ? 1 : 0,
+                    }}
+                  >
+                    <div className="px-6 pb-6 pt-0 ml-5">
+                      <div className="pl-4" style={{ borderLeft: '2px solid #eef4fd' }}>
+                        <p className="text-foreground leading-relaxed">
+                          {highlightValues(faq.answer)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
