@@ -3,53 +3,69 @@ import { Plus, Minus } from 'lucide-react';
 
 const faqs = [
   {
-    question: 'How much is 1 TikTok diamond worth?',
+    question: 'How much is 1 TikTok diamond worth in GBP?',
     answer: 'One TikTok diamond is worth £0.0036 GBP for creators (as of 2026). This means approximately 278 diamonds equals £1.00 GBP. The diamond value has remained stable at this rate since the LIVE gifting system launched, making it easy to calculate your earnings.'
   },
   {
-    question: 'How do I convert TikTok diamonds to money?',
-    answer: 'To convert diamonds to money: Multiply your diamond count by £0.0036. For example, 1,000 diamonds = £3.60 GBP. You can withdraw diamonds as real money through PayPal or bank transfer once you reach the £36 minimum balance threshold.'
+    question: 'How much is 10,000 diamonds on TikTok in UK pounds?',
+    answer: '10,000 TikTok diamonds are worth £36.00 GBP. This is also the minimum withdrawal amount on TikTok. The calculation is simple: 10,000 x £0.0036 = £36.00. At this level you can cash out your diamonds to PayPal or bank transfer.'
+  },
+  {
+    question: 'How much is 50K TikTok diamonds worth in pounds?',
+    answer: '50,000 TikTok diamonds are worth £180.00 GBP. The conversion is: 50,000 x £0.0036 per diamond = £180.00. This is a common monthly earning level for growing creators with 10K-50K followers who stream regularly.'
+  },
+  {
+    question: 'How much is 100K diamonds on TikTok in GBP?',
+    answer: '100,000 TikTok diamonds are worth £360.00 GBP. The calculation: 100,000 x £0.0036 = £360.00. Established streamers with 50K-100K followers can earn this amount monthly through consistent LIVE streaming.'
+  },
+  {
+    question: 'How do I convert TikTok diamonds to GBP?',
+    answer: 'To convert TikTok diamonds to GBP, multiply your diamond count by £0.0036. For example: 1,000 diamonds = £3.60, 10,000 diamonds = £36.00, 100,000 diamonds = £360.00. You can withdraw as real money through PayPal or bank transfer once you reach the £36 minimum (10,000 diamonds).'
+  },
+  {
+    question: 'How many TikTok diamonds do I need to make £100?',
+    answer: 'You need 27,778 diamonds to make £100 GBP. The formula is: £100 / £0.0036 per diamond = 27,778 diamonds. This is equivalent to receiving approximately 55,556 coins worth of gifts from viewers during your LIVE streams.'
   },
   {
     question: 'What is the difference between TikTok coins and diamonds?',
-    answer: 'Coins are purchased by viewers to send gifts. Diamonds are what creators receive from gifts at a 2:1 ratio (2 coins sent = 1 diamond received). Creators keep 50% of the coin value as diamonds worth £0.0036 each.'
+    answer: 'Coins are purchased by viewers with real money to send gifts during LIVE streams. Diamonds are what creators receive from those gifts at a 2:1 ratio (2 coins sent = 1 diamond received). TikTok keeps 50% of the coin value, and creators get the rest as diamonds worth £0.0036 each.'
   },
   {
-    question: 'How many diamonds equal £100 GBP?',
-    answer: 'You need 27,778 diamonds to equal £100 GBP. The conversion is: £100 / £0.0036 per diamond = 27,778 diamonds. This is equivalent to receiving approximately 55,556 coins worth of gifts from viewers.'
+    question: 'How much does TikTok take from diamonds and gifts?',
+    answer: "TikTok takes 50% of all gift value before you receive diamonds. When a viewer spends coins on a gift, half the value goes to TikTok as platform revenue and half becomes your diamonds. The £0.0036 per diamond rate is what you actually keep after TikTok's cut."
   },
   {
-    question: 'When can I cash out my TikTok diamonds?',
-    answer: 'You can withdraw diamonds once you reach the minimum balance of £36 (10,000 diamonds). Withdrawals are processed within 7-14 business days. Payment options include PayPal and direct bank transfer depending on your region.'
+    question: 'How much is 1 million TikTok diamonds worth in GBP?',
+    answer: '1,000,000 TikTok diamonds are worth £3,600 GBP. The calculation: 1,000,000 x £0.0036 = £3,600. Only top-tier creators and celebrities typically earn this level. Most streamers with 100K+ followers earn between 200,000 and 500,000 diamonds monthly (£720-£1,800).'
   },
   {
-    question: 'Does TikTok take a cut from diamonds?',
-    answer: "TikTok already takes their 50% cut before you receive diamonds. When a viewer sends coins, half the value goes to TikTok and half becomes your diamonds. The £0.0036 per diamond rate is what you actually keep after TikTok's fee."
+    question: 'How much are TikTok gifts worth in diamonds and GBP?',
+    answer: 'Popular TikTok gift values: Rose (1 coin) = 0.5 diamonds (£0.0018), TikTok Logo (1 coin) = 0.5 diamonds (£0.0018), Drama Queen (5,000 coins) = 2,500 diamonds (£9.00), TikTok Universe (34,999 coins) = 17,500 diamonds (£63.00). Remember TikTok takes 50% before you receive the diamond amount.'
   },
   {
-    question: 'How much are the most popular TikTok gifts worth in diamonds?',
-    answer: 'Popular gift values: Rose (1 coin) = 0.5 diamonds (£0.0018), TikTok Logo (1 coin) = 0.5 diamonds (£0.0018), Drama Queen (5,000 coins) = 2,500 diamonds (£9.00), TikTok Universe (34,999 coins) = 17,500 diamonds (£63.00).'
+    question: 'When can I withdraw TikTok diamonds as money?',
+    answer: 'You can withdraw diamonds once you reach the minimum balance of £36 (10,000 diamonds). Withdrawals are processed within 7-14 business days. Payment options include PayPal and direct bank transfer depending on your region. TikTok does not charge withdrawal fees, but your bank may charge currency conversion fees.'
   },
   {
-    question: 'Do diamond values change in different countries?',
-    answer: 'The base diamond value of £0.0036 GBP is consistent for UK creators. Creators in other regions receive equivalent amounts in their local currency based on exchange rates. European creators receive EUR amounts, US creators receive USD, etc. Our calculator supports multiple currencies.'
+    question: 'How much is 5,000 TikTok diamonds in GBP?',
+    answer: '5,000 TikTok diamonds are worth £18.00 GBP. The calculation: 5,000 x £0.0036 = £18.00. Note that this is below the minimum withdrawal threshold of £36 (10,000 diamonds), so you would need to keep earning before you can cash out.'
   },
   {
-    question: 'How many diamonds do top TikTok streamers earn?',
-    answer: 'Top LIVE streamers earn 50,000-500,000+ diamonds monthly (£180-£1,800+). Celebrity-level creators can exceed 1 million diamonds per month (£3,600+). Average engaged streamers with 10K-50K followers typically earn 10,000-50,000 diamonds monthly (£36-£180).'
+    question: 'How much is 20,000 TikTok diamonds worth in pounds?',
+    answer: '20,000 TikTok diamonds are worth £72.00 GBP. The conversion: 20,000 x £0.0036 = £72.00. This is above the minimum withdrawal threshold, so you can cash out this amount to PayPal or bank transfer.'
   },
   {
-    question: 'Are there fees when withdrawing diamonds?',
-    answer: 'TikTok does not charge withdrawal fees. However, your bank or PayPal may charge currency conversion fees for international transfers. These third-party fees vary by institution and are separate from the TikTok platform.'
+    question: 'Are TikTok diamond values different in the UK?',
+    answer: 'The base diamond value of £0.0036 GBP is consistent for UK creators. Creators in other regions receive equivalent amounts in their local currency based on exchange rates. European creators receive EUR amounts, US creators receive USD. The underlying value is the same globally.'
   },
   {
-    question: 'Why is the diamond rate only £0.0036?',
-    answer: 'TikTok keeps 50% of all gift value as platform revenue. Viewers pay for coins, TikTok takes half, and creators receive £0.0036 per diamond (which equals 0.5 coins). This 50/50 split is standard for most live streaming platforms.'
+    question: 'How many diamonds do TikTok streamers earn per month?',
+    answer: 'It depends on follower count and streaming frequency. Beginners (1K-10K followers) earn 1,000-10,000 diamonds monthly (£3.60-£36). Growing creators (10K-50K) earn 10,000-50,000 diamonds (£36-£180). Established streamers (50K-100K) earn 50,000-200,000 diamonds (£180-£720). Top streamers (100K+) can earn 200,000-1M+ diamonds (£720-£3,600+).'
   },
   {
-    question: 'Can I earn diamonds without going LIVE?',
-    answer: 'Diamonds are earned exclusively through LIVE streaming gifts. However, TikTok also offers video gifts on regular posts in some regions, which also convert to diamonds. Creator Fund and other monetization methods pay separately, not in diamonds.'
-  }
+    question: 'Can I earn TikTok diamonds without going LIVE?',
+    answer: 'Diamonds are earned primarily through LIVE streaming gifts. However, TikTok also offers video gifts on regular posts in some regions, which convert to diamonds. Creator Fund payments and TikTok Shop commissions are separate income streams and are not paid in diamonds.'
+  },
 ];
 
 export default function Block() {

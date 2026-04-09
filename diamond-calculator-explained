@@ -39,10 +39,119 @@ export default function Block() {
     { label: "Payout timeline", value: "7-14 business days after request" },
   ];
 
+  const popularConversions = [
+    { diamonds: '1,000', gbp: '£3.60', search: 'How much is 1,000 TikTok diamonds in GBP?' },
+    { diamonds: '5,000', gbp: '£18.00', search: 'How much is 5,000 TikTok diamonds worth in pounds?' },
+    { diamonds: '10,000', gbp: '£36.00', search: 'How much is 10,000 diamonds on TikTok in UK pounds?', highlight: true, note: 'Minimum withdrawal amount' },
+    { diamonds: '20,000', gbp: '£72.00', search: 'How much is 20,000 TikTok diamonds in GBP?' },
+    { diamonds: '50,000', gbp: '£180.00', search: 'How much is 50K TikTok diamonds worth in pounds?', highlight: true },
+    { diamonds: '100,000', gbp: '£360.00', search: 'How much is 100K diamonds on TikTok in GBP?', highlight: true },
+    { diamonds: '200,000', gbp: '£720.00', search: 'How much is 200K TikTok diamonds worth?' },
+    { diamonds: '500,000', gbp: '£1,800.00', search: 'How much is 500K TikTok diamonds in pounds?' },
+    { diamonds: '1,000,000', gbp: '£3,600.00', search: 'How much is 1 million TikTok diamonds in GBP?' },
+  ];
+
+  const reverseConversions = [
+    { gbp: '£1', diamonds: '278 diamonds' },
+    { gbp: '£5', diamonds: '1,389 diamonds' },
+    { gbp: '£10', diamonds: '2,778 diamonds' },
+    { gbp: '£20', diamonds: '5,556 diamonds' },
+    { gbp: '£50', diamonds: '13,889 diamonds' },
+    { gbp: '£100', diamonds: '27,778 diamonds' },
+    { gbp: '£500', diamonds: '138,889 diamonds' },
+    { gbp: '£1,000', diamonds: '277,778 diamonds' },
+  ];
+
   return (
     <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
       <div className="container py-12">
         <div className="content">
+
+          {/* SEO-targeted Popular Conversions Section */}
+          <div className="mb-10">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: '#000f4d' }}>
+                TikTok Diamonds to GBP Conversion Table
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                How much are TikTok diamonds worth in UK pounds? Use our quick reference table below for instant conversions at the 2026 rate of £0.0036 per diamond.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Diamonds to GBP */}
+              <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+                <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                  <h3 className="font-bold text-white text-base">TikTok Diamonds to Pounds (GBP)</h3>
+                  <p className="text-xs" style={{ color: '#7a93ff' }}>At the official 2026 rate of £0.0036 per diamond</p>
+                </div>
+                <CardContent className="p-6">
+                  <div className="space-y-0">
+                    {popularConversions.map((row, index) => (
+                      <div key={index}>
+                        <div
+                          className="flex items-center justify-between py-3 px-3 rounded-lg"
+                          style={{
+                            backgroundColor: row.highlight ? 'rgba(41,79,246,0.05)' : 'transparent',
+                          }}
+                        >
+                          <div>
+                            <h4 className="font-semibold text-sm" style={{ color: '#000f4d' }}>
+                              {row.diamonds} diamonds
+                            </h4>
+                            {row.note && (
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: '#d8d8ff', color: '#5e7bf6' }}>
+                                {row.note}
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-bold text-lg" style={{ color: '#294ff6' }}>{row.gbp}</span>
+                        </div>
+                        {index < popularConversions.length - 1 && (
+                          <div className="h-px mx-3" style={{ backgroundColor: '#eef4fd' }} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* GBP to Diamonds (reverse lookup) */}
+              <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+                <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                  <h3 className="font-bold text-white text-base">Pounds (GBP) to TikTok Diamonds</h3>
+                  <p className="text-xs" style={{ color: '#7a93ff' }}>How many diamonds do you need to earn a specific amount?</p>
+                </div>
+                <CardContent className="p-6">
+                  <div className="space-y-0">
+                    {reverseConversions.map((row, index) => (
+                      <div key={index}>
+                        <div className="flex items-center justify-between py-3 px-3">
+                          <h4 className="font-semibold text-sm" style={{ color: '#000f4d' }}>
+                            {row.gbp}
+                          </h4>
+                          <span className="font-bold text-sm" style={{ color: '#294ff6' }}>{row.diamonds}</span>
+                        </div>
+                        {index < reverseConversions.length - 1 && (
+                          <div className="h-px mx-3" style={{ backgroundColor: '#eef4fd' }} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 rounded-xl p-4 flex items-start gap-3" style={{ backgroundColor: '#eef4fd' }}>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: '#294ff6' }}>
+                      <span className="text-white text-xs font-bold">i</span>
+                    </div>
+                    <p className="text-xs" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                      Formula: Diamonds needed = Amount in GBP / £0.0036. You need at least 10,000 diamonds (£36) to make a withdrawal from TikTok.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* Card 1: Understanding TikTok Diamonds */}
