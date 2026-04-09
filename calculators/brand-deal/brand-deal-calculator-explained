@@ -1,14 +1,31 @@
+import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 
+const currencies = [
+  { code: 'GBP', symbol: '£', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '€', rate: 1.17 },
+];
+
 export default function Block() {
+  const [currencyIdx, setCurrencyIdx] = useState(0);
+  const currency = currencies[currencyIdx];
+
+  const fmt = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    if (v >= 1000) return currency.symbol + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (v >= 1) return currency.symbol + v.toFixed(0);
+    return currency.symbol + v.toFixed(2);
+  };
+
   const followerTiers = [
-    { tier: 'Nano (1K-5K)', rate: '\u00a340-\u00a3197', barPct: 5 },
-    { tier: 'Micro (5K-10K)', rate: '\u00a379-\u00a3395', barPct: 10 },
-    { tier: 'Small (10K-50K)', rate: '\u00a3395-\u00a31,970', barPct: 25 },
-    { tier: 'Mid-tier (50K-100K)', rate: '\u00a31,970-\u00a33,940', barPct: 40, featured: true },
-    { tier: 'Macro (100K-500K)', rate: '\u00a33,940-\u00a311,810', barPct: 65, featured: true },
-    { tier: 'Mega (500K-1M)', rate: '\u00a311,810-\u00a327,560', barPct: 85 },
-    { tier: 'Celebrity (1M+)', rate: '\u00a327,560-\u00a378,740+', barPct: 100 },
+    { tier: 'Nano (1K-5K)', low: 40, high: 197, barPct: 5 },
+    { tier: 'Micro (5K-10K)', low: 79, high: 395, barPct: 10 },
+    { tier: 'Small (10K-50K)', low: 395, high: 1970, barPct: 25 },
+    { tier: 'Mid-tier (50K-100K)', low: 1970, high: 3940, barPct: 40, featured: true },
+    { tier: 'Macro (100K-500K)', low: 3940, high: 11810, barPct: 65, featured: true },
+    { tier: 'Mega (500K-1M)', low: 11810, high: 27560, barPct: 85 },
+    { tier: 'Celebrity (1M+)', low: 27560, high: 78740, barPct: 100, plus: true },
   ];
 
   const nicheRates = [
@@ -64,6 +81,22 @@ export default function Block() {
     <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
       <div className="container py-12">
         <div className="content">
+          {/* Currency Switcher */}
+          <div className="flex justify-end mb-4">
+            <select
+              value={currencyIdx}
+              onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+              className="px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+              style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.15)', color: '#294ff6', outline: 'none' }}
+            >
+              {currencies.map((c, idx) => (
+                <option key={c.code} value={idx} style={{ backgroundColor: '#f8fbff', color: '#000f4d' }}>
+                  {c.symbol} {c.code}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* Card 1: Rates by Follower Count */}
@@ -83,7 +116,7 @@ export default function Block() {
                     <div key={i}>
                       <div className="flex justify-between items-center mb-1.5">
                         <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{tier.tier}</span>
-                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>{tier.rate}</span>
+                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>{fmt(tier.low)}-{fmt(tier.high)}{tier.plus ? '+' : ''}</span>
                       </div>
                       <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
                         <div className="h-full rounded-full" style={{ width: `${tier.barPct}%`, background: tier.featured ? 'linear-gradient(90deg, #294ff6, #5e7bf6)' : 'linear-gradient(90deg, #7a93ff, #879cf7)' }} />
