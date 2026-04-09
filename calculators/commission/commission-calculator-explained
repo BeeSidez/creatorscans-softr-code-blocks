@@ -1,21 +1,42 @@
+import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 
+const currencies = [
+  { code: 'GBP', symbol: '£', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '€', rate: 1.17 },
+];
+
 export default function Block() {
+  const [currencyIdx, setCurrencyIdx] = useState(0);
+  const currency = currencies[currencyIdx];
+
+  const fmt = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    if (v >= 1000) return currency.symbol + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (v >= 1) return currency.symbol + v.toFixed(0);
+    return currency.symbol + v.toFixed(2);
+  };
+  const fmtDec = (gbpVal) => {
+    const v = gbpVal * currency.rate;
+    return currency.symbol + v.toFixed(2);
+  };
+
   const categories = [
-    { name: "Beauty & Cosmetics", rate: "8-15%", avg: "£25", pct: 75 },
-    { name: "Fashion & Apparel", rate: "5-12%", avg: "£40", pct: 55 },
-    { name: "Home & Kitchen", rate: "5-10%", avg: "£35", pct: 45 },
-    { name: "Electronics & Gadgets", rate: "3-8%", avg: "£75", pct: 30 },
-    { name: "Health & Wellness", rate: "10-20%", avg: "£30", pct: 85 },
-    { name: "Jewelry & Accessories", rate: "10-15%", avg: "£20", pct: 65 },
-    { name: "Pet Supplies", rate: "8-12%", avg: "£28", pct: 55 },
-    { name: "Baby & Kids", rate: "7-12%", avg: "£32", pct: 50 },
+    { name: "Beauty & Cosmetics", rate: "8-15%", avgGBP: 25, pct: 75 },
+    { name: "Fashion & Apparel", rate: "5-12%", avgGBP: 40, pct: 55 },
+    { name: "Home & Kitchen", rate: "5-10%", avgGBP: 35, pct: 45 },
+    { name: "Electronics & Gadgets", rate: "3-8%", avgGBP: 75, pct: 30 },
+    { name: "Health & Wellness", rate: "10-20%", avgGBP: 30, pct: 85 },
+    { name: "Jewelry & Accessories", rate: "10-15%", avgGBP: 20, pct: 65 },
+    { name: "Pet Supplies", rate: "8-12%", avgGBP: 28, pct: 55 },
+    { name: "Baby & Kids", rate: "7-12%", avgGBP: 32, pct: 50 },
   ];
 
   const monetizationMethods = [
     {
       name: "TikTok Shop",
-      earnings: "£200-£5,000/mo",
+      earningsLow: 200, earningsHigh: 5000, earningsSuffix: "/mo",
       pros: "Passive income, no upfront costs, works with any follower count",
       cons: "Requires consistent product content, commission-based only",
       color: "#294ff6",
@@ -23,7 +44,7 @@ export default function Block() {
     },
     {
       name: "Brand Deals",
-      earnings: "£500-£10,000/post",
+      earningsLow: 500, earningsHigh: 10000, earningsSuffix: "/post",
       pros: "Highest per-post earnings, one-time payment",
       cons: "Requires 10K+ followers, inconsistent deal flow",
       color: "#5e7bf6",
@@ -31,7 +52,7 @@ export default function Block() {
     },
     {
       name: "Creator Fund",
-      earnings: "£20-£200/mo",
+      earningsLow: 20, earningsHigh: 200, earningsSuffix: "/mo",
       pros: "Fully passive, no extra work required",
       cons: "Lowest earnings, requires 100K+ monthly views",
       color: "#7a93ff",
@@ -75,17 +96,34 @@ export default function Block() {
   ];
 
   const earningsTiers = [
-    { name: "Nano Creator", followers: "1K-10K", earnings: "£50-£200/mo", sales: "5-15 sales/mo", content: "3-5 videos/week", barPct: 10 },
-    { name: "Micro Creator", followers: "10K-50K", earnings: "£200-£800/mo", sales: "15-50 sales/mo", content: "5-10 videos/week + LIVE", barPct: 25 },
-    { name: "Mid-Tier Creator", followers: "50K-500K", earnings: "£800-£5,000/mo", sales: "50-200 sales/mo", content: "Daily + 2-3 LIVEs/week", barPct: 50, featured: true },
-    { name: "Macro Creator", followers: "500K-1M", earnings: "£5,000-£15,000/mo", sales: "200-500 sales/mo", content: "Multiple daily + LIVE events", barPct: 75, featured: true },
-    { name: "Mega Creator", followers: "1M+", earnings: "£15,000-£50,000+/mo", sales: "500-2,000+ sales/mo", content: "Full-time + LIVE strategy", barPct: 100 },
+    { name: "Nano Creator", followers: "1K-10K", earningsLow: 50, earningsHigh: 200, sales: "5-15 sales/mo", content: "3-5 videos/week", barPct: 10 },
+    { name: "Micro Creator", followers: "10K-50K", earningsLow: 200, earningsHigh: 800, sales: "15-50 sales/mo", content: "5-10 videos/week + LIVE", barPct: 25 },
+    { name: "Mid-Tier Creator", followers: "50K-500K", earningsLow: 800, earningsHigh: 5000, sales: "50-200 sales/mo", content: "Daily + 2-3 LIVEs/week", barPct: 50, featured: true },
+    { name: "Macro Creator", followers: "500K-1M", earningsLow: 5000, earningsHigh: 15000, sales: "200-500 sales/mo", content: "Multiple daily + LIVE events", barPct: 75, featured: true },
+    { name: "Mega Creator", followers: "1M+", earningsLow: 15000, earningsHigh: 50000, earningsPlus: true, sales: "500-2,000+ sales/mo", content: "Full-time + LIVE strategy", barPct: 100 },
   ];
 
   return (
     <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
       <div className="container py-12">
         <div className="content">
+
+          {/* Currency Switcher Row */}
+          <div className="flex justify-end mb-4">
+            <select
+              value={currencyIdx}
+              onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+              className="px-2 py-1 rounded-lg text-xs font-medium cursor-pointer"
+              style={{ backgroundColor: 'rgba(41,79,246,0.1)', border: '1px solid rgba(41,79,246,0.2)', color: '#294ff6', outline: 'none' }}
+            >
+              {currencies.map((c, idx) => (
+                <option key={c.code} value={idx} style={{ backgroundColor: '#f8fbff', color: '#000f4d' }}>
+                  {c.symbol} {c.code}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* Card 1: Commission Rates by Product Category */}
@@ -116,7 +154,7 @@ export default function Block() {
                             {category.rate}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            Avg: {category.avg}
+                            Avg: {fmt(category.avgGBP)}
                           </span>
                         </div>
                       </div>
@@ -168,7 +206,7 @@ export default function Block() {
                           </h4>
                         </div>
                         <span className="font-bold text-sm px-3 py-1 rounded-full" style={{ backgroundColor: `${method.color}15`, color: method.color }}>
-                          {method.earnings}
+                          {fmt(method.earningsLow)}-{fmt(method.earningsHigh)}{method.earningsSuffix}
                         </span>
                       </div>
                       <div className="space-y-1.5 ml-11">
@@ -273,7 +311,7 @@ export default function Block() {
                           </div>
                         </div>
                         <span className="font-bold text-sm" style={{ color: '#294ff6' }}>
-                          {tier.earnings}
+                          {fmt(tier.earningsLow)}-{fmt(tier.earningsHigh)}{tier.earningsPlus ? '+' : ''}/mo
                         </span>
                       </div>
 
@@ -305,7 +343,7 @@ export default function Block() {
                     <span className="text-white text-xs font-bold">i</span>
                   </div>
                   <p className="text-xs" style={{ color: 'rgba(0,15,77,0.7)' }}>
-                    These estimates assume 8% average commission rate and £35 average product price. Actual earnings depend on niche, product selection, and content quality.
+                    These estimates assume 8% average commission rate and {fmt(35)} average product price. Actual earnings depend on niche, product selection, and content quality.
                   </p>
                 </div>
               </CardContent>
