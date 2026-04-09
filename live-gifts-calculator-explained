@@ -1,0 +1,284 @@
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function Block() {
+  const earningsTiers = [
+    { followers: '1K-5K', perStream: '\u00a34-\u00a320', monthly: '\u00a363-\u00a3315', barPct: 8 },
+    { followers: '5K-10K', perStream: '\u00a316-\u00a340', monthly: '\u00a3252-\u00a3630', barPct: 15 },
+    { followers: '10K-50K', perStream: '\u00a340-\u00a3157', monthly: '\u00a3630-\u00a32,520', barPct: 35 },
+    { followers: '50K-100K', perStream: '\u00a3157-\u00a3395', monthly: '\u00a32,520-\u00a36,300', barPct: 60, featured: true },
+    { followers: '100K+', perStream: '\u00a3395-\u00a31,575+', monthly: '\u00a36,300-\u00a325,200+', barPct: 100, featured: true },
+  ];
+
+  const contentTypes = [
+    { type: 'Q&A / AMA Sessions', rating: 'High', color: '#294ff6' },
+    { type: 'Music / Performances', rating: 'Very High', color: '#294ff6' },
+    { type: 'Challenges / Games', rating: 'High', color: '#294ff6' },
+    { type: 'Tutorials / How-tos', rating: 'Medium', color: '#5e7bf6' },
+    { type: 'Daily Routines / GRWM', rating: 'Medium', color: '#5e7bf6' },
+    { type: 'Collaborations', rating: 'High', color: '#294ff6' },
+  ];
+
+  const strategies = [
+    "Acknowledge every gifter by name immediately",
+    "Set visible gift goals with rewards for milestones",
+    "Stream at consistent times to build viewer habits",
+    "Create tiered recognition for different gift amounts",
+    "Ask questions to keep viewers engaged and chatting",
+    "Use games or challenges that involve the audience",
+    "Promote upcoming streams in your regular content",
+    "Thank top gifters at the start of each stream",
+  ];
+
+  const incomeMethods = [
+    {
+      method: 'LIVE Gifts',
+      earnings: '\u00a340-\u00a33,940+ per stream',
+      requirement: 'Requires only 1K followers',
+      note: 'Active but highest per-hour',
+      color: '#294ff6',
+    },
+    {
+      method: 'Brand Deals',
+      earnings: '\u00a379-\u00a339,370+ per post',
+      requirement: 'Requires negotiation',
+      note: 'One-time payments',
+      color: '#5e7bf6',
+    },
+    {
+      method: 'Creator Fund',
+      earnings: '\u00a30.016-\u00a30.032 per 1K views',
+      requirement: 'Requires 10K followers',
+      note: 'Passive',
+      color: '#7a93ff',
+    },
+  ];
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-12">
+        <div className="content">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Card 1: LIVE Earnings by Follower Count */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png"
+                    alt="Earnings"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">LIVE Earnings by Follower Count</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Streaming 4x/week estimates</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {earningsTiers.map((tier, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl p-4"
+                      style={{
+                        backgroundColor: tier.featured ? 'rgba(41,79,246,0.06)' : '#f8fbff',
+                        border: tier.featured ? '1px solid rgba(41,79,246,0.15)' : '1px solid #eef4fd',
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className="w-2 h-full min-h-[40px] rounded-full"
+                            style={{
+                              background: tier.featured
+                                ? 'linear-gradient(180deg, #294ff6, #5e7bf6)'
+                                : 'linear-gradient(180deg, #7a93ff, #879cf7)',
+                            }}
+                          />
+                          <div>
+                            <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{tier.followers} followers</h4>
+                            <p className="text-xs text-muted-foreground">{tier.perStream}/stream</p>
+                          </div>
+                        </div>
+                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>{tier.monthly}/mo</span>
+                      </div>
+
+                      <div className="ml-4 mb-1">
+                        <div className="h-1.5 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${tier.barPct}%`,
+                              background: tier.featured
+                                ? 'linear-gradient(90deg, #294ff6, #5e7bf6)'
+                                : 'linear-gradient(90deg, #7a93ff, #879cf7)',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Best Content for LIVE */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png"
+                    alt="Content"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Best Content for LIVE</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Content types ranked by gift engagement</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {contentTypes.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-xl p-4"
+                      style={{ backgroundColor: 'rgba(41,79,246,0.04)', border: '1px solid rgba(41,79,246,0.06)' }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: `${item.color}18` }}
+                        >
+                          <span className="text-xs font-bold" style={{ color: item.color }}>{index + 1}</span>
+                        </div>
+                        <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{item.type}</span>
+                      </div>
+                      <span
+                        className="text-xs font-semibold px-3 py-1.5 rounded-full"
+                        style={{
+                          backgroundColor: item.rating === 'Very High'
+                            ? 'rgba(41,79,246,0.15)'
+                            : item.rating === 'High'
+                            ? 'rgba(94,123,246,0.12)'
+                            : 'rgba(135,156,247,0.12)',
+                          color: item.rating === 'Very High'
+                            ? '#294ff6'
+                            : item.rating === 'High'
+                            ? '#4466f8'
+                            : '#5e7bf6',
+                        }}
+                      >
+                        {item.rating}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: Maximize LIVE Gift Earnings */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png"
+                    alt="Strategies"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Maximize LIVE Gift Earnings</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>8 proven strategies to boost your gifts</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {strategies.map((strategy, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl p-4"
+                      style={{ backgroundColor: index % 2 === 0 ? 'rgba(41,79,246,0.04)' : 'rgba(94,123,246,0.04)', border: '1px solid rgba(41,79,246,0.06)' }}
+                    >
+                      <div className="flex gap-3">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: index < 4 ? '#294ff6' : '#7a93ff' }}>
+                          <span className="text-white text-xs font-bold">{index + 1}</span>
+                        </div>
+                        <p className="text-sm leading-relaxed" style={{ color: '#000f4d' }}>
+                          {strategy}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: LIVE vs Other Income */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770814473/creatorscans_icons_3_nv1erg.png"
+                    alt="Compare"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">LIVE vs Other Income</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Compare TikTok monetization methods</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {incomeMethods.map((item, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl p-5"
+                      style={{
+                        backgroundColor: '#f8fbff',
+                        borderLeft: `4px solid ${item.color}`,
+                        border: `1px solid rgba(41,79,246,0.08)`,
+                        borderLeftWidth: '4px',
+                        borderLeftColor: item.color,
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-bold text-sm" style={{ color: '#000f4d' }}>{item.method}</h4>
+                        <span className="font-bold text-sm" style={{ color: item.color }}>{item.earnings}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span
+                          className="text-xs px-2.5 py-1 rounded-full font-medium"
+                          style={{ backgroundColor: `${item.color}12`, color: item.color }}
+                        >
+                          {item.requirement}
+                        </span>
+                        <span
+                          className="text-xs px-2.5 py-1 rounded-full font-medium"
+                          style={{ backgroundColor: '#eef4fd', color: 'rgba(0,15,77,0.6)' }}
+                        >
+                          {item.note}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 rounded-xl p-4 flex items-start gap-3" style={{ backgroundColor: '#eef4fd' }}>
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: '#294ff6' }}>
+                    <span className="text-white text-xs font-bold">i</span>
+                  </div>
+                  <p className="text-xs" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                    LIVE gifts offer the highest per-hour earnings and lowest barrier to entry at just 1,000 followers. Combining all income streams maximizes total revenue.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

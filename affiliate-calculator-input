@@ -1,0 +1,477 @@
+import { useState, useEffect, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { TrendingUp, Calendar, Calculator, Info, ChevronDown, MousePointerClick, ShoppingCart, Coins } from 'lucide-react';
+
+const currencies = [
+  { code: 'GBP', symbol: '\u00a3', label: 'GBP (\u00a3)', rate: 1 },
+  { code: 'USD', symbol: '$', label: 'USD ($)', rate: 1.27 },
+  { code: 'EUR', symbol: '\u20ac', label: 'EUR (\u20ac)', rate: 1.17 },
+  { code: 'AUD', symbol: 'A$', label: 'AUD (A$)', rate: 1.93 },
+  { code: 'CAD', symbol: 'C$', label: 'CAD (C$)', rate: 1.72 },
+  { code: 'INR', symbol: '\u20b9', label: 'INR (\u20b9)', rate: 106.5 },
+];
+
+export default function Block() {
+  const [productPrice, setProductPrice] = useState(50);
+  const [commissionRate, setCommissionRate] = useState(10);
+  const [monthlyClicks, setMonthlyClicks] = useState(1000);
+  const [conversionRate, setConversionRate] = useState(3);
+  const [currency, setCurrency] = useState(currencies[0]);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [animatedCommPerSale, setAnimatedCommPerSale] = useState(0);
+  const [animatedMonthlySales, setAnimatedMonthlySales] = useState(0);
+  const [animatedMonthly, setAnimatedMonthly] = useState(0);
+  const [animatedAnnual, setAnimatedAnnual] = useState(0);
+  const animFrameRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  const commissionPerSale = productPrice * (commissionRate / 100);
+  const monthlySales = monthlyClicks * (conversionRate / 100);
+  const monthlyEarnings = commissionPerSale * monthlySales;
+  const annualEarnings = monthlyEarnings * 12;
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowCurrencyDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const startCPS = animatedCommPerSale;
+    const startSales = animatedMonthlySales;
+    const startMonthly = animatedMonthly;
+    const startAnnual = animatedAnnual;
+    const duration = 400;
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+
+      setAnimatedCommPerSale(startCPS + (commissionPerSale - startCPS) * ease);
+      setAnimatedMonthlySales(startSales + (monthlySales - startSales) * ease);
+      setAnimatedMonthly(startMonthly + (monthlyEarnings - startMonthly) * ease);
+      setAnimatedAnnual(startAnnual + (annualEarnings - startAnnual) * ease);
+
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    animFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [commissionPerSale, monthlySales, monthlyEarnings, annualEarnings]);
+
+  const convert = (val) => val * currency.rate;
+
+  const formatCurrency = (val) => {
+    const converted = convert(val);
+    if (currency.rate >= 50) {
+      return currency.symbol + Math.round(converted).toLocaleString('en-GB');
+    }
+    return currency.symbol + converted.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const formatWhole = (val) => {
+    const converted = val * currency.rate;
+    if (currency.rate >= 50) {
+      return currency.symbol + Math.round(converted).toLocaleString('en-GB');
+    }
+    return currency.symbol + Math.round(converted).toLocaleString('en-GB');
+  };
+
+  const sliderTrackStyle = (value, min, max) => {
+    const pct = ((value - min) / (max - min)) * 100;
+    return {
+      background: `linear-gradient(to right, #294ff6 0%, #5e7bf6 ${pct}%, #eef4fd ${pct}%, #eef4fd 100%)`,
+    };
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-5xl mx-auto space-y-8">
+
+          {/* Calculator Card */}
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            {/* Card Header */}
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                    <Calculator className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Affiliate Commission Calculator</h2>
+                    <p className="text-sm" style={{ color: '#7a93ff' }}>Adjust the sliders to see your projected affiliate earnings</p>
+                  </div>
+                </div>
+
+                {/* Currency Selector */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all"
+                    style={{
+                      backgroundColor: 'rgba(41,79,246,0.2)',
+                      border: '1px solid rgba(122,147,255,0.3)',
+                      color: '#7a93ff',
+                    }}
+                  >
+                    <span className="font-bold text-white">{currency.symbol}</span>
+                    <span>{currency.code}</span>
+                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#7a93ff', transform: showCurrencyDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                  </button>
+
+                  {showCurrencyDropdown && (
+                    <div
+                      className="absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-50"
+                      style={{ backgroundColor: '#152237', border: '1px solid rgba(122,147,255,0.2)', minWidth: '140px' }}
+                    >
+                      {currencies.map((c) => (
+                        <button
+                          key={c.code}
+                          onClick={() => { setCurrency(c); setShowCurrencyDropdown(false); }}
+                          className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 transition-colors"
+                          style={{
+                            color: currency.code === c.code ? 'white' : '#7a93ff',
+                            backgroundColor: currency.code === c.code ? 'rgba(41,79,246,0.3)' : 'transparent',
+                          }}
+                          onMouseEnter={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'rgba(41,79,246,0.15)'; }}
+                          onMouseLeave={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'transparent'; }}
+                        >
+                          <span className="font-bold" style={{ color: 'white', width: '24px' }}>{c.symbol}</span>
+                          <span>{c.code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <CardContent className="p-8 space-y-8">
+              {/* Input: Product Price */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Product Price</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{formatWhole(productPrice)}</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="5"
+                  max="500"
+                  step="5"
+                  value={productPrice}
+                  onChange={(e) => setProductPrice(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(productPrice, 5, 500)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{formatWhole(5)}</span>
+                  <span>{formatWhole(500)}</span>
+                </div>
+              </div>
+
+              {/* Input: Commission Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Commission Rate</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{commissionRate}%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="5"
+                  max="30"
+                  step="1"
+                  value={commissionRate}
+                  onChange={(e) => setCommissionRate(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(commissionRate, 5, 30)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>5%</span>
+                  <span>30%</span>
+                </div>
+              </div>
+
+              {/* Input: Monthly Clicks */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Monthly Clicks</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{monthlyClicks.toLocaleString('en-GB')} clicks</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="100"
+                  max="10000"
+                  step="100"
+                  value={monthlyClicks}
+                  onChange={(e) => setMonthlyClicks(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(monthlyClicks, 100, 10000)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>100</span>
+                  <span>10,000</span>
+                </div>
+              </div>
+
+              {/* Input: Conversion Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Conversion Rate</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{conversionRate}%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="0.5"
+                  value={conversionRate}
+                  onChange={(e) => setConversionRate(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(conversionRate, 1, 10)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>1%</span>
+                  <span>10%</span>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-px" style={{ backgroundColor: '#eef4fd' }} />
+
+              {/* Hero Result Card */}
+              <div className="rounded-2xl p-6 text-center" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.25)' }}>
+                  <TrendingUp className="w-6 h-6" style={{ color: '#7a93ff' }} />
+                </div>
+                <p className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: '#7a93ff' }}>Estimated Monthly Earnings</p>
+                <p className="text-4xl md:text-5xl font-bold text-white mb-1">{formatCurrency(animatedMonthly)}</p>
+                <p className="text-sm" style={{ color: 'rgba(122,147,255,0.6)' }}>per month from affiliate commissions</p>
+              </div>
+
+              {/* 4 Result Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Commission Per Sale */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <Coins className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Per Sale</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{formatCurrency(animatedCommPerSale)}</p>
+                </div>
+
+                {/* Monthly Sales */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <ShoppingCart className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Monthly Sales</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{Math.round(animatedMonthlySales)}</p>
+                </div>
+
+                {/* Monthly Earnings */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <TrendingUp className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Monthly</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{formatCurrency(animatedMonthly)}</p>
+                </div>
+
+                {/* Annual Projection */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <Calendar className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Annual</p>
+                  <p className="text-2xl font-bold" style={{ color: '#000f4d' }}>{formatCurrency(animatedAnnual)}</p>
+                </div>
+              </div>
+
+              {/* Clicks to Earnings Funnel */}
+              <div className="rounded-xl p-6" style={{ backgroundColor: '#eef4fd' }}>
+                <p className="text-xs font-semibold uppercase tracking-wide text-center mb-5" style={{ color: '#000f4d' }}>Clicks to Earnings Funnel</p>
+                <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap">
+                  {/* Clicks */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-2" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                      <MousePointerClick className="w-6 h-6" style={{ color: '#294ff6' }} />
+                    </div>
+                    <p className="text-lg font-bold" style={{ color: '#294ff6' }}>{monthlyClicks.toLocaleString('en-GB')}</p>
+                    <p className="text-xs text-muted-foreground">Clicks</p>
+                  </div>
+
+                  {/* Arrow */}
+                  <div className="flex flex-col items-center px-1">
+                    <div className="text-xs font-semibold px-2 py-1 rounded-full mb-1" style={{ backgroundColor: 'rgba(41,79,246,0.1)', color: '#294ff6' }}>{conversionRate}%</div>
+                    <div className="w-8 h-0.5 rounded-full" style={{ backgroundColor: '#294ff6' }} />
+                  </div>
+
+                  {/* Sales */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-2" style={{ backgroundColor: 'rgba(94,123,246,0.12)' }}>
+                      <ShoppingCart className="w-6 h-6" style={{ color: '#5e7bf6' }} />
+                    </div>
+                    <p className="text-lg font-bold" style={{ color: '#5e7bf6' }}>{Math.round(monthlySales)}</p>
+                    <p className="text-xs text-muted-foreground">Sales</p>
+                  </div>
+
+                  {/* Arrow */}
+                  <div className="flex flex-col items-center px-1">
+                    <div className="text-xs font-semibold px-2 py-1 rounded-full mb-1" style={{ backgroundColor: 'rgba(94,123,246,0.1)', color: '#5e7bf6' }}>x {formatCurrency(commissionPerSale)}</div>
+                    <div className="w-8 h-0.5 rounded-full" style={{ backgroundColor: '#5e7bf6' }} />
+                  </div>
+
+                  {/* Earnings */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-2" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                      <Coins className="w-6 h-6" style={{ color: '#7a93ff' }} />
+                    </div>
+                    <p className="text-lg font-bold" style={{ color: '#000f4d' }}>{formatCurrency(monthlyEarnings)}</p>
+                    <p className="text-xs text-muted-foreground">Earnings</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Earnings bar visual */}
+              <div className="rounded-xl p-4" style={{ backgroundColor: '#eef4fd' }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-muted-foreground">Monthly earnings breakdown</span>
+                  <span className="text-xs font-semibold" style={{ color: '#000f4d' }}>{formatCurrency(animatedMonthly)}/mo</span>
+                </div>
+                <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-500 ease-out"
+                    style={{
+                      width: `${Math.min((monthlyEarnings / 5000) * 100, 100)}%`,
+                      background: 'linear-gradient(90deg, #294ff6 0%, #5e7bf6 50%, #7a93ff 100%)',
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between mt-1.5">
+                  <span className="text-xs text-muted-foreground">{currency.symbol}0</span>
+                  <span className="text-xs text-muted-foreground">{formatWhole(5000)}+</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Calculator Inputs Explained */}
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                  <Info className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Calculator Inputs Explained</h2>
+                  <p className="text-sm" style={{ color: '#7a93ff' }}>Understand each input to get the most accurate results</p>
+                </div>
+              </div>
+            </div>
+
+            <CardContent className="p-8">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #eef4fd' }}>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Input</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Description</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: 'Product Price', desc: 'The retail price of the product you are promoting', example: formatWhole(50), required: true },
+                      { name: 'Commission Rate', desc: 'Percentage you earn per sale (set by the seller)', example: '10%', required: true },
+                      { name: 'Monthly Clicks', desc: 'How many people click your affiliate link each month', example: '1,000', required: true },
+                      { name: 'Conversion Rate', desc: 'Percentage of clicks that result in a purchase', example: '3%', required: true },
+                    ].map((row, i) => (
+                      <tr key={i} className="transition-colors" style={{ borderBottom: '1px solid #eef4fd' }}>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{row.name}</span>
+                            {row.required && (
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: '#d8d8ff', color: '#5e7bf6' }}>Required</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-sm" style={{ color: 'rgba(0,15,77,0.6)' }}>{row.desc}</td>
+                        <td className="py-4 px-4 font-bold text-sm" style={{ color: '#294ff6' }}>{row.example}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-6 flex items-start gap-3 rounded-xl p-4" style={{ backgroundColor: '#eef4fd' }}>
+                <Info className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#5e7bf6' }} />
+                <p className="text-sm" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                  TikTok Shop commissions range from 5% to 30% by category. Beauty and fashion typically pay 10% to 20%. Higher-priced products earn more per sale but may convert at lower rates.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .cs-slider {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 8px;
+          border-radius: 4px;
+          outline: none;
+          cursor: pointer;
+          transition: opacity 0.15s;
+        }
+        .cs-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: white;
+          border: 3px solid #294ff6;
+          box-shadow: 0 2px 8px rgba(41,79,246,0.3);
+          cursor: pointer;
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .cs-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.15);
+          box-shadow: 0 2px 12px rgba(41,79,246,0.45);
+        }
+        .cs-slider::-moz-range-thumb {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: white;
+          border: 3px solid #294ff6;
+          box-shadow: 0 2px 8px rgba(41,79,246,0.3);
+          cursor: pointer;
+        }
+      `}</style>
+    </div>
+  );
+}

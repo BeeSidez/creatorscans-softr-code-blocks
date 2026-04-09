@@ -1,0 +1,97 @@
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
+
+const faqs = [
+  {
+    question: 'How much should I charge for a TikTok brand deal?',
+    answer: 'It depends on your follower count and engagement rate. Creators with 10K-50K followers typically charge \u00a3395-\u00a31,970 per post, 50K-100K followers charge \u00a31,970-\u00a33,940, and 100K-500K followers charge \u00a33,940-\u00a311,810. High engagement (8%+) can add a 50-100% premium on top of these base rates.'
+  },
+  {
+    question: 'What factors affect brand deal pricing?',
+    answer: 'The main factors are follower count, engagement rate, content niche, deliverable type, usage rights, exclusivity, and timing. Q4 holiday season (October to December) typically pays 20-30% more due to higher brand budgets. Finance and technology niches command 2-3x higher rates than entertainment or gaming.'
+  },
+  {
+    question: 'What is a good engagement rate for brand deals?',
+    answer: '5%+ is considered strong for brand deal negotiations. 8%+ is excellent and can command 1.5-2x higher rates than average. Below 3% may reduce your rate below average, as brands increasingly prioritize engagement over raw follower count when evaluating creators.'
+  },
+  {
+    question: 'Should I charge more for usage rights?',
+    answer: 'Yes, absolutely. Organic reposts add 25-50% to your base rate, paid ad rights add 50-100%, whitelisting adds 50-100%, and exclusivity adds 25-50%. Always ask about intended usage before quoting a price, as usage rights can significantly increase the total value of a deal.'
+  },
+  {
+    question: 'How do I negotiate brand deal rates?',
+    answer: 'Start 20-30% above your target rate to leave room for negotiation. Lead with your engagement rate rather than follower count, as brands value engaged audiences more. Ask about usage rights before giving a price. Have a professional media kit ready with your analytics, past collaborations, and audience demographics.'
+  },
+  {
+    question: 'What niches command the highest brand deal rates?',
+    answer: 'Finance and investing command the highest rates at 2-3x the average, followed by technology at 1.5-2.5x, health and wellness at 1.5-2x, and business at 1.5-2x. Beauty and fashion sit at the 1x average baseline. Entertainment and gaming typically pay below average at 0.5-1x.'
+  },
+  {
+    question: 'Do brand deals pay more than Creator Fund?',
+    answer: 'Yes, significantly more. A creator with 50K followers might earn \u00a38-\u00a316 per month from Creator Fund but \u00a31,970-\u00a33,940 per brand deal post. Brand deals are typically the largest income stream for most creators, accounting for 50-70% of total earnings.'
+  },
+  {
+    question: 'How many brand deals should I do per month?',
+    answer: '2-4 deals per month is sustainable for most mid-tier creators. Too many sponsored posts can hurt your engagement rate and audience trust. A good rule of thumb is keeping sponsored content to no more than 20-30% of your total posts to maintain authenticity.'
+  },
+];
+
+export default function Block() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const highlightValues = (text) => {
+    const parts = text.split(/(\u00a3[0-9,]+\.?[0-9]*(?:-\u00a3[0-9,]+\.?[0-9]*)?(?:\+?\/(?:month|post|stream))?|[0-9]+-[0-9]+%|[0-9]+\.?[0-9]*%|[0-9]+K-[0-9]+K|[0-9]+K\+?|[0-9]+-[0-9]+x|[0-9]+\.?[0-9]*x|50-70%|20-30%|25-50%|50-100%)/g);
+    return parts.map((part, i) => {
+      if (part.match(/(\u00a3|%|[0-9]+x|[0-9]+K)/)) {
+        return <span key={i} className="font-semibold" style={{ color: '#294ff6' }}>{part}</span>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.12)' }}>
+              <span className="text-sm font-semibold" style={{ color: '#294ff6' }}>FAQ</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: '#000f4d' }}>Frequently Asked Questions</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Everything you need to know about TikTok brand deal pricing</p>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+              return (
+                <div key={index} className="rounded-xl overflow-hidden transition-all duration-300 shadow-sm" style={{ backgroundColor: '#f8fbff', border: isOpen ? '1px solid rgba(41,79,246,0.2)' : '1px solid transparent' }}>
+                  <button onClick={() => toggleFaq(index)} className="w-full px-6 py-5 flex items-center justify-between gap-4 text-left transition-colors" aria-expanded={isOpen}>
+                    <div className="flex items-center gap-4">
+                      <div className="w-1 h-6 rounded-full transition-all duration-300 flex-shrink-0" style={{ backgroundColor: isOpen ? '#294ff6' : '#eef4fd' }} />
+                      <span className="font-semibold text-base md:text-lg leading-relaxed" style={{ color: '#000f4d' }}>{faq.question}</span>
+                    </div>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300" style={{ backgroundColor: isOpen ? 'rgba(41,79,246,0.12)' : '#eef4fd' }}>
+                      {isOpen ? <Minus className="w-4 h-4" style={{ color: '#294ff6' }} /> : <Plus className="w-4 h-4" style={{ color: '#7a93ff' }} />}
+                    </div>
+                  </button>
+                  <div className="overflow-hidden transition-all duration-300 ease-in-out" style={{ maxHeight: isOpen ? '500px' : '0', opacity: isOpen ? 1 : 0 }}>
+                    <div className="px-6 pb-6 pt-0 ml-5">
+                      <div className="pl-4" style={{ borderLeft: '2px solid #eef4fd' }}>
+                        <p className="text-foreground leading-relaxed">{highlightValues(faq.answer)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
