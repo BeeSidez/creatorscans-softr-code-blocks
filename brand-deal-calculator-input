@@ -1,0 +1,343 @@
+import { useState, useEffect, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Calculator, Info, TrendingUp, ChevronDown, DollarSign, Zap, Target } from 'lucide-react';
+
+const currencies = [
+  { code: 'GBP', symbol: '\u00a3', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '\u20ac', rate: 1.17 },
+  { code: 'AUD', symbol: 'A$', rate: 1.93 },
+  { code: 'CAD', symbol: 'C$', rate: 1.72 },
+  { code: 'INR', symbol: '\u20b9', rate: 106.5 },
+];
+
+const niches = [
+  { name: 'Finance/Investing', multiplier: 2.5 },
+  { name: 'Technology', multiplier: 2.0 },
+  { name: 'Health/Wellness', multiplier: 1.75 },
+  { name: 'Business', multiplier: 1.75 },
+  { name: 'Beauty/Fashion', multiplier: 1.0 },
+  { name: 'Fitness', multiplier: 1.0 },
+  { name: 'Entertainment', multiplier: 0.8 },
+  { name: 'Gaming', multiplier: 0.6 },
+];
+
+const deliverables = [
+  { name: 'Dedicated Video', multiplier: 1.0 },
+  { name: 'Video Series (3+)', multiplier: 2.5 },
+  { name: 'LIVE Integration', multiplier: 0.8 },
+  { name: 'Story/Mention', multiplier: 0.4 },
+];
+
+export default function Block() {
+  const [followers, setFollowers] = useState(50000);
+  const [engagementRate, setEngagementRate] = useState(5);
+  const [nicheIndex, setNicheIndex] = useState(0);
+  const [deliverableIndex, setDeliverableIndex] = useState(0);
+  const [currency, setCurrency] = useState(currencies[0]);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [showNicheDropdown, setShowNicheDropdown] = useState(false);
+  const [showDeliverableDropdown, setShowDeliverableDropdown] = useState(false);
+  const currencyRef = useRef(null);
+  const nicheRef = useRef(null);
+  const deliverableRef = useRef(null);
+
+  const niche = niches[nicheIndex];
+  const deliverable = deliverables[deliverableIndex];
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (currencyRef.current && !currencyRef.current.contains(e.target)) setShowCurrencyDropdown(false);
+      if (nicheRef.current && !nicheRef.current.contains(e.target)) setShowNicheDropdown(false);
+      if (deliverableRef.current && !deliverableRef.current.contains(e.target)) setShowDeliverableDropdown(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Engagement multiplier
+  const getEngMultiplier = (rate) => {
+    if (rate >= 8) return 1.75;
+    if (rate >= 5) return 1.3;
+    if (rate >= 3) return 1.0;
+    return 0.6;
+  };
+
+  const engMultiplier = getEngMultiplier(engagementRate);
+
+  // Base rate: (followers / 1000) * 0.025 GBP
+  const baseRate = (followers / 1000) * 0.025;
+
+  // Final rate
+  const finalRate = baseRate * niche.multiplier * engMultiplier * deliverable.multiplier;
+
+  // Low-high range
+  const lowRate = finalRate * 0.7;
+  const highRate = finalRate * 1.3;
+
+  // Per post rate (dedicated video, 1x niche)
+  const perPostBase = baseRate * engMultiplier;
+  const perPostLow = perPostBase * 0.7;
+  const perPostHigh = perPostBase * 1.3;
+
+  const convert = (val) => val * currency.rate;
+
+  const fmt = (val) => {
+    const c = convert(val);
+    if (c < 1) return currency.symbol + c.toFixed(2);
+    return currency.symbol + Math.round(c).toLocaleString('en-GB');
+  };
+
+  const sliderTrack = (value, min, max) => {
+    const p = ((value - min) / (max - min)) * 100;
+    return { background: `linear-gradient(to right, #294ff6 0%, #5e7bf6 ${p}%, #eef4fd ${p}%, #eef4fd 100%)` };
+  };
+
+  const engLabel = engagementRate >= 8 ? 'Excellent' : engagementRate >= 5 ? 'Strong' : engagementRate >= 3 ? 'Average' : 'Below Average';
+  const engPremium = engagementRate >= 8 ? '+75%' : engagementRate >= 5 ? '+30%' : engagementRate >= 3 ? 'Baseline' : '-40%';
+
+  const usageRights = [
+    { name: 'Organic Reposts', range: '+25-50%', low: finalRate * 0.25, high: finalRate * 0.50 },
+    { name: 'Paid Ads', range: '+50-100%', low: finalRate * 0.50, high: finalRate * 1.00 },
+    { name: 'Exclusivity', range: '+25-50%', low: finalRate * 0.25, high: finalRate * 0.50 },
+    { name: 'Whitelisting', range: '+50-100%', low: finalRate * 0.50, high: finalRate * 1.00 },
+  ];
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-5xl mx-auto space-y-8">
+
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            {/* Header */}
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                    <Calculator className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Brand Deal Rate Calculator</h2>
+                    <p className="text-sm" style={{ color: '#7a93ff' }}>Calculate your recommended brand deal rate</p>
+                  </div>
+                </div>
+
+                {/* Currency */}
+                <div className="relative" ref={currencyRef}>
+                  <button onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)} className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'rgba(41,79,246,0.2)', border: '1px solid rgba(122,147,255,0.3)', color: '#7a93ff' }}>
+                    <span className="font-bold text-white">{currency.symbol}</span>
+                    <span>{currency.code}</span>
+                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#7a93ff', transform: showCurrencyDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                  </button>
+                  {showCurrencyDropdown && (
+                    <div className="absolute right-0 top-full mt-2 rounded-xl shadow-lg overflow-hidden z-50" style={{ backgroundColor: '#152237', border: '1px solid rgba(122,147,255,0.2)', minWidth: '140px' }}>
+                      {currencies.map((c) => (
+                        <button key={c.code} onClick={() => { setCurrency(c); setShowCurrencyDropdown(false); }} className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 transition-colors" style={{ color: currency.code === c.code ? 'white' : '#7a93ff', backgroundColor: currency.code === c.code ? 'rgba(41,79,246,0.3)' : 'transparent' }} onMouseEnter={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'rgba(41,79,246,0.15)'; }} onMouseLeave={(e) => { if (currency.code !== c.code) e.target.style.backgroundColor = 'transparent'; }}>
+                          <span className="font-bold" style={{ color: 'white', width: '24px' }}>{c.symbol}</span>
+                          <span>{c.code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <CardContent className="p-8 space-y-7">
+              {/* Total Followers */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Total Followers</label>
+                  <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{followers.toLocaleString('en-GB')}</span>
+                  </div>
+                </div>
+                <input type="range" min="1000" max="2000000" step="1000" value={followers} onChange={(e) => setFollowers(Number(e.target.value))} className="cs-slider" style={sliderTrack(followers, 1000, 2000000)} />
+                <div className="flex justify-between text-xs text-muted-foreground"><span>1K</span><span>2M</span></div>
+              </div>
+
+              {/* Engagement Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Engagement Rate</label>
+                  <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{engagementRate}%</span>
+                  </div>
+                </div>
+                <input type="range" min="1" max="20" step="0.5" value={engagementRate} onChange={(e) => setEngagementRate(Number(e.target.value))} className="cs-slider" style={sliderTrack(engagementRate, 1, 20)} />
+                <div className="flex justify-between text-xs text-muted-foreground"><span>1%</span><span>20%</span></div>
+              </div>
+
+              {/* Content Niche Dropdown */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Content Niche</label>
+                <div className="relative" ref={nicheRef}>
+                  <button onClick={() => setShowNicheDropdown(!showNicheDropdown)} className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#eef4fd', color: '#000f4d' }}>
+                    <span>{niche.name} ({niche.multiplier}x)</span>
+                    <ChevronDown className="w-4 h-4" style={{ color: '#5e7bf6', transform: showNicheDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                  </button>
+                  {showNicheDropdown && (
+                    <div className="absolute left-0 right-0 top-full mt-1 rounded-xl shadow-lg overflow-hidden z-50 max-h-[280px] overflow-y-auto" style={{ backgroundColor: '#f8fbff', border: '1px solid #eef4fd' }}>
+                      {niches.map((n, i) => (
+                        <button key={n.name} onClick={() => { setNicheIndex(i); setShowNicheDropdown(false); }} className="w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors" style={{ color: '#000f4d', backgroundColor: nicheIndex === i ? 'rgba(41,79,246,0.08)' : 'transparent' }} onMouseEnter={(e) => { if (nicheIndex !== i) e.target.style.backgroundColor = 'rgba(41,79,246,0.04)'; }} onMouseLeave={(e) => { if (nicheIndex !== i) e.target.style.backgroundColor = 'transparent'; }}>
+                          <span>{n.name}</span>
+                          <span className="font-semibold" style={{ color: '#294ff6' }}>{n.multiplier}x</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Deliverable Type Dropdown */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Deliverable Type</label>
+                <div className="relative" ref={deliverableRef}>
+                  <button onClick={() => setShowDeliverableDropdown(!showDeliverableDropdown)} className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#eef4fd', color: '#000f4d' }}>
+                    <span>{deliverable.name} ({deliverable.multiplier}x)</span>
+                    <ChevronDown className="w-4 h-4" style={{ color: '#5e7bf6', transform: showDeliverableDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                  </button>
+                  {showDeliverableDropdown && (
+                    <div className="absolute left-0 right-0 top-full mt-1 rounded-xl shadow-lg overflow-hidden z-50" style={{ backgroundColor: '#f8fbff', border: '1px solid #eef4fd' }}>
+                      {deliverables.map((d, i) => (
+                        <button key={d.name} onClick={() => { setDeliverableIndex(i); setShowDeliverableDropdown(false); }} className="w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors" style={{ color: '#000f4d', backgroundColor: deliverableIndex === i ? 'rgba(41,79,246,0.08)' : 'transparent' }} onMouseEnter={(e) => { if (deliverableIndex !== i) e.target.style.backgroundColor = 'rgba(41,79,246,0.04)'; }} onMouseLeave={(e) => { if (deliverableIndex !== i) e.target.style.backgroundColor = 'transparent'; }}>
+                          <span>{d.name}</span>
+                          <span className="font-semibold" style={{ color: '#294ff6' }}>{d.multiplier}x</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-px" style={{ backgroundColor: '#eef4fd' }} />
+
+              {/* Hero Result Card */}
+              <div className="rounded-2xl p-8 text-center" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <p className="text-xs font-medium uppercase tracking-widest mb-2" style={{ color: '#7a93ff' }}>Recommended Rate Range</p>
+                <p className="text-4xl md:text-5xl font-bold text-white mb-1">
+                  {fmt(lowRate)} - {fmt(highRate)}
+                </p>
+                <p className="text-sm" style={{ color: 'rgba(122,147,255,0.7)' }}>
+                  Per {deliverable.name.toLowerCase()} in {niche.name.toLowerCase()}
+                </p>
+              </div>
+
+              {/* Secondary result cards */}
+              <div className="grid sm:grid-cols-3 gap-4">
+                {/* Per Post Rate */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <DollarSign className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Per Post Rate</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{fmt(perPostLow)} - {fmt(perPostHigh)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Base rate (no niche modifier)</p>
+                </div>
+
+                {/* Engagement Premium */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <Zap className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Engagement Premium</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{engPremium}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{engLabel} ({engagementRate}% rate)</p>
+                </div>
+
+                {/* Niche Multiplier */}
+                <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.06)', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.12)' }}>
+                    <Target className="w-5 h-5" style={{ color: '#294ff6' }} />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">Niche Multiplier</p>
+                  <p className="text-2xl font-bold" style={{ color: '#294ff6' }}>{niche.multiplier}x</p>
+                  <p className="text-xs text-muted-foreground mt-1">{niche.name}</p>
+                </div>
+              </div>
+
+              {/* Usage Rights Add-ons */}
+              <div className="rounded-xl p-5" style={{ backgroundColor: '#eef4fd' }}>
+                <h3 className="font-bold text-sm mb-4" style={{ color: '#000f4d' }}>Usage Rights Add-ons</h3>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {usageRights.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg px-4 py-3" style={{ backgroundColor: '#f8fbff' }}>
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: '#000f4d' }}>{item.name}</p>
+                        <p className="text-xs text-muted-foreground">{item.range}</p>
+                      </div>
+                      <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{fmt(item.low)} - {fmt(item.high)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Calculator Inputs Explained */}
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                  <Info className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Calculator Inputs Explained</h2>
+                  <p className="text-sm" style={{ color: '#7a93ff' }}>Understand each input to get the most accurate rate</p>
+                </div>
+              </div>
+            </div>
+
+            <CardContent className="p-8">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #eef4fd' }}>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Input</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Description</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: 'Total Followers', desc: 'Your total TikTok follower count from your profile', example: '50,000', required: true },
+                      { name: 'Engagement Rate', desc: 'Average likes + comments divided by followers, expressed as a percentage', example: '5%', required: true },
+                      { name: 'Content Niche', desc: 'Your primary content category. High-value niches like finance command higher rates', example: 'Finance/Investing (2.5x)', required: true },
+                      { name: 'Deliverable Type', desc: 'The type of content the brand is requesting from you', example: 'Dedicated Video (1x)', required: true },
+                    ].map((row, i) => (
+                      <tr key={i} className="transition-colors" style={{ borderBottom: '1px solid #eef4fd' }}>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{row.name}</span>
+                            {row.required && <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: '#d8d8ff', color: '#5e7bf6' }}>Required</span>}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-sm" style={{ color: 'rgba(0,15,77,0.6)' }}>{row.desc}</td>
+                        <td className="py-4 px-4 font-bold text-sm" style={{ color: '#294ff6' }}>{row.example}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-6 flex items-start gap-3 rounded-xl p-4" style={{ backgroundColor: '#eef4fd' }}>
+                <Info className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#5e7bf6' }} />
+                <p className="text-sm" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                  For the most accurate results, use your 30-day average metrics from TikTok Analytics. Brand deal rates are highly variable and depend on individual negotiation, brand budget, and campaign scope.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .cs-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 4px; outline: none; cursor: pointer; }
+        .cs-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 50%; background: white; border: 3px solid #294ff6; box-shadow: 0 2px 8px rgba(41,79,246,0.3); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+        .cs-slider::-webkit-slider-thumb:hover { transform: scale(1.15); box-shadow: 0 2px 12px rgba(41,79,246,0.45); }
+        .cs-slider::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: white; border: 3px solid #294ff6; box-shadow: 0 2px 8px rgba(41,79,246,0.3); cursor: pointer; }
+      `}</style>
+    </div>
+  );
+}
