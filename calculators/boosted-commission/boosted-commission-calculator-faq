@@ -1,0 +1,141 @@
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
+
+const faqs = [
+  {
+    question: 'What is a boosted commission rate on TikTok Shop?',
+    answer: 'Sellers can offer higher commission rates (10-15%+) to attract top-performing creators. Default rates are typically 5-7%, set as a baseline for any affiliate. Boosted rates are either offered proactively by sellers to high-GMV creators or negotiated directly between creators and sellers.'
+  },
+  {
+    question: 'How much more can I earn with a boosted rate?',
+    answer: 'At \u00a325,000 monthly GMV, moving from 5% to 15% commission increases earnings from \u00a31,250 to \u00a33,750 per month (before agency fees and refunds). That is an extra \u00a32,500 per month or \u00a330,000 per year from the same sales volume.'
+  },
+  {
+    question: 'What is the 30-day commission lock on TikTok Shop?',
+    answer: 'If a seller lowers their commission rate, creators keep the original higher rate for 30 days from the date of the change. This protects creators who have already invested time creating content for a product. If the seller raises the rate, the higher rate can apply immediately.'
+  },
+  {
+    question: 'How do refunds affect my commission?',
+    answer: 'Full refunds remove the commission entirely. Partial refunds reduce it proportionally. Average refund rates are 5-10% depending on the product category. Commission is not final until after the refund and delivery settlement period, which is approximately 15 days after delivery confirmation.'
+  },
+  {
+    question: 'When do I actually get paid my commission?',
+    answer: 'TikTok Shop payouts are initiated approximately 15 calendar days after delivery confirmation. Earned commission and cash received are not the same thing. The settlement period accounts for potential returns and disputes before your commission is confirmed and released to your wallet.'
+  },
+  {
+    question: 'What does the agency fee cover?',
+    answer: 'Agencies typically take 15-30% of your commission in exchange for negotiating higher rates, managing brand relationships, and handling admin. Whether the fee is worth it depends on how much extra GMV or rate uplift they deliver. A good agency should more than offset their fee through better rates and brand deals.'
+  },
+  {
+    question: 'How is commission calculated on TikTok Shop?',
+    answer: 'Commission is calculated from actual revenue (not raw GMV) and adjusts for refunds. TikTok shows estimated commission first, but it is not final until after settlement. The formula is: Net Commission = GMV x Commission Rate x (1 - Refund Rate) x (1 - Agency Fee).'
+  },
+  {
+    question: 'Should I focus on higher commission rate or higher GMV?',
+    answer: 'Both matter, but GMV has more leverage. Doubling your GMV at 5% earns the same as keeping GMV constant and tripling your rate to 15%. Ideally, work on both. Increase your GMV through better content and posting frequency, then use that track record to negotiate higher commission rates with sellers.'
+  }
+];
+
+export default function Block() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const highlightValues = (text) => {
+    const parts = text.split(/(\u00a3[0-9,]+\.?[0-9]*|\u00a3[0-9,]+|[0-9]+-[0-9]+%|[0-9]+%\+?|[0-9]+-[0-9]+ days|[0-9]+ days|[0-9]+ calendar days|[0-9]+K\+|[0-9]+-[0-9]+x|[0-9]+x)/g);
+    return parts.map((part, i) => {
+      if (part.match(/(\u00a3[0-9,]+\.?[0-9]*|\u00a3[0-9,]+|[0-9]+-[0-9]+%|[0-9]+%\+?|[0-9]+-[0-9]+ days|[0-9]+ days|[0-9]+ calendar days|[0-9]+K\+|[0-9]+-[0-9]+x|[0-9]+x)/)) {
+        return <span key={i} className="font-semibold" style={{ color: '#294ff6' }}>{part}</span>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-4xl mx-auto">
+          {/* Section header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style={{ backgroundColor: 'rgba(41,79,246,0.08)', border: '1px solid rgba(41,79,246,0.12)' }}>
+              <span className="text-sm font-semibold" style={{ color: '#294ff6' }}>FAQ</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: '#000f4d' }}>
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to know about TikTok Shop boosted commission rates and earnings
+            </p>
+          </div>
+
+          {/* FAQ Items */}
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+
+              return (
+                <div
+                  key={index}
+                  className="rounded-xl overflow-hidden transition-all duration-300 shadow-sm"
+                  style={{
+                    backgroundColor: '#f8fbff',
+                    border: isOpen ? '1px solid rgba(41,79,246,0.2)' : '1px solid transparent',
+                  }}
+                >
+                  <button
+                    onClick={() => toggleFaq(index)}
+                    className="w-full px-6 py-5 flex items-center justify-between gap-4 text-left transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Left accent bar */}
+                      <div
+                        className="w-1 h-6 rounded-full transition-all duration-300 flex-shrink-0"
+                        style={{
+                          backgroundColor: isOpen ? '#294ff6' : '#eef4fd',
+                        }}
+                      />
+                      <span className="font-semibold text-base md:text-lg leading-relaxed" style={{ color: '#000f4d' }}>
+                        {faq.question}
+                      </span>
+                    </div>
+                    <div
+                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300"
+                      style={{
+                        backgroundColor: isOpen ? 'rgba(41,79,246,0.12)' : '#eef4fd',
+                      }}
+                    >
+                      {isOpen ? (
+                        <Minus className="w-4 h-4" style={{ color: '#294ff6' }} />
+                      ) : (
+                        <Plus className="w-4 h-4" style={{ color: '#7a93ff' }} />
+                      )}
+                    </div>
+                  </button>
+
+                  <div
+                    className="overflow-hidden transition-all duration-300 ease-in-out"
+                    style={{
+                      maxHeight: isOpen ? '500px' : '0',
+                      opacity: isOpen ? 1 : 0,
+                    }}
+                  >
+                    <div className="px-6 pb-6 pt-0 ml-5">
+                      <div className="pl-4" style={{ borderLeft: '2px solid #eef4fd' }}>
+                        <p className="text-foreground leading-relaxed">
+                          {highlightValues(faq.answer)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

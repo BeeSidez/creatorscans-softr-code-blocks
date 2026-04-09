@@ -1,0 +1,458 @@
+import { useState, useEffect, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { TrendingUp, ArrowUpRight, Calculator, Info, Shield } from 'lucide-react';
+
+const currencies = [
+  { code: 'GBP', symbol: '\u00a3', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '\u20ac', rate: 1.17 },
+];
+
+export default function Block() {
+  const [gmv, setGmv] = useState(25000);
+  const [currentRate, setCurrentRate] = useState(5);
+  const [boostedRate, setBoostedRate] = useState(15);
+  const [agencyFee, setAgencyFee] = useState(20);
+  const [refundRate, setRefundRate] = useState(8);
+  const [currencyIdx, setCurrencyIdx] = useState(0);
+
+  const [animCurrentNet, setAnimCurrentNet] = useState(0);
+  const [animBoostedNet, setAnimBoostedNet] = useState(0);
+  const [animMonthlyDiff, setAnimMonthlyDiff] = useState(0);
+  const [animAnnualDiff, setAnimAnnualDiff] = useState(0);
+  const animFrameRef = useRef(null);
+
+  const currency = currencies[currencyIdx];
+
+  const currentGross = gmv * (currentRate / 100);
+  const boostedGross = gmv * (boostedRate / 100);
+  const currentAfterRefunds = currentGross * (1 - refundRate / 100);
+  const boostedAfterRefunds = boostedGross * (1 - refundRate / 100);
+  const currentNet = currentAfterRefunds * (1 - agencyFee / 100);
+  const boostedNet = boostedAfterRefunds * (1 - agencyFee / 100);
+  const monthlyDifference = boostedNet - currentNet;
+  const annualDifference = monthlyDifference * 12;
+
+  useEffect(() => {
+    const startCN = animCurrentNet;
+    const startBN = animBoostedNet;
+    const startMD = animMonthlyDiff;
+    const startAD = animAnnualDiff;
+    const duration = 400;
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+
+      setAnimCurrentNet(startCN + (currentNet - startCN) * ease);
+      setAnimBoostedNet(startBN + (boostedNet - startBN) * ease);
+      setAnimMonthlyDiff(startMD + (monthlyDifference - startMD) * ease);
+      setAnimAnnualDiff(startAD + (annualDifference - startAD) * ease);
+
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    animFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [currentNet, boostedNet, monthlyDifference, annualDifference]);
+
+  const convert = (val) => val * currency.rate;
+
+  const formatCurrency = (val) => {
+    const converted = convert(val);
+    if (currency.rate >= 50) {
+      return currency.symbol + Math.round(converted).toLocaleString('en-GB');
+    }
+    return currency.symbol + converted.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const formatWhole = (val) => {
+    const converted = val * currency.rate;
+    return currency.symbol + Math.round(converted).toLocaleString('en-GB');
+  };
+
+  const sliderTrackStyle = (value, min, max) => {
+    const pct = ((value - min) / (max - min)) * 100;
+    return {
+      background: `linear-gradient(to right, #294ff6 0%, #5e7bf6 ${pct}%, #eef4fd ${pct}%, #eef4fd 100%)`,
+    };
+  };
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-16">
+        <div className="content max-w-5xl mx-auto space-y-8">
+
+          {/* Calculator Card */}
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            {/* Card Header */}
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                    <Calculator className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Boosted Commission Calculator</h2>
+                    <p className="text-sm" style={{ color: '#7a93ff' }}>Compare current vs boosted commission rates side by side</p>
+                  </div>
+                </div>
+
+                {/* Currency Selector */}
+                <select
+                  value={currencyIdx}
+                  onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+                  className="px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+                  style={{ backgroundColor: 'rgba(41,79,246,0.2)', border: '1px solid rgba(122,147,255,0.3)', color: 'white', outline: 'none' }}
+                >
+                  {currencies.map((c, idx) => (
+                    <option key={c.code} value={idx} style={{ backgroundColor: '#152237', color: 'white' }}>
+                      {c.symbol} {c.code}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <CardContent className="p-8 space-y-8">
+              {/* Input: Monthly GMV */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Monthly GMV</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{formatWhole(gmv)}</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="1000"
+                  max="500000"
+                  step="1000"
+                  value={gmv}
+                  onChange={(e) => setGmv(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(gmv, 1000, 500000)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{formatWhole(1000)}</span>
+                  <span>{formatWhole(500000)}</span>
+                </div>
+              </div>
+
+              {/* Input: Current Commission Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Current Commission Rate</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{currentRate}%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="2"
+                  max="15"
+                  step="0.5"
+                  value={currentRate}
+                  onChange={(e) => setCurrentRate(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(currentRate, 2, 15)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>2%</span>
+                  <span>15%</span>
+                </div>
+              </div>
+
+              {/* Input: Boosted Commission Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Boosted Commission Rate</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{boostedRate}%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="5"
+                  max="30"
+                  step="0.5"
+                  value={boostedRate}
+                  onChange={(e) => setBoostedRate(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(boostedRate, 5, 30)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>5%</span>
+                  <span>30%</span>
+                </div>
+              </div>
+
+              {/* Input: Agency Fee */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Agency Fee</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{agencyFee}%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  step="1"
+                  value={agencyFee}
+                  onChange={(e) => setAgencyFee(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(agencyFee, 0, 50)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>0%</span>
+                  <span>50%</span>
+                </div>
+              </div>
+
+              {/* Input: Refund Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold" style={{ color: '#000f4d' }}>Refund Rate</label>
+                  <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#eef4fd' }}>
+                    <span className="text-sm font-bold" style={{ color: '#294ff6' }}>{refundRate}%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="20"
+                  step="1"
+                  value={refundRate}
+                  onChange={(e) => setRefundRate(Number(e.target.value))}
+                  className="cs-slider"
+                  style={sliderTrackStyle(refundRate, 0, 20)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>0%</span>
+                  <span>20%</span>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-px" style={{ backgroundColor: '#eef4fd' }} />
+
+              {/* Hero Result Card - "You're leaving X on the table" */}
+              <div className="rounded-2xl p-6 text-center" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.25)' }}>
+                  <TrendingUp className="w-6 h-6" style={{ color: '#7a93ff' }} />
+                </div>
+                <p className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: '#7a93ff' }}>You're Leaving Money on the Table</p>
+                <p className="text-4xl md:text-5xl font-bold text-white mb-1">{formatCurrency(animMonthlyDiff)}<span className="text-lg font-medium" style={{ color: '#7a93ff' }}>/month</span></p>
+                <p className="text-sm mb-4" style={{ color: 'rgba(122,147,255,0.6)' }}>extra you could be earning with a boosted rate</p>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{ backgroundColor: 'rgba(41,79,246,0.15)', border: '1px solid rgba(41,79,246,0.25)' }}>
+                  <ArrowUpRight className="w-4 h-4" style={{ color: '#7a93ff' }} />
+                  <span className="text-sm font-semibold" style={{ color: '#7a93ff' }}>Annual projection: {formatCurrency(animAnnualDiff)}</span>
+                </div>
+              </div>
+
+              {/* Side-by-Side Comparison */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Current Column */}
+                <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#eef4fd', border: '1px solid rgba(41,79,246,0.1)' }}>
+                  <div className="px-5 py-3 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.08)' }}>
+                    <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#5e7bf6' }}>Current Rate ({currentRate}%)</p>
+                  </div>
+                  <div className="p-5 space-y-4">
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Gross Commission</p>
+                      <p className="text-xl font-bold" style={{ color: '#294ff6' }}>{formatCurrency(currentGross)}</p>
+                    </div>
+                    <div className="h-px" style={{ backgroundColor: 'rgba(41,79,246,0.1)' }} />
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">After Refunds ({refundRate}%)</p>
+                      <p className="text-xl font-bold" style={{ color: '#294ff6' }}>{formatCurrency(currentAfterRefunds)}</p>
+                    </div>
+                    <div className="h-px" style={{ backgroundColor: 'rgba(41,79,246,0.1)' }} />
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">After Agency Fee ({agencyFee}%)</p>
+                      <p className="text-2xl font-bold" style={{ color: '#000f4d' }}>{formatCurrency(animCurrentNet)}</p>
+                      <p className="text-xs text-muted-foreground">net per month</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Boosted Column */}
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                  <div className="px-5 py-3 text-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                    <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#7a93ff' }}>Boosted Rate ({boostedRate}%)</p>
+                  </div>
+                  <div className="p-5 space-y-4">
+                    <div className="text-center">
+                      <p className="text-xs mb-1" style={{ color: 'rgba(122,147,255,0.6)' }}>Gross Commission</p>
+                      <p className="text-xl font-bold text-white">{formatCurrency(boostedGross)}</p>
+                    </div>
+                    <div className="h-px" style={{ backgroundColor: 'rgba(122,147,255,0.15)' }} />
+                    <div className="text-center">
+                      <p className="text-xs mb-1" style={{ color: 'rgba(122,147,255,0.6)' }}>After Refunds ({refundRate}%)</p>
+                      <p className="text-xl font-bold text-white">{formatCurrency(boostedAfterRefunds)}</p>
+                    </div>
+                    <div className="h-px" style={{ backgroundColor: 'rgba(122,147,255,0.15)' }} />
+                    <div className="text-center">
+                      <p className="text-xs mb-1" style={{ color: 'rgba(122,147,255,0.6)' }}>After Agency Fee ({agencyFee}%)</p>
+                      <p className="text-2xl font-bold text-white">{formatCurrency(animBoostedNet)}</p>
+                      <p className="text-xs" style={{ color: 'rgba(122,147,255,0.5)' }}>net per month</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Difference Bar */}
+              <div className="rounded-xl p-4" style={{ backgroundColor: '#eef4fd' }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-muted-foreground">Monthly earnings gap</span>
+                  <span className="text-xs font-semibold" style={{ color: '#000f4d' }}>+{formatCurrency(animMonthlyDiff)}/mo</span>
+                </div>
+                <div className="h-4 rounded-full overflow-hidden relative" style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}>
+                  {/* Current bar */}
+                  <div
+                    className="h-full rounded-full absolute left-0 top-0 transition-all duration-500 ease-out"
+                    style={{
+                      width: boostedNet > 0 ? `${Math.min((currentNet / boostedNet) * 100, 100)}%` : '0%',
+                      backgroundColor: '#5e7bf6',
+                      opacity: 0.4,
+                    }}
+                  />
+                  {/* Boosted bar */}
+                  <div
+                    className="h-full rounded-full absolute left-0 top-0 transition-all duration-500 ease-out"
+                    style={{
+                      width: '100%',
+                      background: 'linear-gradient(90deg, #294ff6 0%, #5e7bf6 50%, #7a93ff 100%)',
+                      opacity: 0.15,
+                    }}
+                  />
+                  {/* Current portion (solid) */}
+                  <div
+                    className="h-full rounded-l-full absolute left-0 top-0 transition-all duration-500 ease-out"
+                    style={{
+                      width: boostedNet > 0 ? `${Math.min((currentNet / boostedNet) * 100, 100)}%` : '0%',
+                      background: 'linear-gradient(90deg, #5e7bf6, #7a93ff)',
+                    }}
+                  />
+                  {/* Difference portion */}
+                  <div
+                    className="h-full rounded-r-full absolute top-0 transition-all duration-500 ease-out"
+                    style={{
+                      left: boostedNet > 0 ? `${Math.min((currentNet / boostedNet) * 100, 100)}%` : '0%',
+                      width: boostedNet > 0 ? `${Math.max(100 - (currentNet / boostedNet) * 100, 0)}%` : '0%',
+                      background: 'linear-gradient(90deg, #294ff6, #000f4d)',
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between mt-1.5">
+                  <span className="text-xs" style={{ color: '#5e7bf6' }}>Current: {formatCurrency(currentNet)}</span>
+                  <span className="text-xs font-semibold" style={{ color: '#000f4d' }}>Boosted: {formatCurrency(boostedNet)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Calculator Inputs Explained */}
+          <Card className="border-0 shadow-lg overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+            <div className="px-8 py-6" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(41,79,246,0.2)' }}>
+                  <Info className="w-5 h-5" style={{ color: '#7a93ff' }} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Calculator Inputs Explained</h2>
+                  <p className="text-sm" style={{ color: '#7a93ff' }}>Understand each input to get the most accurate results</p>
+                </div>
+              </div>
+            </div>
+
+            <CardContent className="p-8">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #eef4fd' }}>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Input</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Description</th>
+                      <th className="text-left py-3 px-4 font-bold text-sm" style={{ color: '#000f4d' }}>Default</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: 'Monthly GMV', desc: 'Total gross merchandise value you generate per month through TikTok Shop', example: formatWhole(25000) },
+                      { name: 'Current Commission Rate', desc: 'The commission rate you are currently earning from sellers', example: '5%' },
+                      { name: 'Boosted Commission Rate', desc: 'The higher rate you could earn through negotiation or seller programs', example: '15%' },
+                      { name: 'Agency Fee', desc: 'Percentage your agency takes from your commission earnings', example: '20%' },
+                      { name: 'Refund Rate', desc: 'Average percentage of sales that get refunded, reducing your commission', example: '8%' },
+                    ].map((row, i) => (
+                      <tr key={i} className="transition-colors" style={{ borderBottom: '1px solid #eef4fd' }}>
+                        <td className="py-4 px-4">
+                          <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>{row.name}</span>
+                        </td>
+                        <td className="py-4 px-4 text-sm" style={{ color: 'rgba(0,15,77,0.6)' }}>{row.desc}</td>
+                        <td className="py-4 px-4 font-bold text-sm" style={{ color: '#294ff6' }}>{row.example}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-6 flex items-start gap-3 rounded-xl p-4" style={{ backgroundColor: '#eef4fd' }}>
+                <Shield className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#5e7bf6' }} />
+                <p className="text-sm" style={{ color: 'rgba(0,15,77,0.7)' }}>
+                  TikTok Shop has a 30-day commission lock. If a seller lowers their commission rate after you start promoting, you keep the original higher rate for 30 days. This protects creators from sudden rate drops after they have already invested time creating content.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .cs-slider {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 8px;
+          border-radius: 4px;
+          outline: none;
+          cursor: pointer;
+          transition: opacity 0.15s;
+        }
+        .cs-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: white;
+          border: 3px solid #294ff6;
+          box-shadow: 0 2px 8px rgba(41,79,246,0.3);
+          cursor: pointer;
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .cs-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.15);
+          box-shadow: 0 2px 12px rgba(41,79,246,0.45);
+        }
+        .cs-slider::-moz-range-thumb {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: white;
+          border: 3px solid #294ff6;
+          box-shadow: 0 2px 8px rgba(41,79,246,0.3);
+          cursor: pointer;
+        }
+      `}</style>
+    </div>
+  );
+}

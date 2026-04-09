@@ -1,0 +1,262 @@
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+
+const currencies = [
+  { code: 'GBP', symbol: '\u00a3', rate: 1 },
+  { code: 'USD', symbol: '$', rate: 1.27 },
+  { code: 'EUR', symbol: '\u20ac', rate: 1.17 },
+];
+
+export default function Block() {
+  const [currencyIdx, setCurrencyIdx] = useState(0);
+
+  const currency = currencies[currencyIdx];
+
+  const fmt = (val) => {
+    const converted = val * currency.rate;
+    return currency.symbol + Math.round(converted).toLocaleString('en-GB');
+  };
+
+  const gmvExamples = [
+    { gmv: 10000, low: 500, high: 1500, diff: 1000, barPct: 25 },
+    { gmv: 25000, low: 1250, high: 3750, diff: 2500, barPct: 50 },
+    { gmv: 50000, low: 2500, high: 7500, diff: 5000, barPct: 75 },
+    { gmv: 100000, low: 5000, high: 15000, diff: 10000, barPct: 100 },
+  ];
+
+  const strategies = [
+    'Build a strong sales track record with consistent GMV',
+    'Reach out to sellers directly with your performance data',
+    'Focus on high-margin product categories',
+    'Negotiate exclusive or tiered commission structures',
+    'Demonstrate high conversion rates and low return rates',
+    'Create sample content to show sellers your quality',
+    'Join seller affiliate programs with built-in boosted tiers',
+    'Use agencies that negotiate higher rates on your behalf',
+  ];
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-12">
+        <div className="content">
+
+          {/* Currency Switcher */}
+          <div className="flex justify-end mb-6">
+            <select
+              value={currencyIdx}
+              onChange={(e) => setCurrencyIdx(Number(e.target.value))}
+              className="px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+              style={{ backgroundColor: '#eef4fd', border: '1px solid rgba(41,79,246,0.15)', color: '#000f4d', outline: 'none' }}
+            >
+              {currencies.map((c, idx) => (
+                <option key={c.code} value={idx} style={{ backgroundColor: '#f8fbff', color: '#000f4d' }}>
+                  {c.symbol} {c.code}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Card 1: How Commission Boosting Works */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png"
+                    alt="Commission"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">How Commission Boosting Works</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Why higher rates exist and how to get them</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="rounded-xl p-5" style={{ backgroundColor: 'rgba(41,79,246,0.04)', border: '1px solid rgba(41,79,246,0.06)' }}>
+                    <div className="flex gap-3">
+                      <div className="w-2 min-h-[48px] rounded-full flex-shrink-0" style={{ background: 'linear-gradient(180deg, #294ff6, #294ff688)' }} />
+                      <div>
+                        <h4 className="font-bold text-sm mb-1.5" style={{ color: '#000f4d' }}>Default Commission Rates</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Most TikTok Shop sellers set default affiliate commission rates between 5-7%. These are the standard rates available to any creator who adds the product to their showcase.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl p-5" style={{ backgroundColor: 'rgba(41,79,246,0.04)', border: '1px solid rgba(94,123,246,0.06)' }}>
+                    <div className="flex gap-3">
+                      <div className="w-2 min-h-[48px] rounded-full flex-shrink-0" style={{ background: 'linear-gradient(180deg, #5e7bf6, #5e7bf688)' }} />
+                      <div>
+                        <h4 className="font-bold text-sm mb-1.5" style={{ color: '#000f4d' }}>Boosted Rates</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Sellers can offer higher commission rates (10-15% or more) to attract top-performing creators. These boosted rates are designed to incentivise creators who consistently drive sales volume.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl p-5" style={{ backgroundColor: 'rgba(41,79,246,0.04)', border: '1px solid rgba(122,147,255,0.06)' }}>
+                    <div className="flex gap-3">
+                      <div className="w-2 min-h-[48px] rounded-full flex-shrink-0" style={{ background: 'linear-gradient(180deg, #7a93ff, #7a93ff88)' }} />
+                      <div>
+                        <h4 className="font-bold text-sm mb-1.5" style={{ color: '#000f4d' }}>30-Day Rate Lock</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          If a seller lowers their commission rate after you start promoting, you keep the original higher rate for 30 days. This protects creators from sudden rate drops after investing time in content creation.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Commission Impact by GMV */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png"
+                    alt="Impact"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Commission Impact by GMV</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>5% vs 15% at different sales volumes</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-5">
+                  {gmvExamples.map((row, index) => (
+                    <div key={index}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>
+                          {fmt(row.gmv)} GMV
+                        </span>
+                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>
+                          +{fmt(row.diff)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs text-muted-foreground">5%: {fmt(row.low)}</span>
+                        <span className="text-xs text-muted-foreground">vs</span>
+                        <span className="text-xs font-semibold" style={{ color: '#294ff6' }}>15%: {fmt(row.high)}</span>
+                      </div>
+                      <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${row.barPct}%`,
+                            background: 'linear-gradient(90deg, #294ff6, #5e7bf6)',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: How to Get Boosted Rates */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png"
+                    alt="Strategies"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">How to Get Boosted Rates</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>8 strategies to unlock higher commissions</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {strategies.map((strategy, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl p-4 transition-all"
+                      style={{ backgroundColor: index % 2 === 0 ? 'rgba(41,79,246,0.04)' : 'rgba(94,123,246,0.04)', border: '1px solid rgba(41,79,246,0.06)' }}
+                    >
+                      <div className="flex gap-3">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: index < 4 ? '#294ff6' : '#7a93ff' }}>
+                          <span className="text-white text-xs font-bold">{index + 1}</span>
+                        </div>
+                        <p className="text-sm leading-relaxed" style={{ color: '#000f4d' }}>
+                          {strategy}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: Understanding Refunds and Clawbacks */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770814473/creatorscans_icons_3_nv1erg.png"
+                    alt="Refunds"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Understanding Refunds and Clawbacks</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>How returns affect your commission</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {[
+                    { label: 'Full Refund', desc: 'If a buyer returns the product for a full refund, 100% of the commission for that sale is clawed back. The sale is treated as if it never happened.', avoid: true },
+                    { label: 'Partial Refund', desc: 'If a buyer receives a partial refund, the commission is reduced proportionally. For example, a 50% refund on a sale results in a 50% commission reduction.', avoid: false },
+                    { label: 'Average Refund Rates', desc: 'Refund rates typically range from 5-10% depending on product category. Fashion and apparel tend to have higher return rates, while beauty products are lower.', avoid: false },
+                    { label: 'Settlement Period', desc: 'Commission is not final until after the settlement period. TikTok initiates payouts approximately 15 days after delivery confirmation, allowing time for returns.', avoid: false },
+                    { label: 'Estimated vs Actual', desc: 'The commission shown in your dashboard is estimated. It adjusts downward for refunds and is not confirmed until after the settlement window closes.', avoid: true },
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 rounded-xl p-3 transition-all"
+                      style={{
+                        backgroundColor: item.avoid ? 'rgba(220,38,38,0.04)' : 'rgba(41,79,246,0.04)',
+                        border: item.avoid ? '1px solid rgba(220,38,38,0.1)' : '1px solid rgba(41,79,246,0.06)',
+                      }}
+                    >
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                        style={{
+                          backgroundColor: item.avoid ? 'rgba(220,38,38,0.12)' : 'rgba(41,79,246,0.12)',
+                        }}
+                      >
+                        {item.avoid ? (
+                          <span className="text-xs font-bold" style={{ color: '#dc2626' }}>!</span>
+                        ) : (
+                          <span className="text-xs font-bold" style={{ color: '#294ff6' }}>&#10003;</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold mb-0.5" style={{ color: '#000f4d' }}>{item.label}</p>
+                        <p className="text-sm leading-relaxed" style={{ color: item.avoid ? 'rgba(0,15,77,0.6)' : 'rgba(0,15,77,0.7)' }}>
+                          {item.desc}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
