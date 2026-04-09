@@ -1,0 +1,232 @@
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function Block() {
+  const categories = [
+    { name: "Beauty & Skincare", rate: "15-30%", subtitle: "High margins, repeat purchases", barPct: 90 },
+    { name: "Fashion & Apparel", rate: "10-20%", subtitle: "Seasonal trends, broad appeal", barPct: 60 },
+    { name: "Home & Living", rate: "8-15%", subtitle: "High order values, lower frequency", barPct: 45 },
+    { name: "Electronics & Tech", rate: "5-10%", subtitle: "Low margins, high price points", barPct: 25 },
+  ];
+
+  const tips = [
+    "Choose products you genuinely use and believe in",
+    "Show the product in action with real use cases",
+    "Create honest reviews mentioning both pros and cons",
+    'Use clear calls-to-action like "Link in bio" or "Shop now"',
+    "Focus on niche products with passionate audiences",
+    "Post consistently (1-3 product videos per day)",
+    "Engage with comments to build trust",
+    "Test different price points (\u00a315-\u00a380 often converts best)",
+  ];
+
+  const strategies = [
+    {
+      title: "Build Trust First",
+      description: "Share valuable content for 2-4 weeks before promoting. Followers are 3x more likely to buy from trusted creators.",
+      color: "#294ff6",
+    },
+    {
+      title: "Show Transformation",
+      description: "Before and after videos convert 2-4x better. Show the problem, solution, and results.",
+      color: "#5e7bf6",
+    },
+    {
+      title: "Address Objections",
+      description: "Proactively mention common concerns. Answering objections increases conversions by 20-30%.",
+      color: "#7a93ff",
+    },
+  ];
+
+  const bestProducts = [
+    { text: "Problem-solving products (acne solutions, organization tools)", avoid: false },
+    { text: "Impulse buys under \u00a340 (low decision threshold)", avoid: false },
+    { text: "Products with visual results (before/after potential)", avoid: false },
+    { text: 'Trending items (check TikTok Shop "Top Products")', avoid: false },
+    { text: "Items with high perceived value vs actual cost", avoid: false },
+    { text: "Products you can demo in 15-30 seconds", avoid: false },
+    { text: "Avoid: Generic products with lots of competition", avoid: true },
+    { text: "Avoid: Very expensive items (over \u00a3160) without building trust", avoid: true },
+  ];
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f8fbff 50%, #fafbff 100%)' }}>
+      <div className="container py-12">
+        <div className="content">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Card 1: Commission Rates by Category */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/58_nztnfj.png"
+                    alt="Commission"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Commission Rates by Category</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>What affiliates earn across niches</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-5">
+                  {categories.map((category, index) => (
+                    <div key={index}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-semibold text-sm" style={{ color: '#000f4d' }}>
+                          {category.name}
+                        </span>
+                        <span className="font-bold text-sm" style={{ color: '#294ff6' }}>
+                          {category.rate}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">{category.subtitle}</p>
+                      <div className="h-2 rounded-full" style={{ backgroundColor: '#eef4fd' }}>
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${category.barPct}%`,
+                            background: 'linear-gradient(90deg, #294ff6, #5e7bf6)',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: How to Maximize Affiliate Earnings */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png"
+                    alt="Tips"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">How to Maximize Affiliate Earnings</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>8 proven strategies for higher commissions</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {tips.map((tip, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl p-4 transition-all"
+                      style={{ backgroundColor: index % 2 === 0 ? 'rgba(41,79,246,0.04)' : 'rgba(94,123,246,0.04)', border: '1px solid rgba(41,79,246,0.06)' }}
+                    >
+                      <div className="flex gap-3">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: index < 4 ? '#294ff6' : '#7a93ff' }}>
+                          <span className="text-white text-xs font-bold">{index + 1}</span>
+                        </div>
+                        <p className="text-sm leading-relaxed" style={{ color: '#000f4d' }}>
+                          {tip}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: Conversion Rate Optimization */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png"
+                    alt="Optimization"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Conversion Rate Optimization</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>Turn more clicks into actual sales</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {strategies.map((strategy, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl p-5 transition-all"
+                      style={{ backgroundColor: 'rgba(41,79,246,0.04)', border: `1px solid ${strategy.color}20` }}
+                    >
+                      <div className="flex gap-3">
+                        <div
+                          className="w-2 min-h-[48px] rounded-full flex-shrink-0"
+                          style={{ background: `linear-gradient(180deg, ${strategy.color}, ${strategy.color}88)` }}
+                        />
+                        <div>
+                          <h4 className="font-bold text-sm mb-1.5" style={{ color: '#000f4d' }}>
+                            {strategy.title}
+                          </h4>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {strategy.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: Best Products to Promote */}
+            <Card className="border-0 shadow-sm overflow-hidden" style={{ backgroundColor: '#f8fbff' }}>
+              <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #152237 0%, #000f4d 100%)' }}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1770814473/creatorscans_icons_3_nv1erg.png"
+                    alt="Products"
+                    className="w-10 h-10"
+                  />
+                  <div>
+                    <h3 className="font-bold text-white text-base">Best Products to Promote</h3>
+                    <p className="text-xs" style={{ color: '#7a93ff' }}>What converts best for affiliates</p>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {bestProducts.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 rounded-xl p-3 transition-all"
+                      style={{
+                        backgroundColor: item.avoid ? 'rgba(220,38,38,0.04)' : 'rgba(41,79,246,0.04)',
+                        border: item.avoid ? '1px solid rgba(220,38,38,0.1)' : '1px solid rgba(41,79,246,0.06)',
+                      }}
+                    >
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                        style={{
+                          backgroundColor: item.avoid ? 'rgba(220,38,38,0.12)' : 'rgba(41,79,246,0.12)',
+                        }}
+                      >
+                        {item.avoid ? (
+                          <span className="text-xs font-bold" style={{ color: '#dc2626' }}>!</span>
+                        ) : (
+                          <span className="text-xs font-bold" style={{ color: '#294ff6' }}>&#10003;</span>
+                        )}
+                      </div>
+                      <p className="text-sm leading-relaxed" style={{ color: item.avoid ? 'rgba(0,15,77,0.6)' : '#000f4d' }}>
+                        {item.text}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
