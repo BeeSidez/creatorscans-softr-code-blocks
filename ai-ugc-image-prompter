@@ -1,0 +1,333 @@
+import { useState, useMemo } from 'react';
+import { useRecords, q } from '@/lib/datasource';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Copy, X, GripVertical } from 'lucide-react';
+import { toast } from 'sonner';
+
+const select = q.select({
+  name: '4QSmO',
+  category: 'NQwnv',
+  subcategory: 'eecej',
+  description: 'GsAE2',
+  cloudinaryUrl: 'OlAxK',
+  examplePrompt: 'qA2jz',
+  templatePrompt: 'E0uvw',
+});
+
+interface ShotItem {
+  id: string;
+  fields: {
+    name: string;
+    category: { label: string; id: string } | null;
+    subcategory: { label: string; id: string } | null;
+    description: string;
+    cloudinaryUrl: string;
+    examplePrompt: string;
+    templatePrompt: string;
+  };
+}
+
+export default function Block() {
+  const { data, status } = useRecords({ select, count: 100 });
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [lightboxShot, setLightboxShot] = useState<ShotItem | null>(null);
+  const [storyboard, setStoryboard] = useState<(ShotItem | null)[]>(Array(6).fill(null));
+  const [draggedItem, setDraggedItem] = useState<ShotItem | null>(null);
+
+  const items = data?.pages.flatMap((page) => page.items) || [];
+
+  // Extract unique categories and subcategories
+  const categories = useMemo(() => {
+    const cats = new Map<string, string>();
+    items.forEach((item) => {
+      if (item.fields.category) {
+        cats.set(item.fields.category.id, item.fields.category.label);
+      }
+    });
+    return Array.from(cats.entries()).map(([id, label]) => ({ id, label }));
+  }, [items]);
+
+  const subcategories = useMemo(() => {
+    const subcats = new Map<string, string>();
+    items.forEach((item) => {
+      if (item.fields.subcategory) {
+        subcats.set(item.fields.subcategory.id, item.fields.subcategory.label);
+      }
+    });
+    return Array.from(subcats.entries()).map(([id, label]) => ({ id, label }));
+  }, [items]);
+
+  // Filter items
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      if (selectedCategory && item.fields.category?.id !== selectedCategory) return false;
+      if (selectedSubcategory && item.fields.subcategory?.id !== selectedSubcategory) return false;
+      return true;
+    });
+  }, [items, selectedCategory, selectedSubcategory]);
+
+  const copyPrompt = (prompt: string) => {
+    navigator.clipboard.writeText(prompt);
+    toast.success('Prompt copied to clipboard!');
+  };
+
+  const copyAllPrompts = () => {
+    const prompts = storyboard
+      .filter((shot) => shot !== null)
+      .map((shot, index) => `Shot ${index + 1}:\n${shot!.fields.templatePrompt}`)
+      .join('\n\n---\n\n');
+    if (prompts) {
+      navigator.clipboard.writeText(prompts);
+      toast.success('All prompts copied to clipboard!');
+    } else {
+      toast.error('No shots in storyboard');
+    }
+  };
+
+  const handleDragStart = (item: ShotItem) => {
+    setDraggedItem(item);
+  };
+
+  const handleDrop = (index: number) => {
+    if (draggedItem) {
+      const newStoryboard = [...storyboard];
+      newStoryboard[index] = draggedItem;
+      setStoryboard(newStoryboard);
+      setDraggedItem(null);
+    }
+  };
+
+  const removeFromStoryboard = (index: number) => {
+    const newStoryboard = [...storyboard];
+    newStoryboard[index] = null;
+    setStoryboard(newStoryboard);
+  };
+
+  if (status === 'pending') {
+    return (
+      <div className="container py-12">
+        <div className="content flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="text-lg font-medium">Loading shot library...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="container py-12">
+        <div className="content flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="text-lg font-medium text-destructive">Error loading shots</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container py-8">
+      <div className="content">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-heading mb-2">Build Your Shotlist</h1>
+          <p className="text-muted-foreground">
+            Browse 153 UGC reference shots. Drag them into your storyboard. Copy all prompts.
+          </p>
+        </div>
+
+        {/* Filter Pills */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          <Badge
+            variant={selectedCategory === null ? 'default' : 'outline'}
+            className="cursor-pointer"
+            onClick={() => {
+              setSelectedCategory(null);
+              setSelectedSubcategory(null);
+            }}
+          >
+            All Categories
+          </Badge>
+          {categories.map((cat) => (
+            <Badge
+              key={cat.id}
+              variant={selectedCategory === cat.id ? 'default' : 'outline'}
+              className="cursor-pointer"
+              onClick={() => {
+                setSelectedCategory(cat.id);
+                setSelectedSubcategory(null);
+              }}
+            >
+              {cat.label.replace(/_/g, ' ')}
+            </Badge>
+          ))}
+        </div>
+
+        {selectedCategory && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            <Badge
+              variant={selectedSubcategory === null ? 'secondary' : 'outline'}
+              className="cursor-pointer"
+              onClick={() => setSelectedSubcategory(null)}
+            >
+              All Subcategories
+            </Badge>
+            {subcategories.map((subcat) => (
+              <Badge
+                key={subcat.id}
+                variant={selectedSubcategory === subcat.id ? 'secondary' : 'outline'}
+                className="cursor-pointer"
+                onClick={() => setSelectedSubcategory(subcat.id)}
+              >
+                {subcat.label}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Main Layout: Library + Storyboard */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left: Shot Library */}
+          <div className="lg:col-span-2">
+            <h2 className="text-xl font-heading mb-4">
+              Shot Library ({filteredItems.length})
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {filteredItems.map((item) => (
+                <div
+                  key={item.id}
+                  draggable
+                  onDragStart={() => handleDragStart(item)}
+                  className="cursor-move"
+                >
+                  <Card
+                    className="overflow-hidden hover:ring-2 hover:ring-primary transition-all"
+                    onClick={() => setLightboxShot(item)}
+                  >
+                    <img
+                      src={item.fields.cloudinaryUrl}
+                      alt={item.fields.description}
+                      className="w-full aspect-[9/16] object-cover"
+                    />
+                    <div className="p-3">
+                      <p className="text-sm font-medium line-clamp-2">
+                        {item.fields.description}
+                      </p>
+                    </div>
+                  </Card>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Storyboard */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-4">
+              <h2 className="text-xl font-heading mb-4">Your Storyboard</h2>
+              <div className="space-y-3 mb-4">
+                {storyboard.map((shot, index) => (
+                  <div
+                    key={index}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => handleDrop(index)}
+                    className={`border-2 border-dashed rounded-lg p-3 min-h-[120px] flex items-center justify-center relative ${ shot ? 'border-primary bg-primary/5' : 'border-muted-foreground/30' }`}
+                  >
+                    {shot ? (
+                      <>
+                        <div className="flex items-center gap-3 w-full">
+                          <GripVertical className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                          <img
+                            src={shot.fields.cloudinaryUrl}
+                            alt={shot.fields.description}
+                            className="w-16 h-24 object-cover rounded flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-medium text-muted-foreground mb-1">
+                              Shot {index + 1}
+                            </div>
+                            <p className="text-sm line-clamp-2">{shot.fields.description}</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 right-2 h-6 w-6"
+                          onClick={() => removeFromStoryboard(index)}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="text-center text-muted-foreground">
+                        <div className="text-sm font-medium mb-1">Slot {index + 1}</div>
+                        <div className="text-xs">Drag a shot here</div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <Button
+                onClick={copyAllPrompts}
+                className="w-full"
+                disabled={storyboard.every((shot) => shot === null)}
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Copy All Prompts
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Lightbox Modal */}
+        <Dialog open={!!lightboxShot} onOpenChange={() => setLightboxShot(null)}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            {lightboxShot && (
+              <>
+                <DialogHeader>
+                  <DialogTitle>{lightboxShot.fields.description}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <img
+                    src={lightboxShot.fields.cloudinaryUrl}
+                    alt={lightboxShot.fields.description}
+                    className="w-full max-w-sm mx-auto rounded-lg"
+                  />
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-heading text-sm">Example Prompt</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                      {lightboxShot.fields.examplePrompt}
+                    </p>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-heading text-sm">Template Prompt</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyPrompt(lightboxShot.fields.templatePrompt)}
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy
+                      </Button>
+                    </div>
+                    <p className="text-sm bg-muted p-3 rounded-lg font-mono">
+                      {lightboxShot.fields.templatePrompt}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+}
