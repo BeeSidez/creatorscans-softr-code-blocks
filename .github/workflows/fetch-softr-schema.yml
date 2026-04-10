@@ -1,0 +1,129 @@
+name: Fetch Softr Schema
+
+# Fetches the full schema (field IDs, select option IDs, sample records)
+# for a Softr database table using the SOFTR_API_KEY repo secret, and
+# commits the result to docs/softr-schema-lead-magnets.json so Claude Code
+# sessions can read it without ever needing the API key in the sandbox.
+#
+# To run: GitHub -> Actions -> "Fetch Softr Schema" -> "Run workflow".
+# Defaults are set to the Lead Magnets database / AIUGC Prompt Master table.
+
+on:
+  workflow_dispatch:
+    inputs:
+      database_id:
+        description: "Softr database ID"
+        required: false
+        default: "46e257fa-5265-4041-bf88-8f96540742a2"
+      table_id:
+        description: "Softr table ID (AIUGC Prompt Master)"
+        required: false
+        default: "p1lAKjfGsUwIfw"
+      output_path:
+        description: "Output file path (relative to repo root)"
+        required: false
+        default: "docs/softr-schema-lead-magnets.json"
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Fetch schema from Softr API
+        env:
+          SOFTR_API_KEY: ${{ secrets.SOFTR_API_KEY }}
+          DB_ID: ${{ github.event.inputs.database_id }}
+          TABLE_ID: ${{ github.event.inputs.table_id }}
+          OUTPUT_PATH: ${{ github.event.inputs.output_path }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SOFTR_API_KEY:-}" ]; then
+            echo "::error::SOFTR_API_KEY secret is not set on this repository."
+            echo "Add it under Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+          BASE="https://tables-api.softr.io/api/v1"
+          mkdir -p "$(dirname "$OUTPUT_PATH")"
+
+          echo "Fetching database metadata..."
+          curl -fsS -H "Softr-Api-Key: $SOFTR_API_KEY" \
+            "$BASE/databases/$DB_ID" > /tmp/db.json
+
+          echo "Fetching list of tables in database..."
+          curl -fsS -H "Softr-Api-Key: $SOFTR_API_KEY" \
+            "$BASE/databases/$DB_ID/tables" > /tmp/tables.json
+
+          echo "Fetching full table schema (fields, options, choices)..."
+          curl -fsS -H "Softr-Api-Key: $SOFTR_API_KEY" \
+            "$BASE/databases/$DB_ID/tables/$TABLE_ID" > /tmp/table.json
+
+          echo "Fetching sample records (field IDs format)..."
+          curl -fsS -H "Softr-Api-Key: $SOFTR_API_KEY" \
+            "$BASE/databases/$DB_ID/tables/$TABLE_ID/records?limit=3" > /tmp/records-ids.json
+
+          echo "Fetching sample records (field names format)..."
+          curl -fsS -H "Softr-Api-Key: $SOFTR_API_KEY" \
+            "$BASE/databases/$DB_ID/tables/$TABLE_ID/records?limit=3&fieldNames=true" > /tmp/records-names.json
+
+          echo "Fetching table views..."
+          curl -fsS -H "Softr-Api-Key: $SOFTR_API_KEY" \
+            "$BASE/databases/$DB_ID/tables/$TABLE_ID/views" > /tmp/views.json || echo '{"data":[]}' > /tmp/views.json
+
+          echo "Combining into single JSON dump..."
+          jq -n \
+            --slurpfile db /tmp/db.json \
+            --slurpfile tables /tmp/tables.json \
+            --slurpfile table /tmp/table.json \
+            --slurpfile views /tmp/views.json \
+            --slurpfile recordsIds /tmp/records-ids.json \
+            --slurpfile recordsNames /tmp/records-names.json \
+            --arg dbId "$DB_ID" \
+            --arg tableId "$TABLE_ID" \
+            '{
+              fetchedAt: (now | todate),
+              databaseId: $dbId,
+              tableId: $tableId,
+              database: ($db[0].data // $db[0]),
+              tablesInDatabase: ($tables[0].data // $tables[0]),
+              table: ($table[0].data // $table[0]),
+              views: ($views[0].data // $views[0] // []),
+              sampleRecordsById: ($recordsIds[0].data // $recordsIds[0]),
+              sampleRecordsByName: ($recordsNames[0].data // $recordsNames[0])
+            }' > "$OUTPUT_PATH"
+
+          echo "Schema dump written to $OUTPUT_PATH"
+          echo "Size: $(wc -c < "$OUTPUT_PATH") bytes"
+          echo ""
+          echo "=== Summary ==="
+          jq '{
+            database: .database.name,
+            tableName: .table.name,
+            fieldCount: (.table.fields | length),
+            recordsFetched: (.sampleRecordsById | length),
+            fields: [.table.fields[] | {id, name, type}]
+          }' "$OUTPUT_PATH"
+
+      - name: Commit and push schema dump
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${{ github.event.inputs.output_path }}"
+          if git diff --cached --quiet; then
+            echo "No schema changes to commit."
+          else
+            git commit -m "Update Softr schema dump for Lead Magnets database
+
+Generated by fetch-softr-schema workflow."
+            git push origin "HEAD:${{ github.ref_name }}"
+            echo "Pushed schema dump to ${{ github.ref_name }}"
+          fi
