@@ -238,8 +238,8 @@ export default function Block() {
               className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full opacity-10 blur-3xl"
               style={{ background: CS.blue4 }}
             />
-            <div className="relative">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="relative text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center"
                   style={{ background: 'rgba(41,79,246,0.2)' }}
@@ -250,11 +250,11 @@ export default function Block() {
                   Free Tool
                 </span>
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                AI UGC Image Prompter
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-3 leading-tight">
+                AI UGC Video Prompts
               </h1>
-              <p className="text-sm md:text-base max-w-2xl" style={{ color: CS.blue4 }}>
-                Browse {items.length} proven UGC reference shots, drag up to {STORYBOARD_SIZE} into your storyboard, and copy ready-to-use prompts for any AI image generator.
+              <p className="text-sm md:text-base max-w-2xl mx-auto" style={{ color: CS.blue4 }}>
+                150+ shots for Nano Banana, Veo, ChatGPT and any AI image tool. Pick shots, build your storyboard, copy ready-to-use prompts.
               </p>
             </div>
           </div>

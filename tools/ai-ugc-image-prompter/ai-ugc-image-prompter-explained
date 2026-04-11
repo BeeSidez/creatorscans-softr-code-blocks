@@ -21,7 +21,7 @@ export default function Block() {
       number: "1",
       icon: MousePointerClick,
       title: "Pick your shots",
-      description: "Browse 153 proven UGC reference shots. Filter by shot type, drag or click up to 6 into your storyboard, and build the sequence you want to recreate.",
+      description: "Browse 150+ proven UGC reference shots. Filter by shot type, drag or click up to 6 into your storyboard, and build the sequence you want to recreate.",
       bullets: [
         "Product close-ups",
         "Reaction shots",
