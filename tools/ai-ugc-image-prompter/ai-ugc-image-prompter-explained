@@ -54,13 +54,12 @@ export default function Block() {
   ];
 
   const compatibleTools = [
-    { name: "Nano Banana", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775901745/nano_banana_yqpmgn.png" },
-    { name: "ChatGPT", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775901742/open_ai_green_ugf4ij.png" },
-    { name: "Gemini", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775901737/gemini_qgnyzt.png" },
-    { name: "Veo", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775901738/google_veo_aqqnev.png" },
-    { name: "Sora", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775901745/sora_hcj4mt.png" },
-    { name: "Kling", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775901741/kling_ai_s3htnp.png" },
-    { name: "Higgsfield", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775901740/higgsfield_tqrixz.png" },
+    { name: "Nano Banana", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908939/nano_banana_icon_z6ki2j.png" },
+    { name: "Gemini", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908939/gemini_icon_jgrtkp.png" },
+    { name: "Veo", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908939/veo_icon_khpwjm.png" },
+    { name: "Sora", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908940/sora_ai_icon_ysej1f.png" },
+    { name: "Kling", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908939/kling_ai_icon_djxvpv.png" },
+    { name: "Higgsfield", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908939/higgsfield_icon_aqr8zw.png" },
   ];
 
   return (
