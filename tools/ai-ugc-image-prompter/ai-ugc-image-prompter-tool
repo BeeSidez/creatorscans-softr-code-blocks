@@ -1,0 +1,651 @@
+import { useState, useMemo } from 'react';
+import { useRecords, q } from '@/lib/datasource';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Copy, X, Search, Shuffle, Trash2, Sparkles, Image as ImageIcon, Plus, Check } from 'lucide-react';
+import { toast } from 'sonner';
+
+const CS = {
+  blue: '#294ff6',
+  blue2: '#4466f8',
+  blue3: '#5e7bf6',
+  blue4: '#7a93ff',
+  blue5: '#879cf7',
+  navy: '#000f4d',
+  navy2: '#001364',
+  navy3: '#152237',
+  light1: '#f8fbff',
+  light2: '#eef4fd',
+  light3: '#fafbff',
+  lavender: '#d8d8ff',
+  red: '#fe2c55',
+};
+
+const STORYBOARD_SIZE = 6;
+
+const select = q.select({
+  name: '4QSmO',
+  category: 'NQwnv',
+  subcategory: 'eecej',
+  description: 'GsAE2',
+  cloudinaryUrl: 'OlAxK',
+  examplePrompt: 'qA2jz',
+  templatePrompt: 'E0uvw',
+});
+
+const readLabel = (val) => {
+  if (!val) return null;
+  if (typeof val === 'string') return val;
+  if (Array.isArray(val)) return val[0]?.label || val[0]?.name || null;
+  return val.label || val.name || null;
+};
+
+const readId = (val) => {
+  if (!val) return null;
+  if (typeof val === 'string') return val;
+  if (Array.isArray(val)) return val[0]?.id || null;
+  return val.id || null;
+};
+
+export default function Block() {
+  const { data, status } = useRecords({ select, count: 200 });
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [lightboxShot, setLightboxShot] = useState(null);
+  const [storyboard, setStoryboard] = useState(Array(STORYBOARD_SIZE).fill(null));
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+
+  const items = data?.pages.flatMap((page) => page.items) || [];
+
+  const categories = useMemo(() => {
+    const counts = new Map();
+    items.forEach((item) => {
+      const id = readId(item.fields.category);
+      const label = readLabel(item.fields.category);
+      if (id && label) {
+        const existing = counts.get(id) || { id, label, count: 0 };
+        existing.count += 1;
+        counts.set(id, existing);
+      }
+    });
+    return Array.from(counts.values()).sort((a, b) => b.count - a.count);
+  }, [items]);
+
+  const subcategories = useMemo(() => {
+    const counts = new Map();
+    items.forEach((item) => {
+      const catId = readId(item.fields.category);
+      if (selectedCategory && catId !== selectedCategory) return;
+      const id = readId(item.fields.subcategory);
+      const label = readLabel(item.fields.subcategory);
+      if (id && label) {
+        const existing = counts.get(id) || { id, label, count: 0 };
+        existing.count += 1;
+        counts.set(id, existing);
+      }
+    });
+    return Array.from(counts.values()).sort((a, b) => b.count - a.count);
+  }, [items, selectedCategory]);
+
+  const filteredItems = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return items.filter((item) => {
+      if (selectedCategory && readId(item.fields.category) !== selectedCategory) return false;
+      if (selectedSubcategory && readId(item.fields.subcategory) !== selectedSubcategory) return false;
+      if (query) {
+        const haystack = [
+          item.fields.name || '',
+          item.fields.description || '',
+          readLabel(item.fields.category) || '',
+          readLabel(item.fields.subcategory) || '',
+        ].join(' ').toLowerCase();
+        if (!haystack.includes(query)) return false;
+      }
+      return true;
+    });
+  }, [items, selectedCategory, selectedSubcategory, searchQuery]);
+
+  const filledCount = storyboard.filter((s) => s !== null).length;
+  const isInStoryboard = (id) => storyboard.some((s) => s && s.id === id);
+
+  const copyPrompt = (prompt) => {
+    if (!prompt) return;
+    navigator.clipboard.writeText(prompt);
+    toast.success('Prompt copied to clipboard');
+  };
+
+  const copyAllPrompts = () => {
+    const filled = storyboard.filter((s) => s !== null);
+    if (filled.length === 0) {
+      toast.error('Your storyboard is empty');
+      return;
+    }
+    const prompts = filled
+      .map((shot, index) => 'Shot ' + (index + 1) + ' — ' + (shot.fields.description || shot.fields.name || '') + '\n' + (shot.fields.templatePrompt || ''))
+      .join('\n\n---\n\n');
+    navigator.clipboard.writeText(prompts);
+    toast.success(filled.length + ' prompt' + (filled.length === 1 ? '' : 's') + ' copied');
+  };
+
+  const addToNextEmptySlot = (item) => {
+    const nextEmpty = storyboard.findIndex((s) => s === null);
+    if (nextEmpty === -1) {
+      toast.error('Storyboard is full. Remove a shot first.');
+      return;
+    }
+    if (isInStoryboard(item.id)) {
+      toast.info('Already in your storyboard');
+      return;
+    }
+    const next = [...storyboard];
+    next[nextEmpty] = item;
+    setStoryboard(next);
+  };
+
+  const handleDragStart = (item) => setDraggedItem(item);
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (index) => {
+    if (!draggedItem) return;
+    const next = [...storyboard];
+    next[index] = draggedItem;
+    setStoryboard(next);
+    setDraggedItem(null);
+    setDragOverIndex(null);
+  };
+
+  const removeFromStoryboard = (index) => {
+    const next = [...storyboard];
+    next[index] = null;
+    setStoryboard(next);
+  };
+
+  const clearStoryboard = () => {
+    setStoryboard(Array(STORYBOARD_SIZE).fill(null));
+    toast.success('Storyboard cleared');
+  };
+
+  const shuffleIntoStoryboard = () => {
+    if (filteredItems.length === 0) {
+      toast.error('No shots match your current filter');
+      return;
+    }
+    const pool = [...filteredItems];
+    const picks = [];
+    for (let i = 0; i < STORYBOARD_SIZE && pool.length > 0; i++) {
+      const idx = Math.floor(Math.random() * pool.length);
+      picks.push(pool.splice(idx, 1)[0]);
+    }
+    const next = Array(STORYBOARD_SIZE).fill(null);
+    picks.forEach((p, i) => { next[i] = p; });
+    setStoryboard(next);
+    toast.success('Inspiration loaded — ' + picks.length + ' random shots');
+  };
+
+  const resetFilters = () => {
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setSearchQuery('');
+  };
+
+  if (status === 'pending') {
+    return (
+      <div style={{ background: 'linear-gradient(180deg, ' + CS.light3 + ' 0%, ' + CS.light1 + ' 100%)' }}>
+        <div className="container py-20">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div className="w-12 h-12 rounded-full animate-spin" style={{ border: '3px solid ' + CS.light2, borderTopColor: CS.blue }} />
+            <div className="text-sm font-medium" style={{ color: CS.navy }}>Loading shot library...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="container py-20">
+        <div className="text-center">
+          <div className="text-lg font-bold" style={{ color: CS.red }}>Couldn&apos;t load the shot library</div>
+          <p className="text-sm text-muted-foreground mt-2">Try refreshing the page.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, ' + CS.light3 + ' 0%, ' + CS.light1 + ' 50%, ' + CS.light3 + ' 100%)' }}>
+      <div className="container py-10">
+        <div className="content max-w-7xl mx-auto">
+
+          {/* Hero strip */}
+          <div
+            className="rounded-2xl px-6 md:px-10 py-8 md:py-10 mb-8 overflow-hidden relative"
+            style={{ background: 'linear-gradient(135deg, ' + CS.navy3 + ' 0%, ' + CS.navy + ' 100%)' }}
+          >
+            <div
+              className="absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-20 blur-3xl"
+              style={{ background: CS.blue }}
+            />
+            <div
+              className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full opacity-10 blur-3xl"
+              style={{ background: CS.blue4 }}
+            />
+            <div className="relative text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: 'rgba(41,79,246,0.2)' }}
+                >
+                  <Sparkles className="w-4 h-4" style={{ color: CS.blue4 }} />
+                </div>
+                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: CS.blue4 }}>
+                  Free Tool
+                </span>
+              </div>
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-3 leading-tight">
+                AI UGC Image Prompter
+              </h1>
+              <p className="text-sm md:text-base max-w-2xl mx-auto" style={{ color: CS.blue4 }}>
+                150+ reference shots for Nano Banana, Veo, ChatGPT and any AI image tool. Build your storyboard, copy ready-to-use prompts, paste into your favourite generator.
+              </p>
+            </div>
+          </div>
+
+          {/* Search + reset */}
+          <div className="mb-5 flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: CS.blue3 }} />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search shots by name or description..."
+                className="pl-9 h-11 border-0 shadow-sm"
+                style={{ background: 'white' }}
+              />
+            </div>
+            {(searchQuery || selectedCategory || selectedSubcategory) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetFilters}
+                style={{ color: CS.navy }}
+              >
+                Reset filters
+              </Button>
+            )}
+          </div>
+
+          {/* Category pills */}
+          <div className="mb-3 flex flex-wrap gap-2">
+            <button
+              onClick={() => { setSelectedCategory(null); setSelectedSubcategory(null); }}
+              className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all"
+              style={{
+                background: selectedCategory === null ? CS.blue : 'white',
+                color: selectedCategory === null ? 'white' : CS.navy,
+                boxShadow: selectedCategory === null ? '0 4px 12px rgba(41,79,246,0.25)' : '0 1px 3px rgba(0,15,77,0.06)',
+              }}
+            >
+              All ({items.length})
+            </button>
+            {categories.map((cat) => {
+              const active = selectedCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => { setSelectedCategory(cat.id); setSelectedSubcategory(null); }}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all"
+                  style={{
+                    background: active ? CS.blue : 'white',
+                    color: active ? 'white' : CS.navy,
+                    boxShadow: active ? '0 4px 12px rgba(41,79,246,0.25)' : '0 1px 3px rgba(0,15,77,0.06)',
+                  }}
+                >
+                  {cat.label.replace(/_/g, ' ')} ({cat.count})
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Subcategory pills */}
+          {selectedCategory && subcategories.length > 0 && (
+            <div className="mb-6 flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedSubcategory(null)}
+                className="px-3 py-1 rounded-full text-xs font-medium transition-all"
+                style={{
+                  background: selectedSubcategory === null ? CS.lavender : 'transparent',
+                  color: CS.navy,
+                  border: '1px solid ' + (selectedSubcategory === null ? CS.lavender : CS.light2),
+                }}
+              >
+                All
+              </button>
+              {subcategories.map((sub) => {
+                const active = selectedSubcategory === sub.id;
+                return (
+                  <button
+                    key={sub.id}
+                    onClick={() => setSelectedSubcategory(sub.id)}
+                    className="px-3 py-1 rounded-full text-xs font-medium transition-all"
+                    style={{
+                      background: active ? CS.lavender : 'transparent',
+                      color: CS.navy,
+                      border: '1px solid ' + (active ? CS.lavender : CS.light2),
+                    }}
+                  >
+                    {sub.label.replace(/_/g, ' ')} ({sub.count})
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Main grid: Library + Storyboard */}
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+
+            {/* Library */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold" style={{ color: CS.navy }}>
+                  Shot Library
+                </h2>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {filteredItems.length} shot{filteredItems.length === 1 ? '' : 's'}
+                </span>
+              </div>
+
+              {filteredItems.length === 0 ? (
+                <div
+                  className="rounded-2xl p-10 text-center"
+                  style={{ background: 'white', border: '2px dashed ' + CS.light2 }}
+                >
+                  <ImageIcon className="w-10 h-10 mx-auto mb-3" style={{ color: CS.blue4 }} />
+                  <p className="text-sm font-semibold" style={{ color: CS.navy }}>No shots match your filter</p>
+                  <p className="text-xs text-muted-foreground mt-1">Try a different category or clear your search.</p>
+                  <Button variant="ghost" size="sm" onClick={resetFilters} className="mt-3" style={{ color: CS.blue }}>
+                    Reset filters
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                  {filteredItems.map((item) => {
+                    const inBoard = isInStoryboard(item.id);
+                    const catLabel = readLabel(item.fields.category);
+                    return (
+                      <div
+                        key={item.id}
+                        draggable
+                        onDragStart={() => handleDragStart(item)}
+                        onDragEnd={handleDragEnd}
+                        className="group relative cursor-pointer"
+                      >
+                        <Card
+                          className="overflow-hidden border-0 transition-all duration-200 group-hover:-translate-y-0.5"
+                          style={{
+                            background: 'white',
+                            boxShadow: inBoard ? '0 0 0 2px ' + CS.blue + ', 0 8px 24px rgba(41,79,246,0.15)' : '0 2px 8px rgba(0,15,77,0.08)',
+                          }}
+                          onClick={() => setLightboxShot(item)}
+                        >
+                          <div className="relative aspect-[9/16] overflow-hidden" style={{ background: CS.light2 }}>
+                            <img
+                              src={item.fields.cloudinaryUrl}
+                              alt={item.fields.description || item.fields.name || 'UGC reference shot'}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                            {catLabel && (
+                              <div
+                                className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide"
+                                style={{ background: 'rgba(0,15,77,0.75)', color: 'white', backdropFilter: 'blur(4px)' }}
+                              >
+                                {catLabel.replace(/_/g, ' ')}
+                              </div>
+                            )}
+                            {inBoard && (
+                              <div
+                                className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
+                                style={{ background: CS.blue, color: 'white', boxShadow: '0 4px 12px rgba(41,79,246,0.4)' }}
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </div>
+                            )}
+                            <div
+                              className="absolute inset-x-0 bottom-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                              style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(0,15,77,0.85) 100%)' }}
+                            >
+                              <button
+                                onClick={(e) => { e.stopPropagation(); addToNextEmptySlot(item); }}
+                                disabled={inBoard}
+                                className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold transition-all disabled:opacity-60"
+                                style={{ background: 'white', color: CS.navy }}
+                              >
+                                {inBoard ? <><Check className="w-3.5 h-3.5" /> Added</> : <><Plus className="w-3.5 h-3.5" /> Add to storyboard</>}
+                              </button>
+                            </div>
+                          </div>
+                          <div className="p-3">
+                            <p className="text-xs font-medium line-clamp-2" style={{ color: CS.navy }}>
+                              {item.fields.description || item.fields.name || 'Untitled shot'}
+                            </p>
+                          </div>
+                        </Card>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Storyboard */}
+            <div className="lg:col-span-1">
+              <div className="lg:sticky lg:top-4">
+                <div
+                  className="rounded-2xl p-4 md:p-5"
+                  style={{ background: 'white', boxShadow: '0 4px 16px rgba(0,15,77,0.08)' }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold" style={{ color: CS.navy }}>
+                      Your Storyboard
+                    </h2>
+                    <div
+                      className="px-2.5 py-1 rounded-full text-xs font-bold"
+                      style={{ background: CS.light2, color: CS.blue }}
+                    >
+                      {filledCount} / {STORYBOARD_SIZE}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 mb-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={shuffleIntoStoryboard}
+                      className="flex-1 border-0"
+                      style={{ background: CS.light2, color: CS.navy }}
+                    >
+                      <Shuffle className="w-3.5 h-3.5 mr-1.5" />
+                      Inspire me
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearStoryboard}
+                      disabled={filledCount === 0}
+                      className="text-muted-foreground"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                      Clear
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2.5 mb-4">
+                    {storyboard.map((shot, index) => {
+                      const isActive = dragOverIndex === index;
+                      return (
+                        <div
+                          key={index}
+                          onDragOver={(e) => { e.preventDefault(); setDragOverIndex(index); }}
+                          onDragLeave={() => setDragOverIndex(null)}
+                          onDrop={() => handleDrop(index)}
+                          className="rounded-xl p-2.5 min-h-[88px] flex items-center relative transition-all"
+                          style={{
+                            background: shot ? CS.light1 : (isActive ? CS.light2 : 'transparent'),
+                            border: '2px dashed ' + (shot ? 'transparent' : (isActive ? CS.blue : CS.light2)),
+                            boxShadow: shot ? '0 2px 6px rgba(0,15,77,0.06)' : 'none',
+                          }}
+                        >
+                          {shot ? (
+                            <div className="flex items-center gap-3 w-full pr-6">
+                              <div
+                                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                style={{ background: CS.blue, color: 'white' }}
+                              >
+                                {index + 1}
+                              </div>
+                              <img
+                                src={shot.fields.cloudinaryUrl}
+                                alt=""
+                                className="w-12 h-[72px] object-cover rounded-md flex-shrink-0"
+                                style={{ background: CS.light2 }}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold line-clamp-2" style={{ color: CS.navy }}>
+                                  {shot.fields.description || shot.fields.name || 'Shot ' + (index + 1)}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => removeFromStoryboard(index)}
+                                className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center transition-colors hover:bg-red-50"
+                                aria-label="Remove"
+                              >
+                                <X className="w-3 h-3" style={{ color: CS.navy }} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="w-full text-center">
+                              <div className="text-xs font-bold mb-0.5" style={{ color: CS.blue3 }}>Slot {index + 1}</div>
+                              <div className="text-[10px] text-muted-foreground">Drag or click a shot</div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <Button
+                    onClick={copyAllPrompts}
+                    disabled={filledCount === 0}
+                    className="w-full h-11 font-semibold"
+                    style={{
+                      background: filledCount === 0 ? CS.light2 : CS.blue,
+                      color: filledCount === 0 ? CS.blue3 : 'white',
+                      boxShadow: filledCount === 0 ? 'none' : '0 6px 18px rgba(41,79,246,0.35)',
+                    }}
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy all {filledCount > 0 ? filledCount : ''} prompt{filledCount === 1 ? '' : 's'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Lightbox modal */}
+          <Dialog open={!!lightboxShot} onOpenChange={() => setLightboxShot(null)}>
+            <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto border-0" style={{ background: CS.light1 }}>
+              {lightboxShot && (
+                <>
+                  <DialogHeader>
+                    <div className="flex items-center gap-2 mb-1">
+                      {readLabel(lightboxShot.fields.category) && (
+                        <span
+                          className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide"
+                          style={{ background: CS.lavender, color: CS.navy }}
+                        >
+                          {readLabel(lightboxShot.fields.category).replace(/_/g, ' ')}
+                        </span>
+                      )}
+                      {readLabel(lightboxShot.fields.subcategory) && (
+                        <span className="text-[10px] font-medium text-muted-foreground">
+                          {readLabel(lightboxShot.fields.subcategory).replace(/_/g, ' ')}
+                        </span>
+                      )}
+                    </div>
+                    <DialogTitle style={{ color: CS.navy }}>
+                      {lightboxShot.fields.description || lightboxShot.fields.name || 'Shot details'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="grid md:grid-cols-[auto_1fr] gap-5 mt-2">
+                    <img
+                      src={lightboxShot.fields.cloudinaryUrl}
+                      alt={lightboxShot.fields.description || ''}
+                      className="w-full md:w-64 rounded-xl"
+                      style={{ background: CS.light2, boxShadow: '0 8px 24px rgba(0,15,77,0.12)' }}
+                    />
+                    <div className="space-y-4">
+                      {lightboxShot.fields.examplePrompt && (
+                        <div>
+                          <h3 className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: CS.blue }}>
+                            Example Prompt
+                          </h3>
+                          <p className="text-sm leading-relaxed p-3 rounded-lg" style={{ background: 'white', color: CS.navy, border: '1px solid ' + CS.light2 }}>
+                            {lightboxShot.fields.examplePrompt}
+                          </p>
+                        </div>
+                      )}
+                      {lightboxShot.fields.templatePrompt && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: CS.blue }}>
+                              Template Prompt
+                            </h3>
+                            <Button
+                              size="sm"
+                              onClick={() => copyPrompt(lightboxShot.fields.templatePrompt)}
+                              style={{ background: CS.blue, color: 'white' }}
+                            >
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />
+                              Copy
+                            </Button>
+                          </div>
+                          <p className="text-sm leading-relaxed p-3 rounded-lg font-mono" style={{ background: CS.navy, color: 'white' }}>
+                            {lightboxShot.fields.templatePrompt}
+                          </p>
+                        </div>
+                      )}
+                      <Button
+                        onClick={() => { addToNextEmptySlot(lightboxShot); setLightboxShot(null); }}
+                        disabled={isInStoryboard(lightboxShot.id)}
+                        className="w-full h-11 font-semibold"
+                        style={{
+                          background: isInStoryboard(lightboxShot.id) ? CS.light2 : CS.blue,
+                          color: isInStoryboard(lightboxShot.id) ? CS.blue3 : 'white',
+                        }}
+                      >
+                        {isInStoryboard(lightboxShot.id) ? (
+                          <><Check className="w-4 h-4 mr-2" /> Already in storyboard</>
+                        ) : (
+                          <><Plus className="w-4 h-4 mr-2" /> Add to storyboard</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+    </div>
+  );
+}

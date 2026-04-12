@@ -1,0 +1,216 @@
+import { Card, CardContent } from "@/components/ui/card";
+import { MousePointerClick, Images, Wand2, Check, Info } from "lucide-react";
+
+const CS = {
+  blue: "#294ff6",
+  blue2: "#4466f8",
+  blue3: "#5e7bf6",
+  blue4: "#7a93ff",
+  blue5: "#879cf7",
+  navy: "#000f4d",
+  navy3: "#152237",
+  light1: "#f8fbff",
+  light2: "#eef4fd",
+  light3: "#fafbff",
+  lavender: "#d8d8ff",
+};
+
+export default function Block() {
+  const steps = [
+    {
+      number: "1",
+      icon: MousePointerClick,
+      title: "Pick your shots",
+      description: "Browse 150+ proven UGC reference shots. Filter by shot type, drag or click up to 6 into your storyboard, and build the sequence you want to recreate.",
+      bullets: [
+        "Product close-ups",
+        "Reaction shots",
+        "B-roll cutaways",
+        "Lifestyle scenes",
+      ],
+    },
+    {
+      number: "2",
+      icon: Images,
+      title: "Upload your references",
+      description: "You need three photos before you generate. Snap a selfie, grab a product shot, and take one photo of the room you'll shoot in. That's it.",
+      bullets: [
+        "A clear photo of your face",
+        "A product image or link",
+        "A photo of your room or setting",
+      ],
+    },
+    {
+      number: "3",
+      icon: Wand2,
+      title: "Paste into any AI image tool",
+      description: "Click Copy All Prompts, open your favourite AI image generator, upload your three reference images, and paste. You'll get back UGC-style visuals ready to storyboard or moodboard from.",
+      bullets: [
+        "Replace [SUBJECT] with your selfie",
+        "Replace [PRODUCT] with your product",
+        "Replace [ROOM] with your location",
+      ],
+    },
+  ];
+
+  const compatibleTools = [
+    { name: "Nano Banana", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908939/nano_banana_icon_z6ki2j.png" },
+    { name: "Gemini", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908939/gemini_icon_jgrtkp.png" },
+    { name: "Veo", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908939/veo_icon_khpwjm.png" },
+    { name: "Sora", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908940/sora_ai_icon_ysej1f.png" },
+    { name: "Kling", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908939/kling_ai_icon_djxvpv.png" },
+    { name: "Higgsfield", logo: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1775908939/higgsfield_icon_aqr8zw.png" },
+  ];
+
+  return (
+    <div style={{ background: 'linear-gradient(180deg, ' + CS.light3 + ' 0%, ' + CS.light1 + ' 50%, ' + CS.light3 + ' 100%)' }}>
+      <div className="container py-14 md:py-16">
+        <div className="content max-w-6xl mx-auto">
+
+          {/* Section header */}
+          <div className="text-center max-w-2xl mx-auto mb-10 md:mb-12">
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider mb-4"
+              style={{ background: CS.lavender, color: CS.navy }}
+            >
+              <Wand2 className="w-3 h-3" />
+              How it works
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: CS.navy }}>
+              Three steps from blank page to scroll-stopping visual
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground">
+              You don&apos;t need to be a prompt engineer. You need a reference, a product, and somewhere to shoot. The tool handles the rest.
+            </p>
+          </div>
+
+          {/* Three step cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+            {steps.map((step, i) => {
+              const Icon = step.icon;
+              return (
+                <Card
+                  key={i}
+                  className="border-0 overflow-hidden relative"
+                  style={{
+                    background: 'white',
+                    boxShadow: '0 4px 20px rgba(0,15,77,0.08)',
+                  }}
+                >
+                  {/* Top gradient strip */}
+                  <div
+                    className="h-1.5"
+                    style={{
+                      background: 'linear-gradient(90deg, ' + CS.blue + ' 0%, ' + CS.blue3 + ' 100%)',
+                    }}
+                  />
+
+                  <CardContent className="p-6 md:p-7">
+                    {/* Step number + icon */}
+                    <div className="flex items-center justify-between mb-5">
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg"
+                        style={{
+                          background: 'linear-gradient(135deg, ' + CS.navy3 + ' 0%, ' + CS.navy + ' 100%)',
+                          color: 'white',
+                          boxShadow: '0 6px 16px rgba(0,15,77,0.2)',
+                        }}
+                      >
+                        {step.number}
+                      </div>
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{ background: CS.light2 }}
+                      >
+                        <Icon className="w-5 h-5" style={{ color: CS.blue }} />
+                      </div>
+                    </div>
+
+                    {/* Title + description */}
+                    <h3 className="text-lg font-bold mb-2" style={{ color: CS.navy }}>
+                      {step.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+                      {step.description}
+                    </p>
+
+                    {/* Bullet list */}
+                    <ul className="space-y-2">
+                      {step.bullets.map((bullet, j) => (
+                        <li key={j} className="flex items-start gap-2">
+                          <div
+                            className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ background: CS.light2 }}
+                          >
+                            <Check className="w-2.5 h-2.5" style={{ color: CS.blue }} strokeWidth={3} />
+                          </div>
+                          <span className="text-xs font-medium" style={{ color: CS.navy }}>
+                            {bullet}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Compatible tools strip */}
+          <div
+            className="rounded-2xl p-6 md:p-7 mb-5"
+            style={{
+              background: 'linear-gradient(135deg, ' + CS.navy3 + ' 0%, ' + CS.navy + ' 100%)',
+            }}
+          >
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-center md:text-left">
+                <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: CS.blue4 }}>
+                  Model agnostic
+                </div>
+                <h3 className="text-lg md:text-xl font-bold text-white">
+                  Works with any AI image generator
+                </h3>
+              </div>
+              <div className="flex flex-wrap justify-center md:justify-end gap-2">
+                {compatibleTools.map((tool, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-1.5 pl-2 pr-3 py-1.5 rounded-full"
+                    style={{
+                      background: 'white',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                    }}
+                  >
+                    <img
+                      src={tool.logo}
+                      alt={tool.name}
+                      className="w-4 h-4 object-contain flex-shrink-0"
+                      loading="lazy"
+                    />
+                    <span className="text-xs font-semibold" style={{ color: CS.navy }}>
+                      {tool.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          <div
+            className="flex items-start gap-2.5 px-4 py-3 rounded-xl"
+            style={{ background: CS.light2, border: '1px solid ' + CS.lavender }}
+          >
+            <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: CS.blue }} />
+            <p className="text-xs leading-relaxed" style={{ color: CS.navy }}>
+              <span className="font-semibold">These reference shots are examples of UGC-style content.</span>{' '}
+              Use them as inspiration to plan and film your own original footage. The AI-generated images are moodboards and storyboards, not final content to post.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
