@@ -42,7 +42,7 @@ export default function Block() {
           </div>
 
           {/* Title */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 animate-fade-in-up leading-tight" style={{ animationDelay: '0.1s' }}>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 animate-fade-in-up leading-tight" style={{ animationDelay: '0.1s' }}>
             <span className="text-white">TikTok Agency</span>
             <br />
             <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #294ff6 0%, #7a93ff 50%, #879cf7 100%)' }}>
