@@ -1,7 +1,40 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useRef } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
+
+// ================================================================
+// TODO FOR BEV — drop-in assets
+// ================================================================
+//
+// 1. DEMO_VIDEO_URL
+//    Upload your app demo video to Cloudinary as an MP4 (720p,
+//    <10MB, <30s) and paste the URL below. The video will autoplay
+//    muted and loop — no controls shown by default.
+//
+//    If you'd rather use YouTube/Vimeo, tell Claude and I'll swap
+//    the <video> tag for an <iframe>.
+//
+// 2. TRUSTED_BY_HEADSHOTS
+//    Replace these 6 engraving placeholders with real creator
+//    headshots (Cloudinary URLs). Use round-cropped 200×200 PNGs.
+//
+// 3. TRUSTED_BY_COUNT
+//    Update the number to reflect real creators + brands on board.
+// ================================================================
+
+const DEMO_VIDEO_URL = "https://res.cloudinary.com/dmrekfwpj/video/upload/f_auto,q_auto/v1/TODO-replace-with-real-demo-video.mp4";
+const DEMO_VIDEO_POSTER = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104089/engraving_angel-halo-emoji-face-smiling-innocent_yzb9kc.png"; // TODO: replace with video poster frame
+
+const TRUSTED_BY_COUNT = "50+";
+const TRUSTED_BY_HEADSHOTS = [
+  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104142/engraving_woman-hand-gesture-presenting-tutorial-wavy-hair_puqn8k.png",
+  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104109/engraving_man-snapback-cap-portrait-looking-down_dqjdf3.png",
+  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104146/engraving_woman-heart-shaped-sunglasses-portrait_athg7g.png",
+  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104104/engraving_man-holding-id-badge-employee-portrait_coomkz.png",
+  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104141/engraving_woman-adjusting-sunglasses-blazer-bust_dpjrj9.png",
+  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104166/engraving_young-man-hoodie-portrait-bust_lfvhqh.png",
+];
 
 export default function Block() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,6 +67,7 @@ export default function Block() {
       });
     }
 
+    let animationId: number;
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -52,29 +86,30 @@ export default function Block() {
         if (star.y > canvas.height) star.y = 0;
       });
 
-      requestAnimationFrame(animate);
+      animationId = requestAnimationFrame(animate);
     };
 
     animate();
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
+      if (animationId) cancelAnimationFrame(animationId);
     };
   }, []);
 
   const handleCreatorsClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    
+
     if (typeof window !== 'undefined' && (window as any).Softr?.modal?.open) {
       (window as any).Softr.modal.open('/forms-creators');
       return;
     }
-    
+
     const modalEvent = new CustomEvent('softr:openModal', {
       detail: { url: '/forms-creators' }
     });
     window.dispatchEvent(modalEvent);
-    
+
     const link = document.createElement('a');
     link.href = '/forms-creators';
     link.setAttribute('data-modal', 'true');
@@ -84,38 +119,56 @@ export default function Block() {
     document.body.removeChild(link);
   };
 
+  const scrollToNext = () => {
+    window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' });
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       <style>{`
         @keyframes shimmer {
-          0% {
-            background-position: 0% 0%;
-          }
-          100% {
-            background-position: 200% 200%;
-          }
+          0% { background-position: 0% 0%; }
+          100% { background-position: 200% 200%; }
         }
-        
+
+        @keyframes glow-drift {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(30px, 20px) scale(1.1); }
+        }
+
+        @keyframes glow-drift-reverse {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-20px, -30px) scale(1.05); }
+        }
+
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce-gentle {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(6px); }
+        }
+
+        .cs-hero-fade-in { animation: fade-in 0.9s ease-out forwards; opacity: 0; }
+        .cs-hero-glow-1 { animation: glow-drift 12s ease-in-out infinite; }
+        .cs-hero-glow-2 { animation: glow-drift-reverse 14s ease-in-out infinite; }
+        .cs-hero-bounce { animation: bounce-gentle 2.5s ease-in-out infinite; }
+
         .shimmer-border-pink {
           position: relative;
           background: #FE2C55;
           border-radius: 0.5rem;
         }
-        
+
         .shimmer-border-pink::before {
           content: '';
           position: absolute;
           inset: -3px;
           border-radius: calc(0.5rem + 3px);
           padding: 3px;
-          background: linear-gradient(
-            90deg,
-            #FE2C55 0%,
-            #FF6B9D 25%,
-            #FE2C55 50%,
-            #FF6B9D 75%,
-            #FE2C55 100%
-          );
+          background: linear-gradient(90deg, #FE2C55 0%, #FF6B9D 25%, #FE2C55 50%, #FF6B9D 75%, #FE2C55 100%);
           background-size: 200% 200%;
           animation: shimmer 3s linear infinite;
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -123,27 +176,20 @@ export default function Block() {
           mask-composite: exclude;
           z-index: -1;
         }
-        
+
         .shimmer-border-blue {
           position: relative;
           background: linear-gradient(135deg, #7a93ff 0%, #5a73ff 100%);
           border-radius: 0.5rem;
         }
-        
+
         .shimmer-border-blue::before {
           content: '';
           position: absolute;
           inset: -3px;
           border-radius: calc(0.5rem + 3px);
           padding: 3px;
-          background: linear-gradient(
-            90deg,
-            #7a93ff 0%,
-            #a8b9ff 25%,
-            #5a73ff 50%,
-            #a8b9ff 75%,
-            #7a93ff 100%
-          );
+          background: linear-gradient(90deg, #7a93ff 0%, #a8b9ff 25%, #5a73ff 50%, #a8b9ff 75%, #7a93ff 100%);
           background-size: 200% 200%;
           animation: shimmer 3s linear infinite;
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -151,41 +197,145 @@ export default function Block() {
           mask-composite: exclude;
           z-index: -1;
         }
+
+        .gradient-title {
+          background: linear-gradient(135deg, #7a93ff 0%, #a8b9ff 40%, #ffffff 70%, #a8b9ff 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          display: inline-block;
+        }
+
+        .trusted-avatar {
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          border: 2px solid rgba(255, 255, 255, 0.25);
+          background: linear-gradient(135deg, rgba(122, 147, 255, 0.25), rgba(122, 147, 255, 0.05));
+          object-fit: cover;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        }
+
+        .trusted-avatar + .trusted-avatar {
+          margin-left: -14px;
+        }
+
+        .hero-demo-video {
+          width: 100%;
+          max-width: 760px;
+          aspect-ratio: 16 / 9;
+          border-radius: 20px;
+          display: block;
+          object-fit: cover;
+          background: #000B3A;
+          border: 1px solid rgba(122, 147, 255, 0.35);
+          box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 60px rgba(122, 147, 255, 0.18);
+        }
+
+        .hero-glow-orb {
+          position: absolute;
+          border-radius: 50%;
+          pointer-events: none;
+          filter: blur(40px);
+        }
+
+        .hero-glow-orb-1 {
+          top: -10%;
+          left: -5%;
+          width: 500px;
+          height: 500px;
+          background: radial-gradient(circle, rgba(41,79,246,0.22) 0%, transparent 70%);
+        }
+
+        .hero-glow-orb-2 {
+          bottom: -10%;
+          right: -5%;
+          width: 600px;
+          height: 600px;
+          background: radial-gradient(circle, rgba(94,123,246,0.18) 0%, transparent 70%);
+        }
       `}</style>
 
+      {/* Animated star canvas */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
-        style={{
-          background: "#000B3A",
-        }}
+        style={{ background: "#000B3A" }}
       />
 
+      {/* Ambient glow orbs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="hero-glow-orb hero-glow-orb-1 cs-hero-glow-1" />
+        <div className="hero-glow-orb hero-glow-orb-2 cs-hero-glow-2" />
+      </div>
+
+      {/* Main content */}
       <div className="container relative z-10">
-        <div className="content flex flex-col items-center justify-center min-h-screen text-center px-4">
+        <div className="content flex flex-col items-center justify-center min-h-screen text-center px-4 py-20">
+
+          {/* Badge */}
           <Badge
             variant="secondary"
-            className="mb-6 bg-white/10 border-white/20 backdrop-blur-sm px-4 py-2 text-sm font-semibold flex items-center gap-2"
-            style={{ color: "#7a93ff" }}
+            className="mb-6 bg-white/10 border-white/20 backdrop-blur-sm px-4 py-2 text-sm font-semibold flex items-center gap-2 cs-hero-fade-in"
+            style={{ color: "#7a93ff", animationDelay: "0s" }}
           >
-            <img 
-              src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/TIKTOK_jetgnf.png" 
-              alt="TikTok" 
+            <img
+              src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/TIKTOK_jetgnf.png"
+              alt="TikTok"
               className="h-5 w-5 rounded-sm"
               style={{ transform: "rotate(-5deg)" }}
             />
             Official TikTok Partner Agency
           </Badge>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 max-w-4xl leading-tight">
-            TikTok Shop & LIVE Talent Agency
+          {/* Title with gradient on "AI App" */}
+          <h1
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 max-w-4xl leading-tight cs-hero-fade-in"
+            style={{ animationDelay: "0.1s" }}
+          >
+            TikTok Shop LIVE Talent Agency
+            <br />
+            <span className="gradient-title">AI App</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-white/90 mb-10 max-w-3xl leading-relaxed">
-            The #1 Platform for Brands, Beginners & Creators to Make Money on TikTok Through Live Streams and TikTok Shop Affiliates
+          {/* Subtitle */}
+          <p
+            className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl leading-relaxed cs-hero-fade-in"
+            style={{ animationDelay: "0.2s" }}
+          >
+            Coaching, direct TikTok support, and the tools you need to grow — all in one app, backed by a real agency.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          {/* Trusted-by row */}
+          <div
+            className="flex items-center gap-4 mb-10 cs-hero-fade-in"
+            style={{ animationDelay: "0.3s" }}
+          >
+            <div className="flex items-center">
+              {TRUSTED_BY_HEADSHOTS.map((src, i) => (
+                <img
+                  key={i}
+                  src={src}
+                  alt=""
+                  className="trusted-avatar"
+                  loading="lazy"
+                />
+              ))}
+            </div>
+            <span
+              className="text-sm font-semibold"
+              style={{ color: "rgba(219, 228, 255, 0.85)" }}
+            >
+              Trusted by <span className="text-white font-bold">{TRUSTED_BY_COUNT}</span> creators and brands
+            </span>
+          </div>
+
+          {/* CTA Buttons */}
+          <div
+            className="flex flex-col sm:flex-row gap-4 mb-14 cs-hero-fade-in"
+            style={{ animationDelay: "0.4s" }}
+          >
             <Button
               size="lg"
               onClick={handleCreatorsClick}
@@ -217,6 +367,49 @@ export default function Block() {
               </Button>
             </a>
           </div>
+
+          {/* Demo video */}
+          <div
+            className="w-full flex justify-center mb-14 cs-hero-fade-in"
+            style={{ animationDelay: "0.5s" }}
+          >
+            <video
+              className="hero-demo-video"
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster={DEMO_VIDEO_POSTER}
+              preload="metadata"
+            >
+              <source src={DEMO_VIDEO_URL} type="video/mp4" />
+              Your browser doesn't support embedded video.
+            </video>
+          </div>
+
+          {/* Scroll indicator */}
+          <button
+            onClick={scrollToNext}
+            className="cs-hero-fade-in cs-hero-bounce flex flex-col items-center gap-2 cursor-pointer bg-transparent border-0"
+            style={{ animationDelay: "0.6s" }}
+            aria-label="Scroll to next section"
+          >
+            <span
+              className="text-xs font-medium tracking-widest uppercase"
+              style={{ color: "rgba(122,147,255,0.65)" }}
+            >
+              Scroll to explore
+            </span>
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{
+                backgroundColor: "rgba(41,79,246,0.18)",
+                border: "1px solid rgba(41,79,246,0.35)"
+              }}
+            >
+              <ChevronDown className="w-5 h-5" style={{ color: "#7a93ff" }} />
+            </div>
+          </button>
         </div>
       </div>
     </div>
