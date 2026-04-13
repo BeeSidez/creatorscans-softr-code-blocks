@@ -1,13 +1,71 @@
-Paste all Cloudinary image URLs here with a short label for each, so I know what's what.
+# AI Twin Playbook — Cloudinary Image URLs
 
-Format:
-[label] https://res.cloudinary.com/...
+Cloudinary folder: `Academy/Lead Magnet/AI Twin`
+All images are 1834x1024 (playbook slides) or 1920x1080 (guide images) PNG format.
 
-Example:
-[hero] https://res.cloudinary.com/.../itwin-hero.jpg
-[phase1-diagram] https://res.cloudinary.com/.../phase1.png
-[infographic] https://res.cloudinary.com/.../infographic-full.png
-[certificate-bg] https://res.cloudinary.com/.../cert-background.png
+---
 
-Also paste the PDF URL from your Softr Database here once you've uploaded it:
-[pdf] https://...
+## Playbook Slides (28 slides, in deck order)
+
+| # | Name | Description | Cloudinary URL |
+|---|------|-------------|----------------|
+| 01 | Cover | TikTok Shop AI Twin Playbook title slide with Creator Scans branding | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085836/01-cover-tiktok-shop-ai-twin-playbook_ovmmwe.png |
+| 02 | Old Way vs New Way | Manual filming bottleneck vs AI Twin system with asset library | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085831/02-old-way-vs-new-way_msykea.png |
+| 03 | Crossing the Uncanny Valley | Realism graph showing the dip and 4K Creator OS Standard | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085837/03-crossing-the-uncanny-valley-graph_p0vmsx.png |
+| 04 | Five-Phase Overview | Phase 1-5 pipeline: Raw Materials, Programming, Assembly, Animation, Distribution | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085844/04-five-phase-overview_spniws.png |
+| 05 | Studio Set / Lifestyle Set | Photo requirements: 15-20 studio + 10 lifestyle, with drop zones | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085844/05-studio-set-lifestyle-set-photos_jgjkcd.png |
+| 06 | Environmental Plates | Room mapping diagram: bathroom, kitchen, living room, driveway with 0.5x lens | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085845/06-environmental-plates-room-mapping_cztyp6.png |
+| 07 | Audio Pipeline | ElevenLabs decision tree: Instant Clone vs Professional Clone | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085833/07-audio-pipeline-instant-vs-professional_jpcqrr.png |
+| 08 | Voice Sync Matrix | Speed Route (ElevenLabs) vs Realism Route (HeyGen/Manual) comparison table | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085846/08-voice-sync-matrix-speed-vs-realism_gjjvzw.png |
+| 09 | Escaping the Audio Uncanny Valley | 4-item recording best practices checklist (mic, speech, posture, clothing) | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085841/09-escaping-audio-uncanny-valley-checklist_ftxtmf.png |
+| 10 | Deconstruction Method | TikTok ad screenshot to code extraction (hook, shot angle, lighting, positioning) | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085840/10-deconstruction-method-tiktok-ad_gfuhrq.png |
+| 11 | Six-Layer Prompt Stack | Layer 1 (Product Extraction) through Layer 6 (Quality Control) stacked diagram | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085831/11-six-layer-prompt-stack_b8lree.png |
+| 12 | Prompt Anatomy Deconstruction | Terminal/code-editor view: [Subject], [Styling], [Camera/Lighting], [Negative Prompt] | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085838/12-prompt-anatomy-deconstruction-terminal_hvnq7s.png |
+| 13 | Master Image Generation | Selfie + product + prompt → Fal.ai Nano Banana 2 → final composite | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085834/13-master-image-generation-fal-ai_bcfxfn.png |
+| 14 | BOPA Consistency Engine | 4-pillar quadrant: Backgrounds, Outfits, Poses, Angles with icons | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085841/14-bopa-consistency-engine-4-pillars_o2ggxc.png |
+| 15 | Manipulating the Base Image | Higgsfield Apps: Shots (9 angles), Outfit Swap, Transitions | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085839/15-manipulating-base-image-higgsfield_wonxog.png |
+| 16 | Training a Deep Soul ID | 20-30 reference photos → Soul 2.0 → Identity Token funnel | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085846/16-training-deep-soul-id_fqcuce.png |
+| 17 | Video Animation Pipeline | Start Frame → Veo 3.1 / Seedance 2.0 / Kling 3.0 → End Frame | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085842/17-video-animation-pipeline_lqe0nh.png |
+| 18 | Routing the Motion Engine | Decision tree: Educational → HeyGen, UGC/B-Roll → Kling/Sora | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085832/18-routing-the-motion-engine-decision-tree_ku04bo.png |
+| 19 | Generating Natural Motion | Static image + motion prompt = 10-second MP4 via Cling 3.0 | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085832/19-generating-natural-motion-cling_cpwcu4.png |
+| 20 | Lip-Sync and Voiceover Assembly | Visual + Audio layers → HeyGen Processing Engine → Ready to Post | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085843/20-lip-sync-voiceover-assembly-heygen_yuinqh.png |
+| 21 | HeyGen Studio Composition | Room layout blueprint: green screen, LED front light, edge backlight | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085837/21-heygen-studio-composition-room-layout_uuuicn.png |
+| 22 | Turning URLs into Social Video | Funnel: Product URL → GPT-4.1 Extraction → Sora 2 Rendering | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085838/22-turning-urls-into-social-video_zjalye.png |
+| 23 | Deploying the Video Agent | Pipeline: Text Prompt → Script → Voice → B-roll → Final vertical video | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085839/23-deploying-the-video-agent-pipeline_ssjq1e.png |
+| 24 | Master Storyboard | Timeline: Visuals (HeyGen + Cling), Audio (ElevenLabs), Text (auto-captions) | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085843/24-master-storyboard-timeline_tlfstt.png |
+| 25 | Scaling Flywheel (Phase 5) | Generate → Deploy → Analyze → Scale cycle with action steps | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085847/25-scaling-flywheel-phase-5_ikxnif.png |
+| 26 | Define the Digital Persona | Accordion: Target Audience, Character Role, Platform Destination + selfie zone | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085836/26-define-the-digital-persona_uift3d.png |
+| 27 | Generative Software Stack | 4-quadrant with tool logos: Static Faces, Talking Heads, Voice Cloning, Cinematic Motion | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085835/27-generative-software-stack-tool-logos_xcyinl.png |
+| 28 | Your First Afternoon | Next steps timeline: 0:00-2:30 action plan + CTA to Free Prompt Library | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085833/28-your-first-afternoon-next-steps_idpowx.png |
+
+---
+
+## Guide Images (for the markdown text guide)
+
+| Name | Description | Cloudinary URL |
+|------|-------------|----------------|
+| image-1-hero-cover | Hero cover image (Bev's Canva design — AI Clone vs Real Me split-screen) | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085824/image-1-hero-cover_g59qxj.png |
+| image-2-phase-overview | 5-phase system overview diagram | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085818/image-2-_phase-overview_yvepgj.png |
+| image-3-photo-grid-rule-v1 | Photo grid rule (version 1) | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085819/image-3-photo-grid-rule-v1_ohdjei.png |
+| image-3-photo-grid-rule-v2 | Photo grid rule (version 2) | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085825/image-3-photo-grid-rule-v2_kpyyb7.png |
+| image-4-background-examples | Background variation examples | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085826/image-4-background-examples_mzcydf.png |
+| image-5-voice-cloning | Voice cloning process diagram | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085820/image-5-voice-cloning_d1pnrt.png |
+| image-6-deconstruction-method | TikTok ad deconstruction method | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085820/image-6-deconstruction-method_a6wugf.png |
+| image-7-the-layer-stack | 6-layer prompt stack diagram | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085820/image-7-the-layer-stack_bhalf4.png |
+| image-8-image-generation-process | Image generation workflow | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085821/image-8-image-generation-proces_mlodox.png |
+| image-9-BOPA-framework | BOPA framework diagram | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085821/image-9-BOPA-framework_dfoywl.png |
+| Image-10-The-Animation-Pipeline | Animation pipeline process | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085817/Image_10__The_Animation_Pipeline_geq8bb.png |
+| Image-11-The-Scaling-Flywheel | Scaling flywheel cycle | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085817/Image_11__The_Scaling_Flywheel_fghk2e.png |
+| Image-12-Tool-Stack-Cheat-Sheet | Tool stack cheat sheet | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085818/Image_12__Tool_Stack_Cheat_Sheet_wsahck.png |
+| Image-12-Tool-Stack-Cheat-Sheet-2 | Tool stack cheat sheet (version 2) | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085817/Image_12__Tool_Stack_Cheat_Sheet_2_hnqyde.png |
+| Image-13-Call-to-Action-Next-Steps | Call-to-action and next steps | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085819/Image_13__Call-to-Action___Next_Steps_eqyaha.png |
+| image-14-creator-scans-image-prompter | Creator Scans image prompter screenshot | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085822/image-14-_creator-scans-image-promter_pfzdmp.png |
+| image-15-viral-products-creator-scans | Creator Scans viral products page screenshot | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085822/image-15-viral-products-creator_scans_wzp7np.png |
+
+---
+
+## Infographic
+
+| Name | Description | Cloudinary URL |
+|------|-------------|----------------|
+| infographic | AI Twin Blueprint infographic for LinkedIn/social (2752x1536) | https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085829/infographic_pzeqoj.png |
