@@ -1,45 +1,26 @@
 ---
-name: softr-custom-code
-description: Write custom code for Softr apps, including Custom Code blocks (HTML/CSS/JS) and Vibe Coding blocks (AI-prompted UI). Use this skill whenever asked to build, fix, style, or extend anything in a Softr app using custom code. Trigger on any mention of Softr custom code, Softr blocks, Softr vibe coding, Softr styling, Softr events, Softr SPA mode, Softr custom code snippets, or when the user says things like "add custom code to Softr," "style this Softr block," "write a Softr code block," "build a vibe code block," "fix my Softr custom code," "add a script to my Softr page," or mentions Softr block names (e.g. list1, table1, form1, kanban1, chart1). Also trigger when the user references Softr-specific APIs like window.logged_in_user, SOFTR_PAGE, block-loaded events, get-records, update-records, or any Softr DOM selectors. Even if the user just says "custom code for my app" or "add some JS to my Softr page" and the context is clearly Softr, use this skill.
+name: softr-custom-code-block
+description: Write code for Softr Custom Code blocks - raw HTML, CSS, and JavaScript that goes inside the Custom Code block (Blocks > Static > Custom Code). Use this skill whenever asked to write, fix, style, or extend a Softr Custom Code block, add JavaScript or CSS to a Softr page, embed a third-party widget in Softr (Calendly, Typeform, etc.), style an existing Softr block, add event listeners to Softr blocks, manipulate Softr DOM elements, hook into Softr events (block-loaded, get-records, update-records, submit-form, etc.), or use Softr-specific JavaScript APIs like window.SOFTR_PAGE, window.logged_in_user, or openSwModal. Trigger on phrases like "add custom code to Softr," "add a script to my Softr page," "style this Softr block," "Softr custom code block," "embed X in Softr," or any mention of Softr block hrids (list1, table1, form1, kanban1, chart1, etc.) in a custom code context. This skill is for the Custom Code block specifically (raw HTML/CSS/JS), NOT for Vibe Coding blocks (React/JSX) - if the user mentions vibe code, vibe block, or React components, use the softr-vibe-code-block skill instead.
 ---
 
-# Softr Custom Code Skill
+# Softr Custom Code Block Skill
 
 ## What this skill covers
 
-Two types of code blocks in Softr, plus all the events, selectors, and SPA patterns needed to write reliable custom code for Softr apps.
+Writing raw HTML, CSS, and JavaScript for Softr Custom Code blocks. Includes Softr's global APIs, custom events, CSS selectors, and SPA-mode rules.
+
+**For Vibe Coding blocks (React/JSX), use the `softr-vibe-code-block` skill instead.** This skill is only for Custom Code blocks.
 
 ---
 
-## Block types: when to use which
+## What a Custom Code block is
 
-### Custom Code Block
 - Available on Basic plan and above
-- Insert raw HTML, CSS, and/or JavaScript anywhere in the app
-- Code is added inside the `<body>` element
-- Use for: embedding third-party widgets, custom styling, event listeners, DOM manipulation, conditional logic, integrations
-- For code in `<head>` or before `</body>`: use Settings > Custom Code or Page Settings, not a Custom Code block
-
-### Vibe Coding Block
-- Uses AI credits (available on all plans including Free)
-- Describe what you want in plain English; Softr AI generates the interface
-- Can connect to live data sources (Softr Database + 15 external sources including Airtable, Google Sheets, Notion, HubSpot, SQL)
-- Supports CRUD actions (create, edit, delete records) configured in the Actions tab
-- Has version history (each re-prompt saves a new version, can restore or duplicate previous versions)
-- Supports direct text/image editing via Content > Settings without re-prompting
-- Can also edit the generated code directly via Content > Code
-- Use for: custom dashboards, booking tools, progress trackers, calculators, notification feeds, partner portals, admin views, or any UI that goes beyond standard Softr blocks
-
-### Decision: Custom Code vs Vibe Code
-
-| Situation | Use |
-|-----------|-----|
-| Styling an existing block (colours, hide elements, layout tweaks) | Custom Code |
-| Adding event listeners or JS logic to existing blocks | Custom Code |
-| Embedding a third-party widget (Calendly, Typeform, etc.) | Custom Code |
-| Building a brand new UI component connected to data | Vibe Coding |
-| Creating a custom dashboard or tool that doesn't exist as a standard block | Vibe Coding |
-| Quick DOM manipulation or conditional visibility via JS | Custom Code |
+- Added via Blocks > Static > Custom Code
+- Accepts raw HTML, CSS, and JavaScript
+- Code is inserted inside the `<body>` element where the block sits
+- Used for: embedding third-party widgets, custom styling, event listeners, DOM manipulation, conditional visibility, integrations
+- For code in `<head>` or before `</body>`: use Settings > Custom Code or Page Settings, **not** a Custom Code block
 
 ---
 
@@ -97,7 +78,7 @@ window.SOFTR_PAGE.beforeUnload(() => {
 
 ## Event listener pattern for React-rendered elements
 
-Softr uses React. Adding event listeners directly to React elements is unreliable because React may re-render and destroy your listener. **Always delegate to a parent that doesn't re-render:**
+Softr uses React internally. Adding event listeners directly to React elements is unreliable because React may re-render and destroy your listener. **Always delegate to a parent that doesn't re-render:**
 
 ```javascript
 document.body.addEventListener('click', (e) => {
@@ -284,7 +265,7 @@ window.addEventListener('block-loaded-BLOCKNAME', () => {
 
 ## Checklist before writing Softr custom code
 
-1. **Which block type?** Custom Code (raw HTML/CSS/JS) or Vibe Coding (AI-prompted UI)?
+1. **Right block type?** This skill is for Custom Code blocks (HTML/CSS/JS). For Vibe Coding blocks (React/JSX), use `softr-vibe-code-block` instead.
 2. **Where does the code go?** Page-level header, Custom Code block on page, or app-level header/footer?
 3. **SPA safe?** Using `<script type="module">`? Avoiding DOMContentLoaded? Cleaning up dynamic DOM/timers?
 4. **Correct hrid?** Replace placeholder hrids (list1, table1, form1) with the actual block hrid from the user's app.
