@@ -6,7 +6,7 @@ import { Check } from "lucide-react";
 
 const liveCreatorsFeatures = [
   {
-    icon: "👤",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104104/engraving_man-holding-id-badge-employee-portrait_coomkz.png",
     badge: "PRIORITY ACCESS",
     title: "Direct TikTok Support",
     description: "Get direct access to TikTok's support team through our official partnership. We help with account issues, unbans, verification, and technical problems.",
@@ -17,7 +17,7 @@ const liveCreatorsFeatures = [
     ]
   },
   {
-    icon: "🏆",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104220/sticker-icon_blue-trophy-cup-award-winner_oojrjm.png",
     badge: "MEMBERS ONLY",
     title: "Exclusive LIVE Opportunities",
     description: "Access exclusive tournaments, brand campaigns, and sponsored streaming opportunities that are only available to Creator Scans network members.",
@@ -28,7 +28,7 @@ const liveCreatorsFeatures = [
     ]
   },
   {
-    icon: "📊",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104219/sticker-icon_blue-target-bullseye-arrow-hit-goal_t2sh9y.png",
     badge: "PERSONALIZED",
     title: "LIVE Strategy & Feedback",
     description: "Our team reviews your past LIVE sessions and provides detailed feedback plus proven scripts to maximize engagement and monetization during streams.",
@@ -39,7 +39,7 @@ const liveCreatorsFeatures = [
     ]
   },
   {
-    icon: "🎓",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104108/engraving_man-sitting-cross-legged-writing-notebook_ssvbom.png",
     badge: "EDUCATION",
     title: "LIVE Academy",
     description: "Complete training system from foundations to advanced techniques, covering streaming setup, audience engagement, and selling strategies for LIVE.",
@@ -50,7 +50,7 @@ const liveCreatorsFeatures = [
     ]
   },
   {
-    icon: "💬",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104215/sticker-icon_blue-megaphone-bullhorn-announcement_qieqkg.png",
     badge: "ALWAYS AVAILABLE",
     title: "Daily Support",
     description: "Never stream alone. Our support team is available daily to help with any challenges, questions, or technical issues before, during, or after your streams.",
@@ -61,7 +61,7 @@ const liveCreatorsFeatures = [
     ]
   },
   {
-    icon: "🚀",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104217/sticker-icon_blue-rocket-ship-launch-blast-off_qyzwli.png",
     badge: "ADVANCEMENT",
     title: "Career Growth Path",
     description: "Start as a creator and grow into a Creator Manager role. Build your own roster, earn additional income, and develop leadership skills within our network.",
@@ -75,7 +75,7 @@ const liveCreatorsFeatures = [
 
 const shopCreatorsFeatures = [
   {
-    icon: "✍️",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104117/engraving_pen-nib-close-up-writing-detail_s4wtsm.png",
     badge: "PERSONALIZED",
     title: "Expert Feedback & Accountability",
     description: "Get detailed feedback on your videos from our coaching team plus accountability tracking with streaks, points, and gamification to keep you consistent and improving daily.",
@@ -86,7 +86,7 @@ const shopCreatorsFeatures = [
     ]
   },
   {
-    icon: "💰",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104140/engraving_wallet-overflowing-cash-bills-coins-money_f5wptv.png",
     badge: "EXCLUSIVE ACCESS",
     title: "Higher Commissions",
     description: "Access exclusive brand partnerships with commission rates 5-15% higher than open marketplace through our official TikTok Shop Partner status.",
@@ -97,7 +97,7 @@ const shopCreatorsFeatures = [
     ]
   },
   {
-    icon: "🎓",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104108/engraving_man-sitting-cross-legged-writing-notebook_ssvbom.png",
     badge: "EDUCATION",
     title: "Shop Academy",
     description: "Complete training system from foundations to advanced strategies, covering product selection, selling techniques, and affiliate optimization.",
@@ -108,7 +108,7 @@ const shopCreatorsFeatures = [
     ]
   },
   {
-    icon: "📦",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104114/engraving_open-box-skincare-beauty-products-bottles_pbd7aj.png",
     badge: "MEMBERS ONLY",
     title: "Free Product Samples",
     description: "Get free product samples from partner brands and discover high-converting products before they trend on the platform.",
@@ -119,7 +119,7 @@ const shopCreatorsFeatures = [
     ]
   },
   {
-    icon: "🎙️",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104160/engraving_woman-solo-podcast-seated-headphones-microphone-gesturing_hifuau.png",
     badge: "LIVE TRAINING",
     title: "Weekly Expert Calls",
     description: "Join weekly live calls where our instructors and top-performing creators share what's working now and answer your questions in real-time.",
@@ -130,7 +130,7 @@ const shopCreatorsFeatures = [
     ]
   },
   {
-    icon: "💬",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104133/engraving_team-high-five-group-celebration-four-people_efggoq.png",
     badge: "24/7 SUPPORT",
     title: "WhatsApp Community",
     description: "Connect with fellow creators, share wins, get quick feedback, and access our support team anytime through our dedicated WhatsApp community.",
@@ -224,12 +224,13 @@ export default function Block() {
                 
                 <CardContent className="p-8 relative z-10">
                   <div className="flex items-start justify-between mb-3">
-                    <span 
-                      className="text-[40px] transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 inline-block"
+                    <img
+                      src={feature.icon}
+                      alt=""
+                      loading="lazy"
+                      className="w-16 h-16 object-contain transition-all duration-500 group-hover:scale-110 group-hover:-rotate-6"
                       style={{ transformStyle: "preserve-3d" }}
-                    >
-                      {feature.icon}
-                    </span>
+                    />
                     <Badge
                       className="text-[11px] uppercase font-semibold px-4 py-2.5 border-0"
                       style={{

@@ -383,7 +383,7 @@
             <!-- Stage 1: Safe -->
             <div class="stage-card safe">
                 <div class="stage-number">Grace Period</div>
-                <div class="stage-icon">✓</div>
+                <div class="stage-icon"><i class="fa-solid fa-circle-check"></i></div>
                 <h3 class="stage-title">1 "Oops" Per Week</h3>
                 <p class="stage-description">Miss once and your streak stays protected. We get it—life happens. You have breathing room.</p>
                 <div class="stage-quote">"Your profile health stays strong. Keep going."</div>
@@ -392,7 +392,7 @@
             <!-- Stage 2: Warning -->
             <div class="stage-card warning">
                 <div class="stage-number">Week 2 Below 50%</div>
-                <div class="stage-icon">⚠️</div>
+                <div class="stage-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
                 <h3 class="stage-title">Warning Issued</h3>
                 <p class="stage-description">You're at risk of downgrade. Hit your targets next week to stay at your current level.</p>
                 <div class="stage-quote">"You're at risk. Hit your targets next week to stay in your tier."</div>
@@ -401,7 +401,7 @@
             <!-- Stage 3: Cooldown -->
             <div class="stage-card cooldown">
                 <div class="stage-number">Week 3 Below 50%</div>
-                <div class="stage-icon">⏸️</div>
+                <div class="stage-icon"><i class="fa-solid fa-circle-pause"></i></div>
                 <h3 class="stage-title">Rewards Paused</h3>
                 <p class="stage-description">Your premium rewards are temporarily suspended. Prove yourself this week to restore access.</p>
                 <div class="stage-quote">"Prove yourself this week to restore access."</div>
@@ -410,7 +410,7 @@
             <!-- Stage 4: Downgrade -->
             <div class="stage-card danger">
                 <div class="stage-number">Week 4 Below 50%</div>
-                <div class="stage-icon">⬇️</div>
+                <div class="stage-icon"><i class="fa-solid fa-arrow-down-long"></i></div>
                 <h3 class="stage-title">Forced Downgrade</h3>
                 <p class="stage-description">You drop from Advanced to Pro, or Pro to Starter. Your rewards adjust accordingly. Time to rebuild.</p>
                 <div class="stage-quote">"Automatic downgrade. You'll need to earn your way back up."</div>
@@ -418,7 +418,7 @@
 
             <!-- Recovery Section (spans 2 columns) -->
             <div class="recovery-section">
-                <div class="recovery-icon">🔥</div>
+                <div class="recovery-icon"><i class="fa-solid fa-fire"></i></div>
                 <h3 class="recovery-title">But Here's the Good News</h3>
                 <p class="recovery-description">Hit <strong>100% for 4 weeks straight</strong> and you can upgrade again. Your progress resets, but you're back in the game with access to higher rewards. Consistency wins.</p>
             </div>

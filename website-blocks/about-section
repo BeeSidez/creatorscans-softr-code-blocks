@@ -26,10 +26,22 @@ export default function Block() {
   }, []);
 
   const features = [
-    { emoji: "✅", text: "Official TikTok Partner Certifications" },
-    { emoji: "📊", text: "Real-time Analytics & Insights" },
-    { emoji: "💎", text: "24/7 Dedicated Support" },
-    { emoji: "🚀", text: "Fast-Track to £10K+ Monthly" },
+    {
+      icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104210/sticker-icon_blue-award-ribbon-rosette-badge_kzmhes.png",
+      text: "Official TikTok Partner Certifications",
+    },
+    {
+      icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104214/sticker-icon_blue-magnifying-glass-search-zoom_ntk2vo.png",
+      text: "Real-time Analytics & Insights",
+    },
+    {
+      icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104092/engraving_diamond-gemstone-jewel-faceted_vaa7et.png",
+      text: "24/7 Dedicated Support",
+    },
+    {
+      icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104217/sticker-icon_blue-rocket-ship-launch-blast-off_qyzwli.png",
+      text: "Fast-Track to £10K+ Monthly",
+    },
   ];
 
   return (
@@ -103,7 +115,12 @@ export default function Block() {
                 }}
               >
                 <div className="flex items-center gap-4">
-                  <span className="text-2xl">{feature.emoji}</span>
+                  <img
+                    src={feature.icon}
+                    alt=""
+                    className="w-10 h-10 object-contain flex-shrink-0"
+                    loading="lazy"
+                  />
                   <span style={{ color: '#ffffff' }} className="text-base md:text-lg font-medium">
                     {feature.text}
                   </span>
