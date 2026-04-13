@@ -1,0 +1,393 @@
+import { useState, useEffect } from "react";
+
+export default function Block() {
+  const PHASE = 2;
+  const STATE_KEY = "itwin-course-state-v1";
+
+  const cards = [
+    {
+      id: 1,
+      front: "Layer 1 — Product Extraction",
+      back: "Feed Claude the TikTok Shop product URL. It pulls what the product does, who it is for, and the emotional angle."
+    },
+    {
+      id: 2,
+      front: "Layer 2 — Your Twin Profile",
+      back: "A reusable character brief: your reference photos, skin tone, hair, build, typical expressions."
+    },
+    {
+      id: 3,
+      front: "Layer 3 — Your Backgrounds",
+      back: "Your Phase 1 room plates, labelled (kitchen, bathroom, bedroom), ready to drop into any prompt."
+    },
+    {
+      id: 4,
+      front: "Layer 4 — Brand Reference Cards",
+      back: "A Brand Spec Card (fonts, hex colours) plus a Visual Style Card (warm, cool, bright, moody) so aesthetics stay consistent."
+    },
+    {
+      id: 5,
+      front: "Layer 5 — Format Templates (The Cookbook)",
+      back: "Recipe cards per format: Before & After, Yapper, POV, Product Close-Up, GRWM. Each tells Claude how to structure the script and visuals."
+    },
+    {
+      id: 6,
+      front: "Layer 6 — Quality Control Agents",
+      back: "Two checks before you generate: Persona Fit (does this sound like a real person?) and Conversion (does the hook, body, and CTA land?). Iterate until you score 90+."
+    }
+  ];
+
+  const [flipped, setFlipped] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STATE_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (s && s.quizAnswered && s.quizAnswered[PHASE - 1]) {
+        setSubmitted(true);
+        const all = {};
+        cards.forEach(c => { all[c.id] = true; });
+        setFlipped(all);
+      }
+    } catch {}
+  }, []);
+
+  const flippedCount = Object.values(flipped).filter(Boolean).length;
+  const allFlipped = flippedCount === cards.length;
+
+  function toggleFlip(id) {
+    setFlipped(prev => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  function markComplete() {
+    if (submitted) return;
+    setSubmitted(true);
+    if (window.itwinCourse && typeof window.itwinCourse.completePhase === "function") {
+      window.itwinCourse.completePhase(PHASE, true);
+      return;
+    }
+    const defaults = {
+      startedAt: Date.now(),
+      currentPhase: 1,
+      completedPhases: [false, false, false, false, false],
+      quizAnswered: [false, false, false, false, false],
+      quizCorrect: [false, false, false, false, false],
+      completed: false,
+      name: null,
+      email: null
+    };
+    let current = { ...defaults };
+    try {
+      const raw = localStorage.getItem(STATE_KEY);
+      if (raw) current = { ...defaults, ...JSON.parse(raw) };
+    } catch {}
+    current.completedPhases[PHASE - 1] = true;
+    current.quizAnswered[PHASE - 1] = true;
+    current.quizCorrect[PHASE - 1] = true;
+    current.completed = current.completedPhases.every(Boolean);
+    current.currentPhase = current.completed ? 6 : Math.min(PHASE + 1, 5);
+    try { localStorage.setItem(STATE_KEY, JSON.stringify(current)); } catch {}
+    window.dispatchEvent(new CustomEvent("itwin:state-changed", { detail: current }));
+  }
+
+  return (
+    <div id="itwin-p2-root">
+      <style>{`
+        #itwin-p2-root {
+          --cs-blue: #294ff6;
+          --cs-blue-3: #5e7bf6;
+          --cs-blue-4: #7a93ff;
+          --cs-navy: #000f4d;
+          --cs-light-1: #f8fbff;
+          --cs-light-2: #eef4fd;
+          --cs-lavender: #d8d8ff;
+          max-width: 960px;
+          margin: 0 auto;
+          padding: 16px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          color: var(--cs-navy);
+          line-height: 1.6;
+        }
+        #itwin-p2-root *, #itwin-p2-root *::before, #itwin-p2-root *::after { box-sizing: border-box; }
+
+        #itwin-p2-root .p-card {
+          background: white;
+          border-radius: 20px;
+          box-shadow: 0 8px 28px rgba(0,15,77,0.08);
+          padding: 36px 36px 40px;
+          margin-bottom: 20px;
+        }
+        @media (max-width: 640px) { #itwin-p2-root .p-card { padding: 26px 22px 30px; } }
+
+        #itwin-p2-root .p-badge {
+          display: inline-block;
+          background: var(--cs-blue);
+          color: white;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          padding: 6px 14px;
+          border-radius: 100px;
+          margin-bottom: 14px;
+        }
+        #itwin-p2-root h2.p-title {
+          font-size: clamp(24px, 3.4vw, 34px);
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          line-height: 1.2;
+          margin: 0 0 12px;
+        }
+        #itwin-p2-root .p-lede {
+          font-size: 17px;
+          color: #3a4a6b;
+          margin: 0 0 22px;
+          max-width: 720px;
+        }
+        #itwin-p2-root h3.p-step {
+          font-size: 19px;
+          font-weight: 700;
+          margin: 28px 0 10px;
+        }
+        #itwin-p2-root .p-body p { margin: 0 0 12px; }
+        #itwin-p2-root .p-body strong { color: var(--cs-navy); }
+
+        #itwin-p2-root .p-slide {
+          width: 100%;
+          border-radius: 14px;
+          display: block;
+          margin: 18px 0;
+          box-shadow: 0 6px 20px rgba(0,15,77,0.1);
+        }
+        #itwin-p2-root .p-slide-caption {
+          font-size: 12px;
+          color: #6b7a99;
+          text-align: center;
+          margin-top: -10px;
+          margin-bottom: 20px;
+          font-style: italic;
+        }
+
+        #itwin-p2-root .p-tip {
+          background: linear-gradient(135deg, rgba(41,79,246,0.06), rgba(94,123,246,0.1));
+          border-left: 4px solid var(--cs-blue);
+          padding: 14px 18px;
+          border-radius: 10px;
+          margin: 16px 0 4px;
+          font-size: 15px;
+        }
+        #itwin-p2-root .p-tip strong { color: var(--cs-blue); }
+
+        #itwin-p2-root .flash-wrap {
+          background: linear-gradient(135deg, #152237 0%, #000f4d 100%);
+          border-radius: 20px;
+          padding: 34px 36px 38px;
+          box-shadow: 0 12px 32px rgba(0,15,77,0.18);
+          color: white;
+        }
+        @media (max-width: 640px) { #itwin-p2-root .flash-wrap { padding: 26px 22px 30px; } }
+
+        #itwin-p2-root .flash-eyebrow {
+          display: inline-block;
+          background: rgba(122,147,255,0.18);
+          color: var(--cs-blue-4);
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          padding: 6px 12px;
+          border-radius: 100px;
+          margin-bottom: 12px;
+        }
+        #itwin-p2-root .flash-title { font-size: 22px; font-weight: 700; margin: 0 0 6px; }
+        #itwin-p2-root .flash-sub { color: #c3cfe8; margin: 0 0 20px; font-size: 14px; }
+
+        #itwin-p2-root .flash-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 12px;
+          margin-bottom: 22px;
+        }
+        #itwin-p2-root .flash-card {
+          perspective: 1000px;
+          min-height: 150px;
+          cursor: pointer;
+        }
+        #itwin-p2-root .flash-inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          min-height: 150px;
+          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          transform-style: preserve-3d;
+        }
+        #itwin-p2-root .flash-card.flipped .flash-inner { transform: rotateY(180deg); }
+        #itwin-p2-root .flash-face {
+          position: absolute;
+          inset: 0;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          border-radius: 14px;
+          padding: 18px 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          font-size: 15px;
+          font-weight: 600;
+          line-height: 1.4;
+        }
+        #itwin-p2-root .flash-front {
+          background: rgba(122,147,255,0.12);
+          border: 1px solid rgba(122,147,255,0.3);
+          color: white;
+        }
+        #itwin-p2-root .flash-back {
+          background: rgba(41,79,246,0.22);
+          border: 1px solid var(--cs-blue-3);
+          color: #dbe4ff;
+          transform: rotateY(180deg);
+          font-weight: 500;
+          font-size: 13px;
+          line-height: 1.55;
+        }
+        #itwin-p2-root .flash-hint {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--cs-blue-4);
+          position: absolute;
+          bottom: 10px;
+          left: 0;
+          right: 0;
+          text-align: center;
+        }
+
+        #itwin-p2-root .flash-progress {
+          font-size: 13px;
+          color: #c3cfe8;
+          margin-bottom: 14px;
+        }
+        #itwin-p2-root .flash-progress strong { color: white; }
+        #itwin-p2-root .btn-submit {
+          background: var(--cs-blue);
+          color: white;
+          border: none;
+          padding: 13px 26px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+          transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+        #itwin-p2-root .btn-submit:hover:not(:disabled) { transform: translateY(-1px); }
+        #itwin-p2-root .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+        #itwin-p2-root .flash-feedback {
+          margin-top: 16px;
+          padding: 14px 18px;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 600;
+          background: rgba(43,184,120,0.18);
+          color: #c8f2dd;
+        }
+      `}</style>
+
+      <div id="itwin-phase-2" className="p-card">
+        <div className="p-badge">Phase 2 of 5</div>
+        <h2 className="p-title">Find Your Product &amp; Write Your Script</h2>
+        <p className="p-lede">
+          Before you generate anything, you need a winning product, a proven script cloned to your voice, and a prompt system that feeds your image generator exactly what it needs every single time.
+        </p>
+
+        <div className="p-body">
+          <h3 className="p-step">Step 1 — Find a Trending Product</h3>
+          <p>Use TikTok Shop analytics tools like Kalodata or Social1 to see what is currently selling. Or skip the spend and use the free <strong>Creator Scans Viral Products page</strong>, updated weekly with the top-performing TikTok Shop UK items.</p>
+          <p>Once you pick a product, filter for its top UGC ads and save one to your phone. That is the ad you will reverse-engineer.</p>
+
+          <h3 className="p-step">Step 2 — Clone the Winning Script</h3>
+          <p>Upload the winning video to Gemini, or pull its transcript with <strong>TokScript</strong> and paste into Claude. Ask the AI to do three things:</p>
+          <ul style={{paddingLeft: "20px", margin: "10px 0 14px"}}>
+            <li>Transcribe the video word-for-word</li>
+            <li>Break down why the hook works</li>
+            <li>Rewrite it to fit your product and your twin's persona</li>
+          </ul>
+          <p>The goal is a script that sounds like a real casual review, not a polished commercial. Keep it under 60 seconds.</p>
+
+          <h3 className="p-step">Step 3 — The Deconstruction Method</h3>
+          <img
+            className="p-slide"
+            src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085840/10-deconstruction-method-tiktok-ad_gfuhrq.png"
+            alt="Deconstruction method — TikTok ad to code"
+          />
+          <p className="p-slide-caption">Screenshot the winning ad → ask Claude to break down its visual DNA</p>
+          <p>Shot type, camera angle, framing, background, text overlay placement, product positioning, body language. Claude rewrites that structure around your reference assets from Phase 1.</p>
+
+          <h3 className="p-step">Step 4 — The 6-Layer Prompt Stack</h3>
+          <img
+            className="p-slide"
+            src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085831/11-six-layer-prompt-stack_b8lree.png"
+            alt="Six-layer prompt stack"
+          />
+          <p className="p-slide-caption">Your reusable production line in Claude</p>
+          <p>Set this once. Every new product you promote flows through the same six layers, meaning you never start from a blank page again. Flip the cards below to lock each layer in.</p>
+          <div className="p-tip">
+            <strong>Quality bar:</strong> do not generate anything until Layer 6 scores your script 90 or above for both Persona Fit and Conversion.
+          </div>
+        </div>
+      </div>
+
+      <div className="flash-wrap">
+        <div className="flash-eyebrow">Flashcard Drill</div>
+        <h3 className="flash-title">The 6-Layer Prompt Stack</h3>
+        <p className="flash-sub">Tap each card to reveal what that layer does. Flip all six to complete Phase 2.</p>
+
+        <div className="flash-grid">
+          {cards.map(card => (
+            <div
+              key={card.id}
+              className={`flash-card${flipped[card.id] ? " flipped" : ""}`}
+              onClick={() => toggleFlip(card.id)}
+            >
+              <div className="flash-inner">
+                <div className="flash-face flash-front">
+                  <div>
+                    {card.front}
+                    <div className="flash-hint">Tap to flip</div>
+                  </div>
+                </div>
+                <div className="flash-face flash-back">
+                  <div>{card.back}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flash-progress">
+          Flipped <strong>{flippedCount} / {cards.length}</strong> cards
+        </div>
+
+        {!submitted && (
+          <button
+            className="btn-submit"
+            disabled={!allFlipped}
+            onClick={markComplete}
+          >
+            {allFlipped ? "Mark Phase 2 complete" : "Flip all 6 cards to continue"}
+          </button>
+        )}
+
+        {submitted && (
+          <div className="flash-feedback">
+            ✓ Phase 2 complete. You now have the prompt system that makes every future ad faster to build than the last.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

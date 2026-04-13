@@ -1,0 +1,543 @@
+import { useState, useEffect } from "react";
+import { useRecordCreate, q } from "@/lib/datasource";
+import { toast } from "sonner";
+
+// Field ID mapping for the "AI Twin Course Completions" table.
+// These field IDs come from /lead-magnet/itwin/assets/completions-table.json.
+// Bev must also add every alias below in the block's Actions tab in Softr.
+const createFields = q.select({
+  email: "6qDKJ",
+  full_name: "ziFFq",
+  completed_at: "zXnlh",
+  source: "LEYWS",
+  phase_1_quiz_correct: "GDIW6",
+  phase_2_quiz_correct: "wwYxI",
+  phase_3_quiz_correct: "FbtlN",
+  phase_4_quiz_correct: "UgtqR",
+  phase_5_quiz_correct: "AKk5K",
+  quiz_score: "G9MAa",
+  time_on_course_seconds: "9kccK",
+  user_agent: "1NkPW",
+  marketing_consent: "zTuNx"
+});
+
+// Final downloadable playbook (lives in Softr attachments).
+const PDF_URL = "https://tables-api.softr.io/v1/attachments/46e257fa-5265-4041-bf88-8f96540742a2/tifkUtUrpgKACz/QcxZm1Pe6Bmbgc/wqzC2/aca4394b-3260-407f-910f-0b5dec3bd6c7/7d8cafab-c8c0-4b4d-b74e-d7015d978d5b";
+
+export default function Block() {
+  const STATE_KEY = "itwin-course-state-v1";
+  const defaults = {
+    startedAt: Date.now(),
+    currentPhase: 1,
+    completedPhases: [false, false, false, false, false],
+    quizAnswered: [false, false, false, false, false],
+    quizCorrect: [false, false, false, false, false],
+    completed: false,
+    name: null,
+    email: null
+  };
+
+  const [state, setCourseState] = useState(defaults);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const createRecord = useRecordCreate({ fields: createFields });
+
+  // Hydrate course state + listen for updates from phase blocks
+  useEffect(() => {
+    function load() {
+      try {
+        const raw = localStorage.getItem(STATE_KEY);
+        if (!raw) return defaults;
+        return { ...defaults, ...JSON.parse(raw) };
+      } catch {
+        return defaults;
+      }
+    }
+    const s = load();
+    setCourseState(s);
+    if (s.email && s.name) {
+      setEmail(s.email);
+      setName(s.name);
+      setSubmitted(true);
+    }
+    const onChange = (e) => {
+      if (e && e.detail) setCourseState({ ...defaults, ...e.detail });
+    };
+    window.addEventListener("itwin:state-changed", onChange);
+    return () => window.removeEventListener("itwin:state-changed", onChange);
+  }, []);
+
+  const completedCount = state.completedPhases.filter(Boolean).length;
+  const allDone = completedCount === 5;
+  const correctCount = state.quizCorrect.filter(Boolean).length;
+
+  async function handleSubmit() {
+    if (submitting || submitted) return;
+    if (!name.trim()) { toast.error("Please enter your name"); return; }
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) { toast.error("Please enter a valid email"); return; }
+    if (!createRecord.enabled) {
+      toast.error("Cannot save your completion right now. Please refresh and try again.");
+      return;
+    }
+
+    const now = new Date();
+    const isoDate = now.toISOString().slice(0, 10);
+    const elapsedSeconds = Math.max(0, Math.round((now.getTime() - (state.startedAt || now.getTime())) / 1000));
+    const scorePercent = Math.round((correctCount / 5) * 100);
+
+    const fields = {
+      email: email.trim(),
+      full_name: name.trim(),
+      completed_at: isoDate,
+      source: "AI Twin Mini Course",
+      phase_1_quiz_correct: !!state.quizCorrect[0],
+      phase_2_quiz_correct: !!state.quizCorrect[1],
+      phase_3_quiz_correct: !!state.quizCorrect[2],
+      phase_4_quiz_correct: !!state.quizCorrect[3],
+      phase_5_quiz_correct: !!state.quizCorrect[4],
+      quiz_score: scorePercent,
+      time_on_course_seconds: elapsedSeconds,
+      user_agent: (typeof navigator !== "undefined" && navigator.userAgent) ? navigator.userAgent : "",
+      marketing_consent: !!consent
+    };
+
+    setSubmitting(true);
+    try {
+      await createRecord.mutateAsync(fields);
+      // Persist name/email in local state so the PDF stays unlocked on refresh
+      try {
+        const current = { ...defaults, ...JSON.parse(localStorage.getItem(STATE_KEY) || "{}") };
+        current.name = name.trim();
+        current.email = email.trim();
+        localStorage.setItem(STATE_KEY, JSON.stringify(current));
+        window.dispatchEvent(new CustomEvent("itwin:state-changed", { detail: current }));
+      } catch {}
+      setSubmitted(true);
+      toast.success("Your playbook is unlocked");
+    } catch (e) {
+      toast.error("Could not save", { description: e && e.message ? e.message : "Please try again" });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div id="itwin-c-root">
+      <style>{`
+        #itwin-c-root {
+          --cs-blue: #294ff6;
+          --cs-blue-3: #5e7bf6;
+          --cs-blue-4: #7a93ff;
+          --cs-navy: #000f4d;
+          --cs-navy-3: #152237;
+          --cs-light-1: #f8fbff;
+          --cs-light-2: #eef4fd;
+          --cs-lavender: #d8d8ff;
+          max-width: 960px;
+          margin: 0 auto;
+          padding: 16px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          color: var(--cs-navy);
+          line-height: 1.55;
+        }
+        #itwin-c-root *, #itwin-c-root *::before, #itwin-c-root *::after { box-sizing: border-box; }
+
+        #itwin-c-root .c-pending {
+          background: var(--cs-light-1);
+          border-radius: 20px;
+          padding: 36px;
+          text-align: center;
+          box-shadow: 0 8px 28px rgba(0,15,77,0.06);
+          margin-bottom: 20px;
+        }
+        #itwin-c-root .c-pending h3 {
+          font-size: 22px;
+          font-weight: 800;
+          margin: 0 0 8px;
+          color: var(--cs-navy);
+        }
+        #itwin-c-root .c-pending p {
+          margin: 0;
+          color: #6b7a99;
+        }
+        #itwin-c-root .c-pending .c-count {
+          display: inline-block;
+          background: var(--cs-blue);
+          color: white;
+          padding: 6px 14px;
+          border-radius: 100px;
+          font-size: 13px;
+          font-weight: 700;
+          margin-top: 12px;
+        }
+
+        #itwin-c-root .cert-card {
+          position: relative;
+          background: linear-gradient(135deg, #152237 0%, #000f4d 55%, #294ff6 140%);
+          border-radius: 24px;
+          padding: 48px 44px 44px;
+          color: white;
+          box-shadow: 0 18px 48px rgba(0,15,77,0.22);
+          overflow: hidden;
+          margin-bottom: 20px;
+        }
+        #itwin-c-root .cert-card::before {
+          content: "";
+          position: absolute;
+          top: -80px;
+          right: -80px;
+          width: 280px;
+          height: 280px;
+          background: radial-gradient(circle, rgba(122,147,255,0.28) 0%, transparent 65%);
+          pointer-events: none;
+        }
+        @media (max-width: 640px) { #itwin-c-root .cert-card { padding: 34px 24px; } }
+
+        #itwin-c-root .cert-ribbon {
+          display: inline-block;
+          background: rgba(122,147,255,0.18);
+          color: var(--cs-blue-4);
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.18em;
+          padding: 6px 14px;
+          border-radius: 100px;
+          margin-bottom: 18px;
+        }
+        #itwin-c-root .cert-h {
+          font-size: clamp(30px, 4.5vw, 44px);
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          line-height: 1.12;
+          margin: 0 0 14px;
+        }
+        #itwin-c-root .cert-sub {
+          color: #c3cfe8;
+          font-size: 16px;
+          margin: 0 0 28px;
+          max-width: 620px;
+        }
+
+        #itwin-c-root .cert-stats {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          gap: 12px;
+          margin-bottom: 26px;
+        }
+        #itwin-c-root .cert-stat {
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(122,147,255,0.22);
+          border-radius: 14px;
+          padding: 16px;
+        }
+        #itwin-c-root .cert-stat-label {
+          font-size: 11px;
+          color: var(--cs-blue-4);
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin-bottom: 6px;
+        }
+        #itwin-c-root .cert-stat-value {
+          font-size: 24px;
+          font-weight: 800;
+          color: white;
+        }
+
+        #itwin-c-root .cert-name {
+          font-size: 13px;
+          color: var(--cs-blue-4);
+          margin-top: 18px;
+        }
+        #itwin-c-root .cert-name strong {
+          display: block;
+          font-size: 22px;
+          font-weight: 800;
+          color: white;
+          margin-top: 4px;
+          letter-spacing: -0.01em;
+        }
+
+        #itwin-c-root .gate-card {
+          background: white;
+          border-radius: 20px;
+          padding: 34px 36px 38px;
+          box-shadow: 0 8px 28px rgba(0,15,77,0.08);
+          margin-bottom: 20px;
+        }
+        @media (max-width: 640px) { #itwin-c-root .gate-card { padding: 26px 22px; } }
+        #itwin-c-root .gate-title {
+          font-size: 22px;
+          font-weight: 800;
+          margin: 0 0 6px;
+          color: var(--cs-navy);
+        }
+        #itwin-c-root .gate-sub {
+          font-size: 14px;
+          color: #6b7a99;
+          margin: 0 0 22px;
+        }
+        #itwin-c-root .gate-field { margin-bottom: 14px; }
+        #itwin-c-root .gate-label {
+          display: block;
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--cs-navy);
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin-bottom: 6px;
+        }
+        #itwin-c-root .gate-input {
+          width: 100%;
+          padding: 14px 16px;
+          border: 1.5px solid var(--cs-light-2);
+          background: var(--cs-light-1);
+          border-radius: 12px;
+          font-size: 15px;
+          font-family: inherit;
+          color: var(--cs-navy);
+          transition: border-color 0.15s ease;
+        }
+        #itwin-c-root .gate-input:focus {
+          outline: none;
+          border-color: var(--cs-blue);
+        }
+        #itwin-c-root .gate-consent {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          font-size: 13px;
+          color: #6b7a99;
+          margin: 4px 0 18px;
+          line-height: 1.5;
+        }
+        #itwin-c-root .gate-consent input { margin-top: 2px; }
+        #itwin-c-root .btn-download {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          background: var(--cs-blue);
+          color: white;
+          border: none;
+          padding: 15px 28px;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+          text-decoration: none;
+          transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+        #itwin-c-root .btn-download:hover:not(:disabled) { transform: translateY(-1px); }
+        #itwin-c-root .btn-download:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        #itwin-c-root .unlocked {
+          background: linear-gradient(135deg, rgba(41,79,246,0.08), rgba(94,123,246,0.14));
+          border: 1px solid rgba(41,79,246,0.15);
+          border-radius: 16px;
+          padding: 24px 26px;
+        }
+        #itwin-c-root .unlocked h4 {
+          font-size: 18px;
+          font-weight: 800;
+          color: var(--cs-navy);
+          margin: 0 0 6px;
+        }
+        #itwin-c-root .unlocked p {
+          font-size: 14px;
+          color: #3a4a6b;
+          margin: 0 0 14px;
+        }
+
+        #itwin-c-root .cta-card {
+          background: linear-gradient(135deg, #294ff6 0%, #5e7bf6 100%);
+          color: white;
+          border-radius: 20px;
+          padding: 34px 36px 38px;
+          box-shadow: 0 12px 32px rgba(41,79,246,0.28);
+          text-align: center;
+        }
+        @media (max-width: 640px) { #itwin-c-root .cta-card { padding: 28px 24px; } }
+        #itwin-c-root .cta-card h3 {
+          font-size: clamp(22px, 3.2vw, 28px);
+          font-weight: 800;
+          margin: 0 0 10px;
+          line-height: 1.2;
+        }
+        #itwin-c-root .cta-card p {
+          color: #dbe4ff;
+          font-size: 15px;
+          margin: 0 auto 22px;
+          max-width: 560px;
+        }
+        #itwin-c-root .cta-btn {
+          display: inline-block;
+          background: white;
+          color: var(--cs-blue);
+          padding: 14px 30px;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 800;
+          text-decoration: none;
+          transition: transform 0.15s ease;
+        }
+        #itwin-c-root .cta-btn:hover { transform: translateY(-1px); }
+
+        #itwin-c-root .phase-pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-top: 14px;
+        }
+        #itwin-c-root .phase-pill-done {
+          background: rgba(122,147,255,0.15);
+          border: 1px solid rgba(122,147,255,0.3);
+          color: #dbe4ff;
+          font-size: 12px;
+          font-weight: 600;
+          padding: 6px 12px;
+          border-radius: 100px;
+        }
+      `}</style>
+
+      <div id="itwin-completion">
+        {!allDone && (
+          <div className="c-pending">
+            <h3>Not quite there yet</h3>
+            <p>Finish all five phases to unlock your certificate and the full AI Twin Playbook PDF.</p>
+            <div className="c-count">{completedCount} / 5 phases complete</div>
+          </div>
+        )}
+
+        {allDone && (
+          <>
+            <div className="cert-card">
+              <div className="cert-ribbon">Certificate of Completion</div>
+              <h2 className="cert-h">You built an AI twin for TikTok Shop.</h2>
+              <p className="cert-sub">
+                You have worked through the exact system Creator Scans uses to generate hyper-realistic UGC videos at scale. Asset library, script system, BOPA, animation pipeline, scaling flywheel. You have it all.
+              </p>
+
+              <div className="cert-stats">
+                <div className="cert-stat">
+                  <div className="cert-stat-label">Phases</div>
+                  <div className="cert-stat-value">5 / 5</div>
+                </div>
+                <div className="cert-stat">
+                  <div className="cert-stat-label">Quiz Score</div>
+                  <div className="cert-stat-value">{correctCount} / 5</div>
+                </div>
+                <div className="cert-stat">
+                  <div className="cert-stat-label">Status</div>
+                  <div className="cert-stat-value">Complete</div>
+                </div>
+              </div>
+
+              <div className="phase-pills">
+                <span className="phase-pill-done">✓ Asset Library</span>
+                <span className="phase-pill-done">✓ Script &amp; Prompt</span>
+                <span className="phase-pill-done">✓ Generate Twin</span>
+                <span className="phase-pill-done">✓ Animate &amp; Voice</span>
+                <span className="phase-pill-done">✓ Scale GMV</span>
+              </div>
+
+              {submitted && name && (
+                <div className="cert-name">
+                  Issued to
+                  <strong>{name}</strong>
+                </div>
+              )}
+            </div>
+
+            <div className="gate-card">
+              {!submitted && (
+                <>
+                  <h3 className="gate-title">Get your full AI Twin Playbook PDF</h3>
+                  <p className="gate-sub">
+                    A 28-slide deep-dive you can take away forever. Enter your name and email and we will unlock the download right now.
+                  </p>
+
+                  <div className="gate-field">
+                    <label className="gate-label" htmlFor="itwin-name">Full name</label>
+                    <input
+                      id="itwin-name"
+                      className="gate-input"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div className="gate-field">
+                    <label className="gate-label" htmlFor="itwin-email">Email</label>
+                    <input
+                      id="itwin-email"
+                      className="gate-input"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                  <label className="gate-consent">
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={(e) => setConsent(e.target.checked)}
+                    />
+                    <span>
+                      I would like Creator Scans to send me occasional tips, templates, and free tools. I can unsubscribe any time.
+                    </span>
+                  </label>
+
+                  <button
+                    className="btn-download"
+                    disabled={submitting}
+                    onClick={handleSubmit}
+                  >
+                    {submitting ? "Unlocking..." : "Unlock my playbook"}
+                  </button>
+                </>
+              )}
+
+              {submitted && (
+                <div className="unlocked">
+                  <h4>Your playbook is ready</h4>
+                  <p>Download it now — it is yours to keep, reference, and share.</p>
+                  <a
+                    className="btn-download"
+                    href={PDF_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    ⬇ Download the AI Twin Playbook (PDF)
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <div className="cta-card">
+              <h3>Want the full Creator Scans Agency experience?</h3>
+              <p>
+                If this free mini course moved the needle, wait until you see what we do inside the agency. Hands-on education, done-for-you systems, and the exact playbooks our top earners use every day.
+              </p>
+              <a
+                className="cta-btn"
+                href="https://www.creatorscans.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Explore Creator Scans →
+              </a>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

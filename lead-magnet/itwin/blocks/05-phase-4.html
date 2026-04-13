@@ -1,0 +1,401 @@
+import { useState, useEffect } from "react";
+
+export default function Block() {
+  const PHASE = 4;
+  const STATE_KEY = "itwin-course-state-v1";
+
+  const cards = [
+    {
+      id: 1,
+      front: "Start Frame + End Frame",
+      back: "Before you animate anything, use Nano Banana 2 to generate two specific frames — an opening shot and a closing shot. They give the video AI clear rails to move between and dramatically reduce AI weirdness."
+    },
+    {
+      id: 2,
+      front: "Pick Your Video Model",
+      back: "Veo 3.1, Seedance 2.0, and Kling 3.0 are the strongest options right now. Access them via Fal.ai or each platform directly. Test multiple models with the same frames — they each have different strengths."
+    },
+    {
+      id: 3,
+      front: "Prompt the Motion",
+      back: "Describe the motion explicitly: 'slight camera push-in, subject maintains eye contact, natural hand movement holding up the product.' Vague motion prompts are what produce the text-warping, product-distorting videos everyone mocks."
+    },
+    {
+      id: 4,
+      front: "Sync the Voiceover in HeyGen",
+      back: "Bring your animated clip into HeyGen. Upload either your manual voiceover or your ElevenLabs-cloned audio. HeyGen maps lip movements to the audio — natural pauses, breaths, and inflections included when you recorded it yourself."
+    }
+  ];
+
+  const [flipped, setFlipped] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STATE_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (s && s.quizAnswered && s.quizAnswered[PHASE - 1]) {
+        setSubmitted(true);
+        const all = {};
+        cards.forEach(c => { all[c.id] = true; });
+        setFlipped(all);
+      }
+    } catch {}
+  }, []);
+
+  const flippedCount = Object.values(flipped).filter(Boolean).length;
+  const allFlipped = flippedCount === cards.length;
+
+  function toggleFlip(id) {
+    setFlipped(prev => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  function markComplete() {
+    if (submitted) return;
+    setSubmitted(true);
+    if (window.itwinCourse && typeof window.itwinCourse.completePhase === "function") {
+      window.itwinCourse.completePhase(PHASE, true);
+      return;
+    }
+    const defaults = {
+      startedAt: Date.now(),
+      currentPhase: 1,
+      completedPhases: [false, false, false, false, false],
+      quizAnswered: [false, false, false, false, false],
+      quizCorrect: [false, false, false, false, false],
+      completed: false,
+      name: null,
+      email: null
+    };
+    let current = { ...defaults };
+    try {
+      const raw = localStorage.getItem(STATE_KEY);
+      if (raw) current = { ...defaults, ...JSON.parse(raw) };
+    } catch {}
+    current.completedPhases[PHASE - 1] = true;
+    current.quizAnswered[PHASE - 1] = true;
+    current.quizCorrect[PHASE - 1] = true;
+    current.completed = current.completedPhases.every(Boolean);
+    current.currentPhase = current.completed ? 6 : Math.min(PHASE + 1, 5);
+    try { localStorage.setItem(STATE_KEY, JSON.stringify(current)); } catch {}
+    window.dispatchEvent(new CustomEvent("itwin:state-changed", { detail: current }));
+  }
+
+  return (
+    <div id="itwin-p4-root">
+      <style>{`
+        #itwin-p4-root {
+          --cs-blue: #294ff6;
+          --cs-blue-3: #5e7bf6;
+          --cs-blue-4: #7a93ff;
+          --cs-navy: #000f4d;
+          --cs-light-1: #f8fbff;
+          --cs-light-2: #eef4fd;
+          --cs-lavender: #d8d8ff;
+          max-width: 960px;
+          margin: 0 auto;
+          padding: 16px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          color: var(--cs-navy);
+          line-height: 1.6;
+        }
+        #itwin-p4-root *, #itwin-p4-root *::before, #itwin-p4-root *::after { box-sizing: border-box; }
+
+        #itwin-p4-root .p-card {
+          background: white;
+          border-radius: 20px;
+          box-shadow: 0 8px 28px rgba(0,15,77,0.08);
+          padding: 36px 36px 40px;
+          margin-bottom: 20px;
+        }
+        @media (max-width: 640px) { #itwin-p4-root .p-card { padding: 26px 22px 30px; } }
+
+        #itwin-p4-root .p-badge {
+          display: inline-block;
+          background: var(--cs-blue);
+          color: white;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          padding: 6px 14px;
+          border-radius: 100px;
+          margin-bottom: 14px;
+        }
+        #itwin-p4-root h2.p-title {
+          font-size: clamp(24px, 3.4vw, 34px);
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          line-height: 1.2;
+          margin: 0 0 12px;
+        }
+        #itwin-p4-root .p-lede {
+          font-size: 17px;
+          color: #3a4a6b;
+          margin: 0 0 22px;
+          max-width: 720px;
+        }
+        #itwin-p4-root h3.p-step {
+          font-size: 19px;
+          font-weight: 700;
+          margin: 28px 0 10px;
+        }
+        #itwin-p4-root .p-body p { margin: 0 0 12px; }
+        #itwin-p4-root .p-body strong { color: var(--cs-navy); }
+
+        #itwin-p4-root .p-slide {
+          width: 100%;
+          border-radius: 14px;
+          display: block;
+          margin: 18px 0;
+          box-shadow: 0 6px 20px rgba(0,15,77,0.1);
+        }
+        #itwin-p4-root .p-slide-caption {
+          font-size: 12px;
+          color: #6b7a99;
+          text-align: center;
+          margin-top: -10px;
+          margin-bottom: 20px;
+          font-style: italic;
+        }
+
+        #itwin-p4-root .pipeline {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 10px;
+          margin: 18px 0 4px;
+        }
+        @media (max-width: 640px) { #itwin-p4-root .pipeline { grid-template-columns: 1fr; } }
+        #itwin-p4-root .pipe-step {
+          background: var(--cs-light-1);
+          border-radius: 14px;
+          padding: 16px;
+          text-align: center;
+          box-shadow: 0 4px 14px rgba(0,15,77,0.05);
+        }
+        #itwin-p4-root .pipe-num {
+          display: inline-block;
+          background: var(--cs-blue);
+          color: white;
+          width: 28px;
+          height: 28px;
+          line-height: 28px;
+          border-radius: 100px;
+          font-weight: 800;
+          margin-bottom: 10px;
+        }
+        #itwin-p4-root .pipe-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+        #itwin-p4-root .pipe-desc { font-size: 12px; color: #6b7a99; }
+
+        #itwin-p4-root .p-tip {
+          background: linear-gradient(135deg, rgba(41,79,246,0.06), rgba(94,123,246,0.1));
+          border-left: 4px solid var(--cs-blue);
+          padding: 14px 18px;
+          border-radius: 10px;
+          margin: 16px 0 4px;
+          font-size: 15px;
+        }
+        #itwin-p4-root .p-tip strong { color: var(--cs-blue); }
+
+        #itwin-p4-root .flash-wrap {
+          background: linear-gradient(135deg, #152237 0%, #000f4d 100%);
+          border-radius: 20px;
+          padding: 34px 36px 38px;
+          box-shadow: 0 12px 32px rgba(0,15,77,0.18);
+          color: white;
+        }
+        @media (max-width: 640px) { #itwin-p4-root .flash-wrap { padding: 26px 22px 30px; } }
+        #itwin-p4-root .flash-eyebrow {
+          display: inline-block;
+          background: rgba(122,147,255,0.18);
+          color: var(--cs-blue-4);
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          padding: 6px 12px;
+          border-radius: 100px;
+          margin-bottom: 12px;
+        }
+        #itwin-p4-root .flash-title { font-size: 22px; font-weight: 700; margin: 0 0 6px; }
+        #itwin-p4-root .flash-sub { color: #c3cfe8; margin: 0 0 20px; font-size: 14px; }
+
+        #itwin-p4-root .flash-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 12px;
+          margin-bottom: 22px;
+        }
+        #itwin-p4-root .flash-card { perspective: 1000px; min-height: 170px; cursor: pointer; }
+        #itwin-p4-root .flash-inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          min-height: 170px;
+          transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+          transform-style: preserve-3d;
+        }
+        #itwin-p4-root .flash-card.flipped .flash-inner { transform: rotateY(180deg); }
+        #itwin-p4-root .flash-face {
+          position: absolute;
+          inset: 0;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          border-radius: 14px;
+          padding: 18px 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          font-size: 15px;
+          font-weight: 600;
+          line-height: 1.4;
+        }
+        #itwin-p4-root .flash-front {
+          background: rgba(122,147,255,0.12);
+          border: 1px solid rgba(122,147,255,0.3);
+          color: white;
+        }
+        #itwin-p4-root .flash-back {
+          background: rgba(41,79,246,0.22);
+          border: 1px solid var(--cs-blue-3);
+          color: #dbe4ff;
+          transform: rotateY(180deg);
+          font-weight: 500;
+          font-size: 13px;
+          line-height: 1.55;
+        }
+        #itwin-p4-root .flash-hint {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--cs-blue-4);
+          position: absolute;
+          bottom: 10px;
+          left: 0;
+          right: 0;
+          text-align: center;
+        }
+
+        #itwin-p4-root .flash-progress { font-size: 13px; color: #c3cfe8; margin-bottom: 14px; }
+        #itwin-p4-root .flash-progress strong { color: white; }
+        #itwin-p4-root .btn-submit {
+          background: var(--cs-blue);
+          color: white;
+          border: none;
+          padding: 13px 26px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        #itwin-p4-root .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+        #itwin-p4-root .flash-feedback {
+          margin-top: 16px;
+          padding: 14px 18px;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 600;
+          background: rgba(43,184,120,0.18);
+          color: #c8f2dd;
+        }
+      `}</style>
+
+      <div id="itwin-phase-4" className="p-card">
+        <div className="p-badge">Phase 4 of 5</div>
+        <h2 className="p-title">Bring Your Twin to Life</h2>
+        <p className="p-lede">
+          A still image gets attention. A moving, talking twin sells products. This phase turns your Phase 3 master image into a fully animated, voice-synced UGC video that is ready to post.
+        </p>
+
+        <div className="p-body">
+          <img
+            className="p-slide"
+            src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085842/17-video-animation-pipeline_lqe0nh.png"
+            alt="Video animation pipeline — Veo, Seedance, Kling"
+          />
+          <p className="p-slide-caption">Start frame → video model → end frame → HeyGen lip-sync</p>
+
+          <h3 className="p-step">The Animation Pipeline</h3>
+          <div className="pipeline">
+            <div className="pipe-step">
+              <div className="pipe-num">1</div>
+              <div className="pipe-title">Generate frames</div>
+              <div className="pipe-desc">Start + end frames from Nano Banana 2</div>
+            </div>
+            <div className="pipe-step">
+              <div className="pipe-num">2</div>
+              <div className="pipe-title">Animate</div>
+              <div className="pipe-desc">Veo 3.1, Seedance 2.0, or Kling 3.0 via Fal.ai</div>
+            </div>
+            <div className="pipe-step">
+              <div className="pipe-num">3</div>
+              <div className="pipe-title">Lip-sync</div>
+              <div className="pipe-desc">HeyGen maps mouth shapes to your audio</div>
+            </div>
+          </div>
+
+          <img
+            className="p-slide"
+            src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085843/20-lip-sync-voiceover-assembly-heygen_yuinqh.png"
+            alt="HeyGen lip-sync assembly"
+          />
+          <p className="p-slide-caption">Visual + audio → HeyGen processing engine → ready to post</p>
+
+          <div className="p-tip">
+            <strong>The realism lever:</strong> if you use your manual voiceover instead of a typed clone, the final video is almost indistinguishable from a real recording. Save this for your highest-priority hero ads.
+          </div>
+
+          <p>Flip the four cards below to lock the full pipeline in your head.</p>
+        </div>
+      </div>
+
+      <div className="flash-wrap">
+        <div className="flash-eyebrow">Flashcard Drill</div>
+        <h3 className="flash-title">The Animation Pipeline</h3>
+        <p className="flash-sub">Tap each card to reveal the key move. Flip all four to complete Phase 4.</p>
+
+        <div className="flash-grid">
+          {cards.map(card => (
+            <div
+              key={card.id}
+              className={`flash-card${flipped[card.id] ? " flipped" : ""}`}
+              onClick={() => toggleFlip(card.id)}
+            >
+              <div className="flash-inner">
+                <div className="flash-face flash-front">
+                  <div>
+                    {card.front}
+                    <div className="flash-hint">Tap to flip</div>
+                  </div>
+                </div>
+                <div className="flash-face flash-back">
+                  <div>{card.back}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flash-progress">
+          Flipped <strong>{flippedCount} / {cards.length}</strong> cards
+        </div>
+
+        {!submitted && (
+          <button className="btn-submit" disabled={!allFlipped} onClick={markComplete}>
+            {allFlipped ? "Mark Phase 4 complete" : "Flip all 4 cards to continue"}
+          </button>
+        )}
+
+        {submitted && (
+          <div className="flash-feedback">
+            ✓ Phase 4 complete. Your twin now moves, talks, and looks real. One last phase to turn this into GMV.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

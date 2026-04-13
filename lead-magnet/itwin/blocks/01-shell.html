@@ -1,21 +1,121 @@
+import { useState, useEffect } from "react";
+
 export default function Block() {
+  const PHASE_TITLES = ["Asset Library", "Script & Prompt", "Generate Twin", "Animate & Voice", "Scale GMV"];
+  const TOTAL_PHASES = 5;
+  const STATE_KEY = "itwin-course-state-v1";
+
+  const defaultState = {
+    startedAt: Date.now(),
+    currentPhase: 1,
+    completedPhases: [false, false, false, false, false],
+    quizAnswered: [false, false, false, false, false],
+    quizCorrect: [false, false, false, false, false],
+    completed: false,
+    name: null,
+    email: null
+  };
+
+  const [state, setState] = useState(defaultState);
+
+  // Hydrate from localStorage + install global API + subscribe to state-change events
+  useEffect(() => {
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STATE_KEY);
+        if (!raw) return { ...defaultState };
+        return { ...defaultState, ...JSON.parse(raw) };
+      } catch {
+        return { ...defaultState };
+      }
+    }
+
+    function saveAndBroadcast(next) {
+      try {
+        localStorage.setItem(STATE_KEY, JSON.stringify(next));
+      } catch {}
+      setState(next);
+      window.dispatchEvent(new CustomEvent("itwin:state-changed", { detail: next }));
+    }
+
+    // Install global API so other blocks can read/write shared course state.
+    window.itwinCourse = {
+      STATE_KEY,
+      TOTAL_PHASES,
+      PHASE_TITLES,
+      getState() {
+        try {
+          const raw = localStorage.getItem(STATE_KEY);
+          return raw ? { ...defaultState, ...JSON.parse(raw) } : { ...defaultState };
+        } catch {
+          return { ...defaultState };
+        }
+      },
+      setState(patch) {
+        const current = this.getState();
+        saveAndBroadcast({ ...current, ...patch });
+      },
+      goToPhase(phase) {
+        this.setState({ currentPhase: phase });
+        setTimeout(() => {
+          const targetId = phase === 6 ? "itwin-completion" : `itwin-phase-${phase}`;
+          const el = document.getElementById(targetId);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 80);
+      },
+      completePhase(phase, quizCorrect) {
+        const current = this.getState();
+        const completedPhases = [...current.completedPhases];
+        const quizAnswered = [...current.quizAnswered];
+        const quizCorrectArr = [...current.quizCorrect];
+        completedPhases[phase - 1] = true;
+        quizAnswered[phase - 1] = true;
+        quizCorrectArr[phase - 1] = !!quizCorrect;
+        const allDone = completedPhases.every(Boolean);
+        saveAndBroadcast({
+          ...current,
+          completedPhases,
+          quizAnswered,
+          quizCorrect: quizCorrectArr,
+          completed: allDone,
+          currentPhase: allDone ? 6 : Math.min(phase + 1, TOTAL_PHASES)
+        });
+      },
+      reset() {
+        try { localStorage.removeItem(STATE_KEY); } catch {}
+        saveAndBroadcast({ ...defaultState, startedAt: Date.now() });
+      }
+    };
+
+    setState(loadState());
+
+    const onExternalChange = (e) => {
+      if (e && e.detail) setState({ ...defaultState, ...e.detail });
+    };
+    window.addEventListener("itwin:state-changed", onExternalChange);
+    return () => {
+      window.removeEventListener("itwin:state-changed", onExternalChange);
+    };
+  }, []);
+
+  const completedCount = state.completedPhases.filter(Boolean).length;
+  const percent = Math.round((completedCount / TOTAL_PHASES) * 100);
+  const phaseLabel = state.completed
+    ? "Course complete"
+    : `Phase ${Math.min(state.currentPhase, TOTAL_PHASES)} of 5`;
+
   return (
     <div id="itwin-shell">
       <style>{`
         #itwin-shell {
           --cs-blue: #294ff6;
-          --cs-blue-2: #4466f8;
           --cs-blue-3: #5e7bf6;
           --cs-blue-4: #7a93ff;
           --cs-navy: #000f4d;
-          --cs-navy-2: #001364;
           --cs-navy-3: #152237;
           --cs-light-1: #f8fbff;
           --cs-light-2: #eef4fd;
-          --cs-light-3: #fafbff;
           --cs-lavender: #d8d8ff;
-          --cs-red: #fe2c55;
-          
           max-width: 960px;
           margin: 0 auto;
           padding: 0 16px 24px;
@@ -24,14 +124,9 @@ export default function Block() {
           line-height: 1.55;
           color: var(--cs-navy);
         }
-        
-        #itwin-shell *,
-        #itwin-shell *::before,
-        #itwin-shell *::after {
-          box-sizing: border-box;
-        }
-        
-        .itwin-hero {
+        #itwin-shell *, #itwin-shell *::before, #itwin-shell *::after { box-sizing: border-box; }
+
+        #itwin-shell .itwin-hero {
           background: linear-gradient(135deg, #152237 0%, #000f4d 100%);
           border-radius: 20px;
           padding: 48px 40px;
@@ -40,14 +135,9 @@ export default function Block() {
           box-shadow: 0 12px 32px rgba(0, 15, 77, 0.18);
           margin-bottom: 24px;
         }
-        
-        @media (max-width: 640px) {
-          .itwin-hero {
-            padding: 32px 22px;
-          }
-        }
-        
-        .itwin-eyebrow {
+        @media (max-width: 640px) { #itwin-shell .itwin-hero { padding: 32px 22px; } }
+
+        #itwin-shell .itwin-eyebrow {
           display: inline-block;
           background: rgba(122, 147, 255, 0.12);
           color: var(--cs-blue-4);
@@ -59,31 +149,22 @@ export default function Block() {
           border-radius: 100px;
           margin-bottom: 20px;
         }
-        
-        .itwin-title {
+        #itwin-shell .itwin-title {
           font-size: clamp(26px, 4vw, 40px);
           font-weight: 800;
           line-height: 1.15;
           letter-spacing: -0.02em;
           margin: 0 0 16px;
         }
-        
-        .itwin-subtitle {
+        #itwin-shell .itwin-subtitle {
           max-width: 640px;
           margin: 0 auto 28px;
           color: #c3cfe8;
           font-size: 16px;
           line-height: 1.6;
         }
-        
-        .itwin-chips {
-          display: flex;
-          gap: 10px;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-        
-        .itwin-chip {
+        #itwin-shell .itwin-chips { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        #itwin-shell .itwin-chip {
           background: rgba(255, 255, 255, 0.08);
           border: 1px solid rgba(122, 147, 255, 0.25);
           color: #dbe4ff;
@@ -92,8 +173,8 @@ export default function Block() {
           padding: 6px 12px;
           border-radius: 100px;
         }
-        
-        .itwin-sticky-card {
+
+        #itwin-shell .itwin-sticky-card {
           position: sticky;
           top: 12px;
           z-index: 40;
@@ -102,47 +183,29 @@ export default function Block() {
           padding: 16px 20px;
           box-shadow: 0 4px 18px rgba(0, 15, 77, 0.08);
         }
-        
-        .itwin-label-row {
+        #itwin-shell .itwin-label-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
           margin-bottom: 10px;
         }
-        
-        .itwin-phase-label {
-          font-size: 13px;
-          font-weight: 700;
-          color: var(--cs-navy);
-        }
-        
-        .itwin-percent-label {
-          font-size: 13px;
-          font-weight: 700;
-          color: var(--cs-blue);
-        }
-        
-        .itwin-progress-track {
+        #itwin-shell .itwin-phase-label { font-size: 13px; font-weight: 700; color: var(--cs-navy); }
+        #itwin-shell .itwin-percent-label { font-size: 13px; font-weight: 700; color: var(--cs-blue); }
+        #itwin-shell .itwin-progress-track {
           height: 8px;
           background: var(--cs-light-2);
           border-radius: 100px;
           overflow: hidden;
           margin-bottom: 16px;
         }
-        
-        .itwin-progress-fill {
+        #itwin-shell .itwin-progress-fill {
           height: 100%;
           background: linear-gradient(90deg, var(--cs-blue) 0%, var(--cs-blue-3) 100%);
           border-radius: 100px;
           transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        .itwin-phase-nav {
-          display: flex;
-          gap: 8px;
-        }
-        
-        .itwin-phase-pill {
+        #itwin-shell .itwin-phase-nav { display: flex; gap: 8px; }
+        #itwin-shell .itwin-phase-pill {
           flex: 1 1 auto;
           padding: 10px 12px;
           font-size: 12px;
@@ -157,29 +220,14 @@ export default function Block() {
           background: var(--cs-light-2);
           color: var(--cs-navy);
         }
-        
-        .itwin-phase-pill:hover {
-          transform: translateY(-1px);
-        }
-        
-        .itwin-phase-pill.active {
-          background: var(--cs-blue);
-          color: white;
-        }
-        
-        .itwin-phase-pill.done {
-          background: var(--cs-lavender);
-          color: var(--cs-navy);
-        }
-        
+        #itwin-shell .itwin-phase-pill:hover { transform: translateY(-1px); }
+        #itwin-shell .itwin-phase-pill.active { background: var(--cs-blue); color: white; }
+        #itwin-shell .itwin-phase-pill.done { background: var(--cs-lavender); color: var(--cs-navy); }
         @media (max-width: 640px) {
-          .itwin-phase-pill {
-            font-size: 11px;
-            padding: 8px 10px;
-          }
+          #itwin-shell .itwin-phase-pill { font-size: 11px; padding: 8px 10px; }
         }
       `}</style>
-      
+
       <div className="itwin-hero">
         <div className="itwin-eyebrow">Creator Scans Free Mini Course</div>
         <h1 className="itwin-title">How to Build a Realistic AI Twin for TikTok Shop</h1>
@@ -192,170 +240,37 @@ export default function Block() {
           <span className="itwin-chip">Free certificate</span>
         </div>
       </div>
-      
+
       <div className="itwin-sticky-card">
         <div className="itwin-label-row">
-          <span className="itwin-phase-label" id="itwin-phase-label">Phase 1 of 5</span>
-          <span className="itwin-percent-label" id="itwin-percent-label">0% complete</span>
+          <span className="itwin-phase-label">{phaseLabel}</span>
+          <span className="itwin-percent-label">{percent}% complete</span>
         </div>
         <div className="itwin-progress-track">
-          <div className="itwin-progress-fill" id="itwin-progress-fill" style={{width: '0%'}}></div>
+          <div className="itwin-progress-fill" style={{ width: `${percent}%` }}></div>
         </div>
-        <div className="itwin-phase-nav" id="itwin-phase-nav"></div>
+        <div className="itwin-phase-nav">
+          {PHASE_TITLES.map((title, idx) => {
+            const phase = idx + 1;
+            const isActive = state.currentPhase === phase && !state.completed;
+            const isDone = state.completedPhases[idx];
+            const classes = [
+              "itwin-phase-pill",
+              isActive ? "active" : "",
+              isDone ? "done" : ""
+            ].filter(Boolean).join(" ");
+            return (
+              <button
+                key={phase}
+                className={classes}
+                onClick={() => window.itwinCourse && window.itwinCourse.goToPhase(phase)}
+              >
+                {isDone ? `✓ ${phase}. ${title}` : `${phase}. ${title}`}
+              </button>
+            );
+          })}
+        </div>
       </div>
-      
-      <script type="module" dangerouslySetInnerHTML={{__html: `
-        const STATE_KEY = 'itwin-course-state-v1';
-        const TOTAL_PHASES = 5;
-        const PHASE_TITLES = ['Asset Library', 'Script & Prompt', 'Generate Twin', 'Animate & Voice', 'Scale GMV'];
-        
-        const defaultState = {
-          startedAt: Date.now(),
-          currentPhase: 1,
-          completedPhases: [false, false, false, false, false],
-          quizAnswered: [false, false, false, false, false],
-          quizCorrect: [false, false, false, false, false],
-          completed: false,
-          name: null,
-          email: null
-        };
-        
-        function loadState() {
-          try {
-            const stored = localStorage.getItem(STATE_KEY);
-            if (!stored) return { ...defaultState };
-            const parsed = JSON.parse(stored);
-            return { ...defaultState, ...parsed };
-          } catch {
-            return { ...defaultState };
-          }
-        }
-        
-        function saveState(state) {
-          localStorage.setItem(STATE_KEY, JSON.stringify(state));
-        }
-        
-        const listeners = [];
-        let currentState = loadState();
-        
-        function emitChange() {
-          listeners.forEach(fn => fn(currentState));
-          window.dispatchEvent(new CustomEvent('itwin:state-changed', { detail: currentState }));
-        }
-        
-        window.itwinCourse = {
-          STATE_KEY,
-          TOTAL_PHASES,
-          PHASE_TITLES,
-          
-          getState() {
-            return { ...currentState };
-          },
-          
-          setState(patch) {
-            currentState = { ...currentState, ...patch };
-            saveState(currentState);
-            emitChange();
-          },
-          
-          goToPhase(phase) {
-            this.setState({ currentPhase: phase });
-            setTimeout(() => {
-              const targetId = phase === 6 ? 'itwin-completion' : \`itwin-phase-\${phase}\`;
-              const el = document.getElementById(targetId);
-              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 80);
-          },
-          
-          completePhase(phase, quizCorrect) {
-            const newCompleted = [...currentState.completedPhases];
-            const newAnswered = [...currentState.quizAnswered];
-            const newCorrect = [...currentState.quizCorrect];
-            
-            newCompleted[phase - 1] = true;
-            newAnswered[phase - 1] = true;
-            newCorrect[phase - 1] = !!quizCorrect;
-            
-            const allDone = newCompleted.every(Boolean);
-            
-            this.setState({
-              completedPhases: newCompleted,
-              quizAnswered: newAnswered,
-              quizCorrect: newCorrect,
-              completed: allDone,
-              currentPhase: allDone ? 6 : Math.min(phase + 1, TOTAL_PHASES)
-            });
-          },
-          
-          onStateChange(fn) {
-            listeners.push(fn);
-            return () => {
-              const idx = listeners.indexOf(fn);
-              if (idx > -1) listeners.splice(idx, 1);
-            };
-          },
-          
-          reset() {
-            localStorage.removeItem(STATE_KEY);
-            currentState = { ...defaultState };
-            emitChange();
-          }
-        };
-        
-        function renderUI() {
-          const state = window.itwinCourse.getState();
-          const completedCount = state.completedPhases.filter(Boolean).length;
-          const percent = Math.round((completedCount / TOTAL_PHASES) * 100);
-          
-          const phaseLabel = document.getElementById('itwin-phase-label');
-          const percentLabel = document.getElementById('itwin-percent-label');
-          const progressFill = document.getElementById('itwin-progress-fill');
-          const phaseNav = document.getElementById('itwin-phase-nav');
-          
-          if (phaseLabel) {
-            phaseLabel.textContent = state.completed ? 'Course complete' : \`Phase \${Math.min(state.currentPhase, TOTAL_PHASES)} of 5\`;
-          }
-          
-          if (percentLabel) {
-            percentLabel.textContent = \`\${percent}% complete\`;
-          }
-          
-          if (progressFill) {
-            progressFill.style.width = \`\${percent}%\`;
-          }
-          
-          if (phaseNav) {
-            phaseNav.innerHTML = '';
-            PHASE_TITLES.forEach((title, idx) => {
-              const phase = idx + 1;
-              const btn = document.createElement('button');
-              btn.className = 'itwin-phase-pill';
-              
-              const isActive = state.currentPhase === phase && !state.completed;
-              const isDone = state.completedPhases[idx];
-              
-              if (isActive) btn.classList.add('active');
-              if (isDone) btn.classList.add('done');
-              
-              btn.textContent = isDone ? \`✓ \${phase}. \${title}\` : \`\${phase}. \${title}\`;
-              btn.onclick = () => window.itwinCourse.goToPhase(phase);
-              
-              phaseNav.appendChild(btn);
-            });
-          }
-        }
-        
-        function init() {
-          renderUI();
-          window.itwinCourse.onStateChange(renderUI);
-        }
-        
-        if (window.SOFTR_PAGE && window.SOFTR_PAGE.waitFor) {
-          window.SOFTR_PAGE.waitFor(() => document.getElementById('itwin-shell')).then(init);
-        } else {
-          init();
-        }
-      `}} />
     </div>
   );
 }

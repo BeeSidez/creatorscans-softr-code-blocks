@@ -1,0 +1,404 @@
+import { useState, useEffect } from "react";
+
+export default function Block() {
+  const PHASE = 1;
+  const STATE_KEY = "itwin-course-state-v1";
+
+  const [selected, setSelected] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+
+  // Hydrate existing answer (if user already completed this phase in a previous session)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STATE_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (s && s.quizAnswered && s.quizAnswered[PHASE - 1]) {
+        setSubmitted(true);
+        setSelected(s.quizCorrect && s.quizCorrect[PHASE - 1] ? "C" : "prev");
+      }
+    } catch {}
+  }, []);
+
+  function markComplete(correct) {
+    if (window.itwinCourse && typeof window.itwinCourse.completePhase === "function") {
+      window.itwinCourse.completePhase(PHASE, correct);
+      return;
+    }
+    // Fallback: write directly to localStorage and broadcast so the shell picks it up
+    const defaults = {
+      startedAt: Date.now(),
+      currentPhase: 1,
+      completedPhases: [false, false, false, false, false],
+      quizAnswered: [false, false, false, false, false],
+      quizCorrect: [false, false, false, false, false],
+      completed: false,
+      name: null,
+      email: null
+    };
+    let current = { ...defaults };
+    try {
+      const raw = localStorage.getItem(STATE_KEY);
+      if (raw) current = { ...defaults, ...JSON.parse(raw) };
+    } catch {}
+    current.completedPhases[PHASE - 1] = true;
+    current.quizAnswered[PHASE - 1] = true;
+    current.quizCorrect[PHASE - 1] = !!correct;
+    current.completed = current.completedPhases.every(Boolean);
+    current.currentPhase = current.completed ? 6 : Math.min(PHASE + 1, 5);
+    try { localStorage.setItem(STATE_KEY, JSON.stringify(current)); } catch {}
+    window.dispatchEvent(new CustomEvent("itwin:state-changed", { detail: current }));
+  }
+
+  const options = [
+    { id: "A", label: "5 to 10 selfies are plenty" },
+    { id: "B", label: "10 to 15 photos, studio only" },
+    { id: "C", label: "20 to 30 photos across a studio set and a lifestyle set" },
+    { id: "D", label: "50 or more, all in natural light" }
+  ];
+  const CORRECT = "C";
+
+  function handleSubmit() {
+    if (!selected || submitted) return;
+    setSubmitted(true);
+    markComplete(selected === CORRECT);
+  }
+
+  const isCorrect = selected === CORRECT;
+
+  return (
+    <div id="itwin-p1-root">
+      <style>{`
+        #itwin-p1-root {
+          --cs-blue: #294ff6;
+          --cs-blue-3: #5e7bf6;
+          --cs-blue-4: #7a93ff;
+          --cs-navy: #000f4d;
+          --cs-light-1: #f8fbff;
+          --cs-light-2: #eef4fd;
+          --cs-lavender: #d8d8ff;
+          --cs-red: #fe2c55;
+          max-width: 960px;
+          margin: 0 auto;
+          padding: 16px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          color: var(--cs-navy);
+          line-height: 1.6;
+        }
+        #itwin-p1-root *, #itwin-p1-root *::before, #itwin-p1-root *::after { box-sizing: border-box; }
+
+        #itwin-p1-root .p-card {
+          background: white;
+          border-radius: 20px;
+          box-shadow: 0 8px 28px rgba(0,15,77,0.08);
+          padding: 36px 36px 40px;
+          margin-bottom: 20px;
+        }
+        @media (max-width: 640px) { #itwin-p1-root .p-card { padding: 26px 22px 30px; } }
+
+        #itwin-p1-root .p-badge {
+          display: inline-block;
+          background: var(--cs-blue);
+          color: white;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          padding: 6px 14px;
+          border-radius: 100px;
+          margin-bottom: 14px;
+        }
+        #itwin-p1-root h2.p-title {
+          font-size: clamp(24px, 3.4vw, 34px);
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          line-height: 1.2;
+          margin: 0 0 12px;
+        }
+        #itwin-p1-root .p-lede {
+          font-size: 17px;
+          color: #3a4a6b;
+          margin: 0 0 22px;
+          max-width: 720px;
+        }
+
+        #itwin-p1-root h3.p-step {
+          font-size: 19px;
+          font-weight: 700;
+          margin: 28px 0 10px;
+          color: var(--cs-navy);
+        }
+        #itwin-p1-root .p-body p { margin: 0 0 12px; }
+        #itwin-p1-root .p-body strong { color: var(--cs-navy); }
+
+        #itwin-p1-root .p-slide {
+          width: 100%;
+          border-radius: 14px;
+          display: block;
+          margin: 18px 0;
+          box-shadow: 0 6px 20px rgba(0,15,77,0.1);
+        }
+        #itwin-p1-root .p-slide-caption {
+          font-size: 12px;
+          color: #6b7a99;
+          text-align: center;
+          margin-top: -10px;
+          margin-bottom: 20px;
+          font-style: italic;
+        }
+
+        #itwin-p1-root .p-tip {
+          background: linear-gradient(135deg, rgba(41,79,246,0.06), rgba(94,123,246,0.1));
+          border-left: 4px solid var(--cs-blue);
+          padding: 14px 18px;
+          border-radius: 10px;
+          margin: 16px 0 4px;
+          font-size: 15px;
+        }
+        #itwin-p1-root .p-tip strong { color: var(--cs-blue); }
+
+        #itwin-p1-root .p-checklist {
+          list-style: none;
+          padding: 0;
+          margin: 10px 0 6px;
+        }
+        #itwin-p1-root .p-checklist li {
+          padding: 8px 0 8px 28px;
+          position: relative;
+        }
+        #itwin-p1-root .p-checklist li::before {
+          content: "✓";
+          position: absolute;
+          left: 0;
+          top: 8px;
+          color: var(--cs-blue);
+          font-weight: 800;
+        }
+
+        #itwin-p1-root .quiz-card {
+          background: linear-gradient(135deg, #152237 0%, #000f4d 100%);
+          color: white;
+          border-radius: 20px;
+          padding: 34px 36px;
+          box-shadow: 0 12px 32px rgba(0,15,77,0.18);
+        }
+        @media (max-width: 640px) { #itwin-p1-root .quiz-card { padding: 26px 22px; } }
+        #itwin-p1-root .quiz-eyebrow {
+          display: inline-block;
+          background: rgba(122,147,255,0.18);
+          color: var(--cs-blue-4);
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          padding: 6px 12px;
+          border-radius: 100px;
+          margin-bottom: 14px;
+        }
+        #itwin-p1-root .quiz-q { font-size: 20px; font-weight: 700; margin: 0 0 18px; }
+        #itwin-p1-root .quiz-opts {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-bottom: 18px;
+        }
+        #itwin-p1-root .quiz-opt {
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(122,147,255,0.25);
+          color: #dbe4ff;
+          text-align: left;
+          padding: 14px 16px;
+          border-radius: 12px;
+          font-size: 15px;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        #itwin-p1-root .quiz-opt:hover:not(:disabled) {
+          background: rgba(122,147,255,0.12);
+          border-color: rgba(122,147,255,0.5);
+        }
+        #itwin-p1-root .quiz-opt.selected {
+          background: rgba(41,79,246,0.25);
+          border-color: var(--cs-blue);
+          color: white;
+        }
+        #itwin-p1-root .quiz-opt.correct {
+          background: rgba(43,184,120,0.2);
+          border-color: #2bb878;
+          color: #c8f2dd;
+        }
+        #itwin-p1-root .quiz-opt.wrong {
+          background: rgba(254,44,85,0.18);
+          border-color: var(--cs-red);
+          color: #ffd1dc;
+        }
+        #itwin-p1-root .quiz-opt:disabled { cursor: default; }
+
+        #itwin-p1-root .quiz-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        #itwin-p1-root .btn-submit {
+          background: var(--cs-blue);
+          color: white;
+          border: none;
+          padding: 12px 22px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+          transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+        #itwin-p1-root .btn-submit:hover:not(:disabled) { transform: translateY(-1px); }
+        #itwin-p1-root .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+        #itwin-p1-root .btn-hint {
+          background: transparent;
+          color: var(--cs-blue-4);
+          border: 1px solid rgba(122,147,255,0.35);
+          padding: 12px 18px;
+          border-radius: 12px;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        #itwin-p1-root .quiz-hint {
+          margin-top: 14px;
+          background: rgba(122,147,255,0.1);
+          border-radius: 10px;
+          padding: 12px 16px;
+          font-size: 14px;
+          color: #dbe4ff;
+        }
+        #itwin-p1-root .quiz-feedback {
+          margin-top: 16px;
+          padding: 14px 18px;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 600;
+        }
+        #itwin-p1-root .quiz-feedback.ok { background: rgba(43,184,120,0.18); color: #c8f2dd; }
+        #itwin-p1-root .quiz-feedback.no { background: rgba(254,44,85,0.15); color: #ffd1dc; }
+      `}</style>
+
+      <div id="itwin-phase-1" className="p-card">
+        <div className="p-badge">Phase 1 of 5</div>
+        <h2 className="p-title">Build Your Asset Library</h2>
+        <p className="p-lede">
+          Before any AI tool can create a convincing version of you, it needs raw material. This phase is a one-time setup. Do it properly once and you will reuse these assets for every product you ever promote.
+        </p>
+
+        <div className="p-body">
+          <h3 className="p-step">Step 1 — The 20 to 30 Rule</h3>
+          <p>You need 20 to 30 clear photos of yourself from different angles. Two sets get the best results.</p>
+          <img
+            className="p-slide"
+            src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085844/05-studio-set-lifestyle-set-photos_jgjkcd.png"
+            alt="Studio set and lifestyle set photo grid"
+          />
+          <p className="p-slide-caption">Studio set + lifestyle set — 20 to 30 photos total</p>
+          <ul className="p-checklist">
+            <li><strong>Studio set (15 to 20):</strong> plain wall or green screen, plain clothing, slight angle variations</li>
+            <li><strong>Lifestyle set (10):</strong> natural photos around your home, same plain clothing rule</li>
+            <li>No filters, no sunglasses, no other people in frame</li>
+          </ul>
+          <div className="p-tip">
+            <strong>Why plain clothing?</strong> It makes it trivial for the AI to swap outfits later — essential when you are producing ads across different product categories.
+          </div>
+
+          <h3 className="p-step">Step 2 — Background Plates</h3>
+          <p>Give your twin real places to "film" in. Photograph your actual home so the AI does not invent fake-looking rooms.</p>
+          <img
+            className="p-slide"
+            src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085845/06-environmental-plates-room-mapping_cztyp6.png"
+            alt="Room mapping with phone 0.5x wide angle"
+          />
+          <p className="p-slide-caption">Stand in each corner, use your 0.5x lens, shoot every room that matches your products</p>
+          <p>Selling beauty? Shoot the bathroom. Kitchen gadgets? Counter and stove. Fashion? Bedroom, hallway, garden, driveway.</p>
+
+          <h3 className="p-step">Step 3 — Reference Videos (2 minutes each)</h3>
+          <p>Record four short videos of you talking to camera. The AI uses them to learn your mouth, head, and natural gestures.</p>
+          <ul className="p-checklist">
+            <li>Sitting, landscape — 2 minutes</li>
+            <li>Sitting, portrait — 2 minutes</li>
+            <li>Standing, landscape — 2 minutes</li>
+            <li>Standing, portrait — 2 minutes</li>
+          </ul>
+          <div className="p-tip">
+            <strong>Pro tip:</strong> be exaggeratedly expressive with your mouth. It is what lets the AI lip-sync perfectly to new scripts later.
+          </div>
+
+          <h3 className="p-step">Step 4 — Clone Your Voice</h3>
+          <p>Your twin needs to sound like you. Two routes depending on how much realism you want.</p>
+          <img
+            className="p-slide"
+            src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085846/08-voice-sync-matrix-speed-vs-realism_gjjvzw.png"
+            alt="Voice sync matrix — speed vs realism"
+          />
+          <p><strong>Speed route:</strong> record a clean 30 to 60 second sample, upload to ElevenLabs, type scripts from then on.</p>
+          <p><strong>Realism route:</strong> record each voiceover manually and upload it straight into HeyGen or Fal.ai. Best for hero ads.</p>
+          <div className="p-tip">
+            <strong>Best of both:</strong> use the ElevenLabs clone for rapid testing, manual voiceover for the hero ads you scale.
+          </div>
+        </div>
+      </div>
+
+      <div className="quiz-card">
+        <div className="quiz-eyebrow">Quick Check</div>
+        <p className="quiz-q">How many reference photos do you need to build your asset library?</p>
+        <div className="quiz-opts">
+          {options.map(opt => {
+            const isSel = selected === opt.id;
+            let cls = "quiz-opt";
+            if (submitted) {
+              if (opt.id === CORRECT) cls += " correct";
+              else if (isSel) cls += " wrong";
+            } else if (isSel) cls += " selected";
+            return (
+              <button
+                key={opt.id}
+                className={cls}
+                disabled={submitted}
+                onClick={() => setSelected(opt.id)}
+              >
+                <strong>{opt.id}.</strong> {opt.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {!submitted && (
+          <div className="quiz-actions">
+            <button
+              className="btn-submit"
+              disabled={!selected}
+              onClick={handleSubmit}
+            >
+              Check my answer
+            </button>
+            <button
+              className="btn-hint"
+              onClick={() => setShowHint(!showHint)}
+            >
+              {showHint ? "Hide hint" : "Need a hint?"}
+            </button>
+          </div>
+        )}
+
+        {!submitted && showHint && (
+          <div className="quiz-hint">
+            You need enough to capture every angle of your face and body — plus some lifestyle variation on top. Think two sets, not one.
+          </div>
+        )}
+
+        {submitted && (
+          <div className={`quiz-feedback ${isCorrect ? "ok" : "no"}`}>
+            {isCorrect
+              ? "✓ Correct — 20 to 30 photos split between a studio and a lifestyle set. Phase 1 complete."
+              : "Close. The answer is C — 20 to 30 photos across a studio set and a lifestyle set. Phase 1 marked complete, keep going."}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
