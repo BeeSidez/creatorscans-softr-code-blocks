@@ -1,0 +1,29 @@
+Drop the full course text here. Structure it as 5 phases.
+
+For each phase, include:
+- Phase number and title
+- Body text (as much as you want, I will format it nicely)
+- Which Cloudinary image(s) belong to this phase (paste URLs)
+- One quiz question, 4 multiple choice options, the correct answer, and a hint
+
+Example format:
+
+=== PHASE 1: [TITLE] ===
+
+[Body text for phase 1]
+
+IMAGES:
+- https://res.cloudinary.com/.../phase1-hero.jpg
+- https://res.cloudinary.com/.../phase1-diagram.png
+
+QUIZ:
+Q: [Question text]
+A) [option A]
+B) [option B]
+C) [option C]
+D) [option D]
+CORRECT: B
+HINT: [Short hint that helps without giving it away]
+
+=== PHASE 2: [TITLE] ===
+...etc
