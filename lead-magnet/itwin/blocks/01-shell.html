@@ -1,382 +1,361 @@
-<!--
-  BLOCK 1 of 7 — SHELL (hero + progress bar + shared state)
-  =========================================================
-  Page: /tiktok-shop-ugc-ai-twin
-  Paste this into a Softr Custom Code block at the TOP of the page.
-
-  This block must load BEFORE any phase block, because it sets up:
-    - window.itwinCourse global (state, helpers, events)
-    - CSS variables (--cs-*) used by every phase block
-    - The sticky progress bar / phase navigator
-    - localStorage persistence
--->
-
-<div id="itwin-shell">
-  <div class="itwin-hero">
-    <div class="itwin-eyebrow">Creator Scans Free Mini Course</div>
-    <h1 class="itwin-title">How to Build a Realistic AI Twin for TikTok Shop</h1>
-    <p class="itwin-sub">
-      The complete five-phase system for generating hyper-realistic UGC-style videos
-      that sell TikTok Shop products on autopilot. No studio. No filming. Just your
-      phone and a few AI tools.
-    </p>
-    <div class="itwin-meta">
-      <span class="itwin-chip">5 phases</span>
-      <span class="itwin-chip">~15 min read</span>
-      <span class="itwin-chip">Free certificate</span>
+export default function Block() {
+  return (
+    <div id="itwin-shell">
+      <style>{`
+        #itwin-shell {
+          --cs-blue: #294ff6;
+          --cs-blue-2: #4466f8;
+          --cs-blue-3: #5e7bf6;
+          --cs-blue-4: #7a93ff;
+          --cs-navy: #000f4d;
+          --cs-navy-2: #001364;
+          --cs-navy-3: #152237;
+          --cs-light-1: #f8fbff;
+          --cs-light-2: #eef4fd;
+          --cs-light-3: #fafbff;
+          --cs-lavender: #d8d8ff;
+          --cs-red: #fe2c55;
+          
+          max-width: 960px;
+          margin: 0 auto;
+          padding: 0 16px 24px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          font-size: 16px;
+          line-height: 1.55;
+          color: var(--cs-navy);
+        }
+        
+        #itwin-shell *,
+        #itwin-shell *::before,
+        #itwin-shell *::after {
+          box-sizing: border-box;
+        }
+        
+        .itwin-hero {
+          background: linear-gradient(135deg, #152237 0%, #000f4d 100%);
+          border-radius: 20px;
+          padding: 48px 40px;
+          text-align: center;
+          color: white;
+          box-shadow: 0 12px 32px rgba(0, 15, 77, 0.18);
+          margin-bottom: 24px;
+        }
+        
+        @media (max-width: 640px) {
+          .itwin-hero {
+            padding: 32px 22px;
+          }
+        }
+        
+        .itwin-eyebrow {
+          display: inline-block;
+          background: rgba(122, 147, 255, 0.12);
+          color: var(--cs-blue-4);
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          padding: 6px 14px;
+          border-radius: 100px;
+          margin-bottom: 20px;
+        }
+        
+        .itwin-title {
+          font-size: clamp(26px, 4vw, 40px);
+          font-weight: 800;
+          line-height: 1.15;
+          letter-spacing: -0.02em;
+          margin: 0 0 16px;
+        }
+        
+        .itwin-subtitle {
+          max-width: 640px;
+          margin: 0 auto 28px;
+          color: #c3cfe8;
+          font-size: 16px;
+          line-height: 1.6;
+        }
+        
+        .itwin-chips {
+          display: flex;
+          gap: 10px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        
+        .itwin-chip {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(122, 147, 255, 0.25);
+          color: #dbe4ff;
+          font-size: 12px;
+          font-weight: 700;
+          padding: 6px 12px;
+          border-radius: 100px;
+        }
+        
+        .itwin-sticky-card {
+          position: sticky;
+          top: 12px;
+          z-index: 40;
+          background: var(--cs-light-1);
+          border-radius: 16px;
+          padding: 16px 20px;
+          box-shadow: 0 4px 18px rgba(0, 15, 77, 0.08);
+        }
+        
+        .itwin-label-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+        
+        .itwin-phase-label {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--cs-navy);
+        }
+        
+        .itwin-percent-label {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--cs-blue);
+        }
+        
+        .itwin-progress-track {
+          height: 8px;
+          background: var(--cs-light-2);
+          border-radius: 100px;
+          overflow: hidden;
+          margin-bottom: 16px;
+        }
+        
+        .itwin-progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, var(--cs-blue) 0%, var(--cs-blue-3) 100%);
+          border-radius: 100px;
+          transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .itwin-phase-nav {
+          display: flex;
+          gap: 8px;
+        }
+        
+        .itwin-phase-pill {
+          flex: 1 1 auto;
+          padding: 10px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          border-radius: 10px;
+          border: none;
+          cursor: pointer;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          transition: transform 0.15s ease;
+          background: var(--cs-light-2);
+          color: var(--cs-navy);
+        }
+        
+        .itwin-phase-pill:hover {
+          transform: translateY(-1px);
+        }
+        
+        .itwin-phase-pill.active {
+          background: var(--cs-blue);
+          color: white;
+        }
+        
+        .itwin-phase-pill.done {
+          background: var(--cs-lavender);
+          color: var(--cs-navy);
+        }
+        
+        @media (max-width: 640px) {
+          .itwin-phase-pill {
+            font-size: 11px;
+            padding: 8px 10px;
+          }
+        }
+      `}</style>
+      
+      <div className="itwin-hero">
+        <div className="itwin-eyebrow">Creator Scans Free Mini Course</div>
+        <h1 className="itwin-title">How to Build a Realistic AI Twin for TikTok Shop</h1>
+        <p className="itwin-subtitle">
+          The complete five-phase system for generating hyper-realistic UGC-style videos that sell TikTok Shop products on autopilot. No studio. No filming. Just your phone and a few AI tools.
+        </p>
+        <div className="itwin-chips">
+          <span className="itwin-chip">5 phases</span>
+          <span className="itwin-chip">~15 min read</span>
+          <span className="itwin-chip">Free certificate</span>
+        </div>
+      </div>
+      
+      <div className="itwin-sticky-card">
+        <div className="itwin-label-row">
+          <span className="itwin-phase-label" id="itwin-phase-label">Phase 1 of 5</span>
+          <span className="itwin-percent-label" id="itwin-percent-label">0% complete</span>
+        </div>
+        <div className="itwin-progress-track">
+          <div className="itwin-progress-fill" id="itwin-progress-fill" style={{width: '0%'}}></div>
+        </div>
+        <div className="itwin-phase-nav" id="itwin-phase-nav"></div>
+      </div>
+      
+      <script type="module" dangerouslySetInnerHTML={{__html: `
+        const STATE_KEY = 'itwin-course-state-v1';
+        const TOTAL_PHASES = 5;
+        const PHASE_TITLES = ['Asset Library', 'Script & Prompt', 'Generate Twin', 'Animate & Voice', 'Scale GMV'];
+        
+        const defaultState = {
+          startedAt: Date.now(),
+          currentPhase: 1,
+          completedPhases: [false, false, false, false, false],
+          quizAnswered: [false, false, false, false, false],
+          quizCorrect: [false, false, false, false, false],
+          completed: false,
+          name: null,
+          email: null
+        };
+        
+        function loadState() {
+          try {
+            const stored = localStorage.getItem(STATE_KEY);
+            if (!stored) return { ...defaultState };
+            const parsed = JSON.parse(stored);
+            return { ...defaultState, ...parsed };
+          } catch {
+            return { ...defaultState };
+          }
+        }
+        
+        function saveState(state) {
+          localStorage.setItem(STATE_KEY, JSON.stringify(state));
+        }
+        
+        const listeners = [];
+        let currentState = loadState();
+        
+        function emitChange() {
+          listeners.forEach(fn => fn(currentState));
+          window.dispatchEvent(new CustomEvent('itwin:state-changed', { detail: currentState }));
+        }
+        
+        window.itwinCourse = {
+          STATE_KEY,
+          TOTAL_PHASES,
+          PHASE_TITLES,
+          
+          getState() {
+            return { ...currentState };
+          },
+          
+          setState(patch) {
+            currentState = { ...currentState, ...patch };
+            saveState(currentState);
+            emitChange();
+          },
+          
+          goToPhase(phase) {
+            this.setState({ currentPhase: phase });
+            setTimeout(() => {
+              const targetId = phase === 6 ? 'itwin-completion' : \`itwin-phase-\${phase}\`;
+              const el = document.getElementById(targetId);
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 80);
+          },
+          
+          completePhase(phase, quizCorrect) {
+            const newCompleted = [...currentState.completedPhases];
+            const newAnswered = [...currentState.quizAnswered];
+            const newCorrect = [...currentState.quizCorrect];
+            
+            newCompleted[phase - 1] = true;
+            newAnswered[phase - 1] = true;
+            newCorrect[phase - 1] = !!quizCorrect;
+            
+            const allDone = newCompleted.every(Boolean);
+            
+            this.setState({
+              completedPhases: newCompleted,
+              quizAnswered: newAnswered,
+              quizCorrect: newCorrect,
+              completed: allDone,
+              currentPhase: allDone ? 6 : Math.min(phase + 1, TOTAL_PHASES)
+            });
+          },
+          
+          onStateChange(fn) {
+            listeners.push(fn);
+            return () => {
+              const idx = listeners.indexOf(fn);
+              if (idx > -1) listeners.splice(idx, 1);
+            };
+          },
+          
+          reset() {
+            localStorage.removeItem(STATE_KEY);
+            currentState = { ...defaultState };
+            emitChange();
+          }
+        };
+        
+        function renderUI() {
+          const state = window.itwinCourse.getState();
+          const completedCount = state.completedPhases.filter(Boolean).length;
+          const percent = Math.round((completedCount / TOTAL_PHASES) * 100);
+          
+          const phaseLabel = document.getElementById('itwin-phase-label');
+          const percentLabel = document.getElementById('itwin-percent-label');
+          const progressFill = document.getElementById('itwin-progress-fill');
+          const phaseNav = document.getElementById('itwin-phase-nav');
+          
+          if (phaseLabel) {
+            phaseLabel.textContent = state.completed ? 'Course complete' : \`Phase \${Math.min(state.currentPhase, TOTAL_PHASES)} of 5\`;
+          }
+          
+          if (percentLabel) {
+            percentLabel.textContent = \`\${percent}% complete\`;
+          }
+          
+          if (progressFill) {
+            progressFill.style.width = \`\${percent}%\`;
+          }
+          
+          if (phaseNav) {
+            phaseNav.innerHTML = '';
+            PHASE_TITLES.forEach((title, idx) => {
+              const phase = idx + 1;
+              const btn = document.createElement('button');
+              btn.className = 'itwin-phase-pill';
+              
+              const isActive = state.currentPhase === phase && !state.completed;
+              const isDone = state.completedPhases[idx];
+              
+              if (isActive) btn.classList.add('active');
+              if (isDone) btn.classList.add('done');
+              
+              btn.textContent = isDone ? \`✓ \${phase}. \${title}\` : \`\${phase}. \${title}\`;
+              btn.onclick = () => window.itwinCourse.goToPhase(phase);
+              
+              phaseNav.appendChild(btn);
+            });
+          }
+        }
+        
+        function init() {
+          renderUI();
+          window.itwinCourse.onStateChange(renderUI);
+        }
+        
+        if (window.SOFTR_PAGE && window.SOFTR_PAGE.waitFor) {
+          window.SOFTR_PAGE.waitFor(() => document.getElementById('itwin-shell')).then(init);
+        } else {
+          init();
+        }
+      `}} />
     </div>
-  </div>
-
-  <div class="itwin-progress-wrap" id="itwin-progress-wrap">
-    <div class="itwin-progress-label">
-      <span id="itwin-progress-text">Phase 1 of 5</span>
-      <span id="itwin-progress-percent">0% complete</span>
-    </div>
-    <div class="itwin-progress-track">
-      <div class="itwin-progress-fill" id="itwin-progress-fill"></div>
-    </div>
-    <nav class="itwin-phase-nav" id="itwin-phase-nav" aria-label="Course phases">
-      <!-- Phase pills injected by JS -->
-    </nav>
-  </div>
-</div>
-
-<style>
-  #itwin-shell,
-  [id^="itwin-phase-"],
-  #itwin-completion {
-    --cs-blue: #294ff6;
-    --cs-blue-2: #4466f8;
-    --cs-blue-3: #5e7bf6;
-    --cs-blue-4: #7a93ff;
-    --cs-blue-5: #879cf7;
-    --cs-navy: #000f4d;
-    --cs-navy-2: #001364;
-    --cs-navy-3: #152237;
-    --cs-light-1: #f8fbff;
-    --cs-light-2: #eef4fd;
-    --cs-light-3: #fafbff;
-    --cs-lavender: #d8d8ff;
-    --cs-red: #fe2c55;
-  }
-
-  #itwin-shell,
-  #itwin-shell *,
-  [id^="itwin-phase-"],
-  [id^="itwin-phase-"] *,
-  #itwin-completion,
-  #itwin-completion * {
-    box-sizing: border-box;
-  }
-
-  #itwin-shell {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 16px 24px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: var(--cs-navy);
-    line-height: 1.55;
-  }
-
-  .itwin-hero {
-    background: linear-gradient(135deg, #152237 0%, #000f4d 100%);
-    color: #fff;
-    border-radius: 20px;
-    padding: 48px 40px;
-    margin: 24px 0;
-    text-align: center;
-    box-shadow: 0 12px 32px rgba(0, 15, 77, 0.18);
-  }
-
-  .itwin-eyebrow {
-    display: inline-block;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--cs-blue-4);
-    background: rgba(122, 147, 255, 0.12);
-    padding: 6px 14px;
-    border-radius: 999px;
-    margin-bottom: 18px;
-  }
-
-  .itwin-title {
-    font-size: clamp(26px, 4vw, 40px);
-    font-weight: 800;
-    margin: 0 0 14px;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-  }
-
-  .itwin-sub {
-    max-width: 640px;
-    margin: 0 auto 22px;
-    font-size: 16px;
-    color: #c3cfe8;
-  }
-
-  .itwin-meta {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .itwin-chip {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    color: #dbe4ff;
-    border: 1px solid rgba(122, 147, 255, 0.25);
-  }
-
-  .itwin-progress-wrap {
-    position: sticky;
-    top: 12px;
-    z-index: 40;
-    background: var(--cs-light-1);
-    border-radius: 16px;
-    padding: 16px 20px;
-    box-shadow: 0 4px 18px rgba(0, 15, 77, 0.08);
-    margin-bottom: 24px;
-  }
-
-  .itwin-progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--cs-navy);
-    margin-bottom: 8px;
-  }
-
-  #itwin-progress-percent {
-    color: var(--cs-blue);
-  }
-
-  .itwin-progress-track {
-    height: 8px;
-    background: var(--cs-light-2);
-    border-radius: 999px;
-    overflow: hidden;
-  }
-
-  .itwin-progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--cs-blue) 0%, var(--cs-blue-3) 100%);
-    border-radius: 999px;
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .itwin-phase-nav {
-    display: flex;
-    gap: 8px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
-
-  .itwin-phase-pill {
-    flex: 1 1 auto;
-    min-width: 0;
-    background: var(--cs-light-2);
-    color: var(--cs-navy);
-    border: none;
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, transform 0.2s;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: inherit;
-  }
-
-  .itwin-phase-pill:hover {
-    transform: translateY(-1px);
-  }
-
-  .itwin-phase-pill.active {
-    background: var(--cs-blue);
-    color: #fff;
-  }
-
-  .itwin-phase-pill.done {
-    background: var(--cs-lavender);
-    color: var(--cs-navy);
-  }
-
-  .itwin-phase-pill.done::before {
-    content: "✓ ";
-    color: var(--cs-blue);
-    font-weight: 800;
-  }
-
-  @media (max-width: 640px) {
-    .itwin-hero { padding: 32px 22px; margin: 16px 0; }
-    .itwin-progress-wrap { padding: 14px 16px; }
-    .itwin-phase-pill { padding: 8px 6px; font-size: 11px; }
-  }
-</style>
-
-<script type="module">
-  // Set up the global namespace if it doesn't exist yet.
-  // Phase blocks expect window.itwinCourse to be available.
-  const STATE_KEY = "itwin-course-state-v1";
-  const TOTAL_PHASES = 5;
-  const PHASE_TITLES = [
-    "Asset Library",
-    "Script & Prompt",
-    "Generate Twin",
-    "Animate & Voice",
-    "Scale GMV",
-  ];
-
-  function defaultState() {
-    return {
-      startedAt: Date.now(),
-      currentPhase: 1, // 1..5 for phases, 6 = completion
-      completedPhases: [false, false, false, false, false],
-      quizAnswered: [false, false, false, false, false],
-      quizCorrect: [false, false, false, false, false],
-      completed: false,
-      name: null,
-      email: null,
-    };
-  }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STATE_KEY);
-      if (!raw) return defaultState();
-      const parsed = JSON.parse(raw);
-      return Object.assign(defaultState(), parsed);
-    } catch (e) {
-      return defaultState();
-    }
-  }
-
-  function saveState(state) {
-    try {
-      localStorage.setItem(STATE_KEY, JSON.stringify(state));
-    } catch (e) {
-      /* storage disabled, ignore */
-    }
-  }
-
-  // Expose the shared API before any phase block initialises.
-  if (!window.itwinCourse) {
-    const listeners = new Set();
-    const api = {
-      STATE_KEY,
-      TOTAL_PHASES,
-      PHASE_TITLES,
-      getState: loadState,
-      setState(patch) {
-        const next = Object.assign(loadState(), patch);
-        saveState(next);
-        api._emit();
-        return next;
-      },
-      goToPhase(phase) {
-        api.setState({ currentPhase: phase });
-        // Scroll the active phase into view after the render has run.
-        setTimeout(() => {
-          const el = document.getElementById(
-            phase === 6 ? "itwin-completion" : `itwin-phase-${phase}`
-          );
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 80);
-      },
-      completePhase(phase, quizCorrect) {
-        const state = loadState();
-        state.completedPhases[phase - 1] = true;
-        state.quizAnswered[phase - 1] = true;
-        state.quizCorrect[phase - 1] = !!quizCorrect;
-        saveState(state);
-        api._emit();
-      },
-      onStateChange(fn) {
-        listeners.add(fn);
-        return () => listeners.delete(fn);
-      },
-      _emit() {
-        const state = loadState();
-        listeners.forEach((fn) => {
-          try { fn(state); } catch (e) { /* ignore */ }
-        });
-        window.dispatchEvent(
-          new CustomEvent("itwin:state-changed", { detail: state })
-        );
-      },
-      reset() {
-        localStorage.removeItem(STATE_KEY);
-        api._emit();
-      },
-    };
-    window.itwinCourse = api;
-  }
-
-  const api = window.itwinCourse;
-
-  function renderProgressBar() {
-    const wrap = document.getElementById("itwin-progress-wrap");
-    if (!wrap) return;
-    const state = api.getState();
-    const doneCount = state.completedPhases.filter(Boolean).length;
-    const percent = Math.round((doneCount / TOTAL_PHASES) * 100);
-
-    const textEl = document.getElementById("itwin-progress-text");
-    const pctEl = document.getElementById("itwin-progress-percent");
-    const fillEl = document.getElementById("itwin-progress-fill");
-    if (textEl)
-      textEl.textContent = state.completed
-        ? "Course complete"
-        : `Phase ${Math.min(state.currentPhase, TOTAL_PHASES)} of ${TOTAL_PHASES}`;
-    if (pctEl) pctEl.textContent = `${percent}% complete`;
-    if (fillEl) fillEl.style.width = `${percent}%`;
-
-    const nav = document.getElementById("itwin-phase-nav");
-    if (nav) {
-      nav.innerHTML = PHASE_TITLES.map((title, i) => {
-        const n = i + 1;
-        const isActive = state.currentPhase === n && !state.completed;
-        const isDone = state.completedPhases[i];
-        const cls = [
-          "itwin-phase-pill",
-          isActive ? "active" : "",
-          isDone && !isActive ? "done" : "",
-        ]
-          .filter(Boolean)
-          .join(" ");
-        return `<button type="button" class="${cls}" data-phase="${n}">${n}. ${title}</button>`;
-      }).join("");
-      nav.querySelectorAll(".itwin-phase-pill").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const phase = Number(btn.getAttribute("data-phase"));
-          api.goToPhase(phase);
-        });
-      });
-    }
-  }
-
-  function init() {
-    renderProgressBar();
-    api.onStateChange(renderProgressBar);
-  }
-
-  // Softr SPA-safe init: wait for this block's DOM, then run.
-  if (window.SOFTR_PAGE && window.SOFTR_PAGE.waitFor) {
-    window.SOFTR_PAGE.waitFor(() =>
-      document.getElementById("itwin-shell")
-    ).then(init);
-  } else {
-    init();
-  }
-</script>
+  );
+}
