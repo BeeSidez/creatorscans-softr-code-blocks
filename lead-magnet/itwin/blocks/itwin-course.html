@@ -429,8 +429,8 @@ const STYLES = `
     padding: 7px 14px; border-radius: 100px;
     margin-bottom: 22px;
   }
-  .cs-hero h1 { color: white; margin-bottom: 20px; }
-  .cs-hero-sub {
+  #itwin-course .cs-hero h1 { color: white; margin-bottom: 20px; }
+  #itwin-course .cs-hero-sub {
     font-size: 17px; line-height: 1.6;
     color: #c3cfe8; margin-bottom: 28px; max-width: 580px;
   }
@@ -629,7 +629,7 @@ const STYLES = `
     padding: 6px 12px; border-radius: 100px;
     margin-bottom: 16px;
   }
-  .cs-quiz-question {
+  #itwin-course .cs-quiz-question {
     position: relative; z-index: 2;
     font-size: 22px; font-weight: 800; line-height: 1.35;
     margin: 0 0 22px; color: white;
@@ -707,8 +707,8 @@ const STYLES = `
   }
 
   /* ============ FLASHCARDS ============ */
-  .cs-deck-title { font-size: 24px; font-weight: 800; color: white; margin: 0 0 6px; position: relative; z-index: 2; }
-  .cs-deck-sub { font-size: 14px; color: #c3cfe8; margin-bottom: 24px; position: relative; z-index: 2; }
+  #itwin-course .cs-deck-title { font-size: 24px; font-weight: 800; color: white; margin: 0 0 6px; position: relative; z-index: 2; }
+  #itwin-course .cs-deck-sub { font-size: 14px; color: #c3cfe8; margin-bottom: 24px; position: relative; z-index: 2; }
 
   .cs-deck-progress {
     position: relative; z-index: 2;
@@ -877,8 +877,9 @@ const STYLES = `
     pointer-events: none;
   }
   .cs-completion-inner { position: relative; z-index: 2; }
-  .cs-completion h2 { color: white; }
-  .cs-completion p { color: #c3cfe8; }
+  #itwin-course .cs-completion h2 { color: white; }
+  #itwin-course .cs-completion p { color: #c3cfe8; }
+  #itwin-course .cs-cert-body { color: #c3cfe8; font-size: 15px; max-width: 480px; margin: 0 auto; }
   .cs-cert {
     background: linear-gradient(135deg, rgba(216, 216, 255, 0.1), rgba(122, 147, 255, 0.08));
     border: 1px solid rgba(216, 216, 255, 0.25);
@@ -940,11 +941,9 @@ const STYLES = `
   }
 
   /* ============ ANIMATIONS ============ */
-  .cs-fade-in {
-    opacity: 0; transform: translateY(20px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-  .cs-fade-in.visible { opacity: 1; transform: translateY(0); }
+  /* NOTE: fade-in disabled — was hiding content in Softr's render context.
+     Content is visible by default now. Pop animation on phase check kept. */
+  .cs-fade-in { opacity: 1; }
 
   @keyframes cs-pop {
     0% { transform: scale(1); }
@@ -1312,24 +1311,7 @@ export default function Block() {
     return () => observer.disconnect();
   }, []);
 
-  // Fade-in on scroll
-  useEffect(() => {
-    const els = document.querySelectorAll("#itwin-course .cs-fade-in");
-    if (!els.length) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("visible");
-            observer.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-    els.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+  // NOTE: scroll fade-in disabled (was hiding content in Softr render context).
 
   const registerSection = useCallback((id) => (el) => {
     if (el) sectionsRef.current[id] = el;
