@@ -1,0 +1,2030 @@
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useRecordCreate, q } from "@/lib/datasource";
+import { toast } from "sonner";
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+
+const STATE_KEY = "itwin-course-state-v3";
+const TOTAL_PHASES = 5;
+
+const createFields = q.select({
+  email: "6qDKJ",
+  full_name: "ziFFq",
+  completed_at: "zXnlh",
+  source: "LEYWS",
+  phase_1_quiz_correct: "GDIW6",
+  phase_2_quiz_correct: "wwYxI",
+  phase_3_quiz_correct: "FbtlN",
+  phase_4_quiz_correct: "UgtqR",
+  phase_5_quiz_correct: "AKk5K",
+  quiz_score: "G9MAa",
+  time_on_course: "9kccK",
+  user_agent: "1NkPW",
+  marketing_consent: "zTuNx",
+});
+
+const IMG = {
+  hero: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085824/image-1-hero-cover_g59qxj.png",
+  overview: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085818/image-2-_phase-overview_yvepgj.png",
+  photoGrid: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085819/image-3-photo-grid-rule-v1_ohdjei.png",
+  backgrounds: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085826/image-4-background-examples_mzcydf.png",
+  voice: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085820/image-5-voice-cloning_d1pnrt.png",
+  deconstruction: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085820/image-6-deconstruction-method_a6wugf.png",
+  layerStack: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085820/image-7-the-layer-stack_bhalf4.png",
+  imageGen: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085821/image-8-image-generation-proces_mlodox.png",
+  bopa: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085821/image-9-BOPA-framework_dfoywl.png",
+  animation: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085817/Image_10__The_Animation_Pipeline_geq8bb.png",
+  flywheel: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085817/Image_11__The_Scaling_Flywheel_fghk2e.png",
+  toolStack: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085818/Image_12__Tool_Stack_Cheat_Sheet_wsahck.png",
+  nextSteps: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085819/Image_13__Call-to-Action___Next_Steps_eqyaha.png",
+  imagePrompter: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085822/image-14-_creator-scans-image-promter_pfzdmp.png",
+  viralProducts: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085822/image-15-viral-products-creator_scans_wzp7np.png",
+};
+
+const PHASES = [
+  {
+    id: "phase-1",
+    number: 1,
+    title: "Build Your Asset Library",
+    shortTitle: "Asset Library",
+    duration: "4 min",
+    steps: [
+      { id: "phase-1-step-1", label: "The 20–30 Rule" },
+      { id: "phase-1-step-2", label: "Background Plates" },
+      { id: "phase-1-step-3", label: "Reference Videos" },
+      { id: "phase-1-step-4", label: "Clone Your Voice" },
+    ],
+  },
+  {
+    id: "phase-2",
+    number: 2,
+    title: "Find Your Product & Write Your Script",
+    shortTitle: "Script & Prompt",
+    duration: "4 min",
+    steps: [
+      { id: "phase-2-step-1", label: "Find a Trending Product" },
+      { id: "phase-2-step-2", label: "Clone the Script" },
+      { id: "phase-2-step-3", label: "Visual Prompt" },
+      { id: "phase-2-step-4", label: "The 6-Layer Stack" },
+    ],
+  },
+  {
+    id: "phase-3",
+    number: 3,
+    title: "Generate Your AI Twin Image",
+    shortTitle: "Generate Twin",
+    duration: "2 min",
+    steps: [
+      { id: "phase-3-step-1", label: "Master Image" },
+      { id: "phase-3-step-2", label: "BOPA Framework" },
+    ],
+  },
+  {
+    id: "phase-4",
+    number: 4,
+    title: "Bring Your Twin to Life",
+    shortTitle: "Animate & Voice",
+    duration: "3 min",
+    steps: [
+      { id: "phase-4-step-1", label: "Start & End Frames" },
+      { id: "phase-4-step-2", label: "Animate with Video" },
+      { id: "phase-4-step-3", label: "Sync Voiceover" },
+    ],
+  },
+  {
+    id: "phase-5",
+    number: 5,
+    title: "Scale Your GMV",
+    shortTitle: "Scale GMV",
+    duration: "2 min",
+    steps: [
+      { id: "phase-5-step-1", label: "Test Hooks in Bulk" },
+      { id: "phase-5-step-2", label: "Scale Across Products" },
+    ],
+  },
+];
+
+// ============================================================
+// STATE HELPERS
+// ============================================================
+
+function defaultState() {
+  return {
+    startedAt: Date.now(),
+    completedPhases: [false, false, false, false, false],
+    quizCorrect: [false, false, false, false, false],
+    actionStepsDone: [false, false, false, false, false, false, false],
+    completed: false,
+    submitted: false,
+    name: "",
+    email: "",
+  };
+}
+
+function loadState() {
+  if (typeof window === "undefined") return defaultState();
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (!raw) return defaultState();
+    return { ...defaultState(), ...JSON.parse(raw) };
+  } catch {
+    return defaultState();
+  }
+}
+
+function saveState(s) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STATE_KEY, JSON.stringify(s));
+  } catch {}
+}
+
+// ============================================================
+// QUIZ + FLASHCARD + FAQ DATA
+// (filled in next edits)
+// ============================================================
+
+const QUIZZES = {
+  1: {
+    question: "How many reference photos should your AI twin learn from in total?",
+    options: [
+      { text: "A five-photo selfie burst is plenty", correct: false },
+      { text: "20–30 photos — about 15–20 studio plus 10 lifestyle", correct: true },
+      { text: "50+ photos from every possible angle", correct: false },
+      { text: "One high-quality headshot", correct: false },
+    ],
+    hint: "Two sets — one against a plain wall (studio), one around your home (lifestyle). Together they give the AI enough angles to rebuild your face without over-fitting.",
+    correctMessage: "Exactly. Two sets, plain clothing, plain backgrounds — that's the reference foundation your AI twin is built on.",
+  },
+  3: {
+    question: "What does BOPA stand for in the consistency framework?",
+    options: [
+      { text: "Background, Object, Product, Angle", correct: false },
+      { text: "Base, Overlay, Pose, Ad", correct: false },
+      { text: "Backgrounds, Outfits, Poses, Angles", correct: true },
+      { text: "Beauty, Outfit, Product, Accessory", correct: false },
+    ],
+    hint: "Four levers you can pull to turn ONE master image into dozens of variations: where your twin is, what they're wearing, how they hold the product, and the camera position.",
+    correctMessage: "Correct. Backgrounds, Outfits, Poses, Angles — the four ways to scale one master image into a whole ad library without ever re-filming.",
+  },
+  5: {
+    question: "Why are AI twins so powerful for scaling your GMV?",
+    options: [
+      { text: "They guarantee every ad will go viral", correct: false },
+      { text: "You produce dozens of variations in an hour, test them all, and only scale the winners", correct: true },
+      { text: "TikTok gives AI-generated content preferential reach", correct: false },
+      { text: "They replace the need for product research entirely", correct: false },
+    ],
+    hint: "Think about the core bottleneck for human creators: time to film and edit. AI twins break that bottleneck — letting you test more hook variations than any human could film.",
+    correctMessage: "Exactly. The affiliates who win TikTok Shop aren't the ones with the best single ad — they're the ones who test the most variations and scale winners fastest.",
+  },
+};
+
+const FLASHCARDS = {
+  2: [
+    { front: "The Deconstruction Method", back: "Drop a winning ad thumbnail into Claude and have it extract the visual DNA — shot type, angle, framing, text placement, body language — then rebuild it using your Phase 1 face, rooms, and the new product." },
+    { front: "Layer 1 — Product Extraction", back: "Feed Claude the TikTok Shop product URL. Extract what the product does, who the target customer is, and the emotional angle (the problem it solves or desire it fulfils)." },
+    { front: "Layer 6 — Quality Control", back: "Run every script through two checks: a 'Persona Fit' check (does it sound like a real person?) and a 'Conversion' check (hook / desire / CTA). Iterate until it scores 90+ / 100." },
+    { front: "TokScript", back: "A free tool at tokscript.com that extracts transcripts from TikTok videos. Paste the transcript into Claude or ChatGPT, then rewrite for your twin's voice and your product." },
+    { front: "Under 60 seconds", back: "Keep every TikTok Shop script under 60 seconds. Conversational, casual-review language — not polished commercial copy. Sound like a real UGC recommendation." },
+  ],
+  4: [
+    { front: "Two Frames, Not One", back: "Always generate a Start Frame and an End Frame with Nano Banana 2 before animating. Two frames give the video model clear instructions for how motion should begin and end — dramatically reducing glitches and 'AI weirdness'." },
+    { front: "The Big Three Video Models", back: "Veo 3.1, Seedance 2.0, and Kling 3.0 — all accessible through Fal.ai or their native platforms. Each animates your static frames into a realistic short-form clip." },
+    { front: "HeyGen's Job", back: "HeyGen maps your twin's lip movements to your audio, syncing mouth shapes to your exact words. It's the final step that turns a silent animation into a talking, product-reviewing video." },
+    { front: "Motion Prompts Must Be Specific", back: "Tell the model exactly how to move: 'slight camera push-in', 'subject maintains eye contact', 'natural hand movement as they hold up the product'. Specificity prevents text warping and uncanny-valley drift." },
+    { front: "When to Use Manual Voiceover", back: "Use your real voice for hero ads you expect to scale. Natural breaths, pauses, and inflections make the final video almost indistinguishable from a genuine UGC recording. Save the ElevenLabs clone for rapid hook testing." },
+  ],
+};
+
+const TOOL_STACK = [
+  { name: "Fal.ai", category: "Image & Video", job: "The hub. Runs Nano Banana 2 for images and hosts the top video models. Most of your generation happens here." },
+  { name: "Nano Banana 2", category: "Image Gen", job: "Currently the strongest realistic image model for AI twin generation from reference photos. Runs on Fal.ai." },
+  { name: "Veo 3.1 / Seedance 2.0 / Kling 3.0", category: "Video Gen", job: "The top three video generation models right now — all used to animate your static twin frames into 10-second UGC clips." },
+  { name: "ElevenLabs", category: "Voice Cloning", job: "Creates a digital clone of your voice from a 30–60 second sample. Type scripts, get audio that sounds like you." },
+  { name: "HeyGen", category: "Lip Sync", job: "Maps your voiceover (cloned or recorded) to your twin's lip movements. The last step before posting." },
+  { name: "Claude / ChatGPT / Gemini", category: "Scripting", job: "Deconstructing winning ads, rewriting scripts, building your 6-layer prompt system, and running your quality control checks." },
+  { name: "TokScript", category: "Research", job: "Free tool at tokscript.com that pulls transcripts out of TikTok videos. Feed them to your AI assistant and rewrite for your twin." },
+  { name: "Kalodata / Social1", category: "Research", job: "Paid TikTok Shop analytics. Track trending products and see the top-performing ads for any item on TikTok Shop UK." },
+];
+
+const ACTION_STEPS = [
+  "Block out one hour to capture your Phase 1 assets. Photos, backgrounds, videos, and a voice sample. Do this once and you're set.",
+  "Pick one trending product from the Creator Scans Viral Products page.",
+  "Find the top-performing ad for that product and clone the script using the method in Phase 2.",
+  "Generate your first AI twin image on Fal.ai using Nano Banana 2.",
+  "Apply BOPA to create five variations.",
+  "Animate your best image and sync your voiceover.",
+  "Post all five to TikTok and let the data tell you which hook wins.",
+];
+
+const FAQS = [
+  { q: "Do I need any tech skills to use AI to create TikTok videos?", a: "No. If you can take a selfie and type a sentence, you have enough. Every tool in this guide has a visual interface — there's no coding, no developer setup. This step-by-step guide is designed so that anyone can follow along, even if you've never used an AI tool before. The platforms handle the heavy lifting; you just provide the inputs." },
+  { q: "How realistic are AI twins, really? Will viewers be able to tell?", a: "The technology has improved dramatically. When you use high-quality reference photos, your actual background plates, and a manual voiceover (rather than a typed voice clone), the result is virtually indistinguishable from a real UGC video. The key is in your reference assets — the more realistic your inputs, the more realistic your output. Most viewers scrolling through TikTok will not notice the difference." },
+  { q: "Can I use this for faceless content, or do I have to show my face?", a: "This guide focuses on creating a digital twin of yourself, which means your face is part of the content. However, the same tools and workflow can be adapted for faceless formats — for example, product-only close-ups, screen recordings with AI voiceover, or hands-only shots. If you want to stay anonymous, you can still leverage AI voice cloning and video generation without training a twin on your face." },
+  { q: "How much does this cost to get started?", a: "Most of these platforms offer free tiers or low-cost entry plans. Fal.ai charges per generation (pennies per image), ElevenLabs has a free tier for voice cloning, and HeyGen offers a starter plan. You can realistically get your first AI twin ad produced for under £10. The efficiency gains compound quickly — once your asset library is built, each new ad costs almost nothing to produce." },
+  { q: "Can my AI twin sell products in multiple languages?", a: "Yes. ElevenLabs supports AI voice cloning in multiple languages, so you can generate voiceovers in languages you don't even speak — using your own voice. This opens up TikTok Shop markets beyond the UK without needing to hire translators or native speakers. Your digital twin can pitch products in Spanish, French, German, or any supported language while still sounding like you." },
+  { q: "Is this just for TikTok Shop, or does it work for other e-commerce platforms?", a: "The workflow in this guide is optimised for TikTok Shop affiliates, but the same system works for any platform where short-form video drives sales. Amazon influencer storefronts, Instagram Reels, YouTube Shorts — the AI twin you build here can create content for all of them. The product research step changes (you'd use different analytics tools), but the image generation, animation, and voice sync process is identical." },
+  { q: "How is this different from hiring a UGC creator?", a: "When you hire a UGC creator, you get one video per brief, per product, per creator. If the hook doesn't convert, you pay again. With an AI twin, you generate dozens of variations in an hour, test them all, and only scale the winners. It's not about replacing human creators entirely — it's about using automation to handle the volume and testing that no human could keep up with, so you can invest your budget in scaling what works." },
+  { q: "Won't TikTok penalise AI-generated content?", a: "TikTok's guidelines focus on authenticity, not on how the content was made. The goal of this workflow is to produce content that looks and sounds like genuine UGC — because it's based on your real face, your real voice, and your real home. As long as your content provides value to viewers and doesn't mislead them, you're operating within the platform's guidelines. That said, stay ahead of the curve — always check TikTok's latest policies on AI-generated content, as these are evolving." },
+  { q: "How long does it take to go from zero to my first posted AI twin video?", a: "If you block out a focused afternoon, you can capture all your Phase 1 assets (about an hour), find a product and clone a winning script (30 minutes), generate your first twin image and a few BOPA variations (30 minutes), and animate your best image with a voiceover (30 minutes). Most people can have their first AI video posted within three to four hours of starting. After that, each new product takes a fraction of the time because your asset library and prompt system are already built." },
+  { q: "What if the AI-generated image doesn't look right?", a: "Expect your first few generations to need tweaking — this is normal with any AI tool. The most common fix is improving your prompt: be more specific about product placement, clothing, and the room setting. If the face doesn't look right, try uploading additional reference photos from different angles. Nano Banana 2 on Fal.ai typically nails it within two or three runs once your prompt is dialled in." },
+  { q: "Can I use AI to enhance my existing TikTok content strategy, or is this a complete replacement?", a: "This is a solution that enhances your strategy — it doesn't have to replace anything. Many affiliates use their AI twin to handle the volume and testing (producing 20 variations of a product pitch to find the winning hook) while still posting real, filmed content for their highest-value products. Think of your digital twin as a way to streamline your content production and optimise your output, not as a binary choice between real and AI. The smartest affiliates use both." },
+  { q: "I'm already creating content manually. Is it worth switching to this workflow?", a: "If you're producing content efficiently and your TikTok Shop sales are where you want them, you might not need to change anything. But if you're spending hours filming and editing each ad, struggling to test enough hooks, or finding that your productivity plateaus because you can only film so much — this workflow is built for exactly that problem. The capability to generate, test, and iterate at scale is what separates affiliates who earn commissions from affiliates who build real income." },
+  { q: "What's the best strategy for testing which hooks convert?", a: "Use the BOPA framework to create five to ten variations of the same product ad, each with a different opening hook. Post them all to TikTok at the same time, let them run for 48 hours, and then look at the data. Kill everything except the top one or two performers, then scale those winners with more background and angle variations. This is the same approach professional social media advertisers use — AI just lets you do it faster and cheaper as an individual affiliate." },
+];
+
+// ============================================================
+// STYLES
+// ============================================================
+
+const STYLES = `
+  #itwin-course {
+    --cs-blue: #294ff6;
+    --cs-blue-2: #4466f8;
+    --cs-blue-3: #5e7bf6;
+    --cs-blue-4: #7a93ff;
+    --cs-navy: #000f4d;
+    --cs-navy-2: #001364;
+    --cs-navy-3: #152237;
+    --cs-light-1: #f8fbff;
+    --cs-light-2: #eef4fd;
+    --cs-light-3: #fafbff;
+    --cs-lavender: #d8d8ff;
+    --cs-red: #fe2c55;
+    --cs-green: #34d399;
+    --cs-ink: #1c274c;
+    --cs-ink-soft: #5a6690;
+
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--cs-navy);
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 40px;
+  }
+  #itwin-course *, #itwin-course *::before, #itwin-course *::after { box-sizing: border-box; }
+
+  #itwin-course h1, #itwin-course h2, #itwin-course h3, #itwin-course h4 {
+    color: var(--cs-navy);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0 0 14px;
+    font-weight: 800;
+  }
+  #itwin-course h1 { font-size: clamp(32px, 5vw, 52px); }
+  #itwin-course h2 { font-size: clamp(26px, 3.6vw, 38px); }
+  #itwin-course h3 { font-size: 22px; }
+  #itwin-course h4 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cs-blue); }
+  #itwin-course p { margin: 0 0 16px; color: var(--cs-ink); }
+  #itwin-course a { color: var(--cs-blue); text-decoration: underline; text-underline-offset: 3px; }
+  #itwin-course strong { color: var(--cs-navy); }
+  #itwin-course ul { margin: 0 0 16px; padding-left: 20px; }
+  #itwin-course li { margin-bottom: 6px; color: var(--cs-ink); }
+
+  /* ============ SIDEBAR ============ */
+  .cs-sidebar {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    height: calc(100vh - 48px);
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    background: white;
+    border: 1px solid var(--cs-light-2);
+    border-radius: 20px;
+    padding: 26px 22px;
+    box-shadow: 0 8px 28px rgba(0, 15, 77, 0.06);
+    scrollbar-width: thin;
+    scrollbar-color: var(--cs-lavender) transparent;
+  }
+  .cs-sidebar::-webkit-scrollbar { width: 6px; }
+  .cs-sidebar::-webkit-scrollbar-thumb { background: var(--cs-lavender); border-radius: 10px; }
+
+  .cs-sidebar-eyebrow {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--cs-blue);
+    margin-bottom: 16px;
+  }
+
+  .cs-ring-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--cs-light-2);
+  }
+  .cs-ring { position: relative; width: 78px; height: 78px; flex-shrink: 0; }
+  .cs-ring svg { transform: rotate(-90deg); }
+  .cs-ring-bg { stroke: var(--cs-light-2); }
+  .cs-ring-fill { stroke: var(--cs-blue); transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+  .cs-ring-label {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 900; color: var(--cs-navy);
+  }
+  .cs-ring-meta { font-size: 13px; color: var(--cs-ink-soft); line-height: 1.4; }
+  .cs-ring-meta strong { color: var(--cs-navy); display: block; font-size: 14px; margin-bottom: 2px; }
+
+  .cs-nav-item {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; text-align: left; background: none; border: none;
+    padding: 9px 10px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; color: var(--cs-ink);
+    cursor: pointer; font-family: inherit;
+    transition: all 0.2s ease;
+  }
+  .cs-nav-item:hover { background: var(--cs-light-1); color: var(--cs-navy); }
+  .cs-nav-item.active { background: var(--cs-light-2); color: var(--cs-navy); font-weight: 800; }
+  .cs-nav-item.sub { padding-left: 38px; font-size: 13px; font-weight: 500; color: var(--cs-ink-soft); }
+  .cs-nav-item.sub.active { color: var(--cs-blue); background: transparent; font-weight: 700; }
+
+  .cs-nav-tile {
+    flex: 0 0 24px; height: 24px; border-radius: 6px;
+    background: var(--cs-light-2); color: var(--cs-ink-soft);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 900;
+    transition: all 0.2s ease;
+  }
+  .cs-nav-item.active .cs-nav-tile { background: var(--cs-blue); color: white; }
+  .cs-nav-item.done .cs-nav-tile { background: var(--cs-green); color: white; }
+
+  .cs-nav-section-label {
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--cs-ink-soft);
+    margin: 18px 0 6px 10px;
+  }
+
+  /* ============ DRAWER (mobile) ============ */
+  .cs-drawer-toggle {
+    display: none;
+    position: fixed; bottom: 20px; right: 20px; z-index: 120;
+    background: var(--cs-blue); color: white; border: none;
+    padding: 14px 20px; border-radius: 100px;
+    font-size: 14px; font-weight: 800;
+    font-family: inherit; cursor: pointer;
+    box-shadow: 0 10px 28px rgba(41, 79, 246, 0.45);
+  }
+  .cs-drawer-backdrop {
+    display: none;
+    position: fixed; inset: 0; background: rgba(0, 15, 77, 0.4);
+    z-index: 110; backdrop-filter: blur(4px);
+  }
+  .cs-drawer-close {
+    display: none;
+    position: absolute; top: 12px; right: 12px;
+    background: var(--cs-light-2); border: none;
+    width: 34px; height: 34px; border-radius: 50%;
+    font-size: 20px; font-weight: 800; cursor: pointer;
+    color: var(--cs-navy); font-family: inherit;
+  }
+
+  /* ============ MAIN ============ */
+  .cs-main { min-width: 0; }
+  .cs-section { scroll-margin-top: 24px; margin-bottom: 56px; }
+  .cs-section-eyebrow {
+    display: inline-block;
+    background: var(--cs-light-2); color: var(--cs-blue);
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 6px 12px; border-radius: 100px;
+    margin-bottom: 14px;
+  }
+
+  /* ============ HERO ============ */
+  .cs-hero {
+    position: relative;
+    background: linear-gradient(135deg, #152237 0%, #000f4d 60%, #1a2d6b 100%);
+    border-radius: 24px;
+    padding: 56px 48px;
+    color: white;
+    margin-bottom: 48px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 15, 77, 0.22);
+  }
+  .cs-hero::before {
+    content: ""; position: absolute; top: -60%; right: -20%;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(94, 123, 246, 0.35) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cs-hero-inner { position: relative; z-index: 2; max-width: 640px; }
+  .cs-hero-eyebrow {
+    display: inline-block;
+    background: rgba(122, 147, 255, 0.18);
+    color: var(--cs-blue-4);
+    border: 1px solid rgba(122, 147, 255, 0.3);
+    font-size: 12px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 7px 14px; border-radius: 100px;
+    margin-bottom: 22px;
+  }
+  .cs-hero h1 { color: white; margin-bottom: 20px; }
+  .cs-hero-sub {
+    font-size: 17px; line-height: 1.6;
+    color: #c3cfe8; margin-bottom: 28px; max-width: 580px;
+  }
+  .cs-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
+  .cs-chip {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(122, 147, 255, 0.3);
+    color: #dbe4ff; font-size: 12px; font-weight: 700;
+    padding: 7px 14px; border-radius: 100px;
+  }
+  .cs-hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+  .cs-btn-primary {
+    background: var(--cs-blue); color: white; border: none;
+    padding: 15px 26px; border-radius: 14px;
+    font-size: 15px; font-weight: 800;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 10px 28px rgba(41, 79, 246, 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .cs-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(41, 79, 246, 0.55); }
+  .cs-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .cs-btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    border: 1px solid rgba(122, 147, 255, 0.4);
+    padding: 15px 24px; border-radius: 14px;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    transition: all 0.2s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .cs-btn-secondary:hover { background: rgba(122, 147, 255, 0.2); }
+
+  /* ============ INTRO / WHAT YOU'LL LEARN ============ */
+  .cs-intro-card {
+    background: white;
+    border: 1px solid var(--cs-light-2);
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 48px;
+    box-shadow: 0 6px 20px rgba(0, 15, 77, 0.05);
+  }
+
+  /* ============ PHASE HEADER ============ */
+  .cs-phase-header {
+    display: flex; align-items: center; gap: 18px;
+    margin-bottom: 28px;
+    padding: 28px 32px;
+    background: linear-gradient(135deg, #eef4fd 0%, #f8fbff 60%, #d8d8ff 100%);
+    border: 1px solid rgba(41, 79, 246, 0.15);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cs-phase-header::after {
+    content: ""; position: absolute;
+    top: 50%; right: -40px; width: 140px; height: 140px;
+    background: radial-gradient(circle, rgba(94, 123, 246, 0.18) 0%, transparent 70%);
+    transform: translateY(-50%); pointer-events: none;
+  }
+  .cs-phase-num {
+    flex: 0 0 68px; height: 68px;
+    background: var(--cs-blue);
+    color: white; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; font-weight: 900;
+    box-shadow: 0 10px 26px rgba(41, 79, 246, 0.35);
+  }
+  .cs-phase-meta { flex: 1; position: relative; z-index: 2; }
+  .cs-phase-meta-label {
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--cs-blue); margin-bottom: 6px;
+  }
+  .cs-phase-meta h2 { margin-bottom: 6px; }
+  .cs-phase-meta-duration { font-size: 14px; color: var(--cs-ink-soft); }
+  .cs-phase-check {
+    flex: 0 0 48px; height: 48px; border-radius: 50%;
+    background: var(--cs-green); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900;
+    box-shadow: 0 8px 20px rgba(52, 211, 153, 0.4);
+    position: relative; z-index: 2;
+  }
+
+  /* ============ STEP CARDS ============ */
+  .cs-step {
+    background: white;
+    border: 1px solid var(--cs-light-2);
+    border-radius: 18px;
+    padding: 32px 34px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 16px rgba(0, 15, 77, 0.05);
+    scroll-margin-top: 24px;
+  }
+  .cs-step-head {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+  }
+  .cs-step-num {
+    flex: 0 0 38px; height: 38px; border-radius: 10px;
+    background: var(--cs-blue); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900;
+  }
+  .cs-step-head h3 { margin: 0; }
+
+  /* ============ CALLOUT ============ */
+  .cs-callout {
+    background: linear-gradient(135deg, #eef4fd 0%, #f8fbff 100%);
+    border-left: 4px solid var(--cs-blue);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin: 16px 0;
+    font-size: 15px; color: var(--cs-navy);
+  }
+  .cs-callout strong { color: var(--cs-blue); }
+  .cs-callout.tip { border-left-color: var(--cs-green); background: linear-gradient(135deg, rgba(52, 211, 153, 0.08), #f8fbff); }
+  .cs-callout.tip strong { color: #0f9e6e; }
+
+  /* ============ SUB-CARDS ============ */
+  .cs-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  .cs-mini {
+    background: var(--cs-light-1);
+    border: 1px solid var(--cs-light-2);
+    border-radius: 14px; padding: 18px 20px;
+  }
+  .cs-mini h4 { margin-bottom: 8px; color: var(--cs-blue); text-transform: none; letter-spacing: normal; font-size: 16px; }
+  .cs-mini p { font-size: 14px; margin: 0; color: var(--cs-ink); line-height: 1.55; }
+
+  /* ============ GUIDE IMAGE ============ */
+  .cs-img-wrap { margin: 20px 0; }
+  .cs-img-wrap img {
+    width: 100%; height: auto;
+    border-radius: 16px; display: block;
+    box-shadow: 0 10px 28px rgba(0, 15, 77, 0.12);
+    background: var(--cs-light-2);
+  }
+  .cs-img-caption {
+    font-size: 13px; color: var(--cs-ink-soft);
+    text-align: center; margin-top: 10px; font-style: italic;
+  }
+
+  /* ============ INTERNAL LINK CARD ============ */
+  .cs-link-card {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 20px; margin: 18px 0;
+    background: linear-gradient(135deg, #eef4fd 0%, #f8fbff 100%);
+    border: 1px solid rgba(41, 79, 246, 0.2);
+    border-radius: 14px;
+    text-decoration: none; color: var(--cs-navy);
+    transition: all 0.25s ease;
+  }
+  .cs-link-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(41, 79, 246, 0.18);
+    border-color: var(--cs-blue);
+    text-decoration: none;
+  }
+  .cs-link-card-icon {
+    flex: 0 0 44px; height: 44px; border-radius: 10px;
+    background: var(--cs-blue); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .cs-link-card-body { flex: 1; }
+  .cs-link-card-title { font-weight: 800; font-size: 15px; color: var(--cs-navy); margin-bottom: 2px; }
+  .cs-link-card-sub { font-size: 13px; color: var(--cs-ink-soft); }
+  .cs-link-card-arrow { font-size: 20px; color: var(--cs-blue); font-weight: 900; }
+
+  /* ============ QUIZ ============ */
+  .cs-quiz, .cs-deck {
+    background: linear-gradient(135deg, #152237 0%, #000f4d 100%);
+    color: white;
+    border-radius: 22px;
+    padding: 36px 34px;
+    margin-top: 28px;
+    box-shadow: 0 16px 40px rgba(0, 15, 77, 0.28);
+    position: relative;
+    overflow: hidden;
+  }
+  .cs-quiz::before, .cs-deck::before {
+    content: ""; position: absolute;
+    top: -50%; right: -20%; width: 420px; height: 420px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(94, 123, 246, 0.22) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cs-quiz-eyebrow {
+    position: relative; z-index: 2;
+    display: inline-block;
+    background: rgba(122, 147, 255, 0.2);
+    color: var(--cs-blue-4);
+    border: 1px solid rgba(122, 147, 255, 0.3);
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 6px 12px; border-radius: 100px;
+    margin-bottom: 16px;
+  }
+  .cs-quiz-question {
+    position: relative; z-index: 2;
+    font-size: 22px; font-weight: 800; line-height: 1.35;
+    margin: 0 0 22px; color: white;
+  }
+  .cs-quiz-options { position: relative; z-index: 2; }
+  .cs-quiz-option {
+    display: block; width: 100%; text-align: left;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(122, 147, 255, 0.25);
+    color: #e5ecff; font-size: 15px; font-weight: 600;
+    padding: 16px 18px; margin-bottom: 10px; border-radius: 13px;
+    cursor: pointer; transition: all 0.25s ease;
+    font-family: inherit;
+  }
+  .cs-quiz-option:hover:not(:disabled) {
+    background: rgba(122, 147, 255, 0.18);
+    border-color: var(--cs-blue-4);
+    transform: translateY(-1px);
+  }
+  .cs-quiz-option.correct {
+    background: rgba(52, 211, 153, 0.22);
+    border-color: var(--cs-green);
+    color: #d1fae5;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
+  }
+  .cs-quiz-option.incorrect {
+    background: rgba(254, 44, 85, 0.18);
+    border-color: var(--cs-red);
+    color: #ffe3ea;
+  }
+  .cs-quiz-option:disabled { cursor: default; }
+
+  .cs-hint-btn {
+    position: relative; z-index: 2;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent; color: var(--cs-blue-4);
+    border: 1px dashed rgba(122, 147, 255, 0.45);
+    padding: 9px 16px; border-radius: 100px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer; margin-top: 8px; font-family: inherit;
+    transition: background 0.2s ease;
+  }
+  .cs-hint-btn:hover { background: rgba(122, 147, 255, 0.12); }
+  .cs-hint-box {
+    position: relative; z-index: 2;
+    margin-top: 14px; padding: 14px 16px;
+    background: rgba(122, 147, 255, 0.1);
+    border-left: 3px solid var(--cs-blue-4);
+    border-radius: 10px;
+    font-size: 14px; color: #dbe4ff; line-height: 1.55;
+  }
+  .cs-feedback {
+    position: relative; z-index: 2;
+    margin-top: 18px; padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 14px; font-weight: 600;
+  }
+  .cs-feedback.correct { background: rgba(52, 211, 153, 0.2); color: #d1fae5; border: 1px solid rgba(52, 211, 153, 0.35); }
+  .cs-feedback.incorrect { background: rgba(254, 44, 85, 0.18); color: #ffe3ea; border: 1px solid rgba(254, 44, 85, 0.35); }
+  .cs-next-btn {
+    position: relative; z-index: 2;
+    margin-top: 20px;
+    background: var(--cs-blue); color: white; border: none;
+    padding: 15px 26px; border-radius: 13px;
+    font-size: 15px; font-weight: 800;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 10px 26px rgba(41, 79, 246, 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .cs-next-btn:hover:not(:disabled) { transform: translateY(-2px); }
+  .cs-next-btn:disabled {
+    background: rgba(122, 147, 255, 0.25);
+    cursor: not-allowed; box-shadow: none; opacity: 0.7;
+  }
+
+  /* ============ FLASHCARDS ============ */
+  .cs-deck-title { font-size: 24px; font-weight: 800; color: white; margin: 0 0 6px; position: relative; z-index: 2; }
+  .cs-deck-sub { font-size: 14px; color: #c3cfe8; margin-bottom: 24px; position: relative; z-index: 2; }
+
+  .cs-deck-progress {
+    position: relative; z-index: 2;
+    height: 6px; background: rgba(122, 147, 255, 0.18);
+    border-radius: 100px; overflow: hidden; margin-bottom: 18px;
+  }
+  .cs-deck-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cs-blue) 0%, var(--cs-blue-4) 100%);
+    border-radius: 100px; transition: width 0.5s ease;
+  }
+
+  .cs-flash-stage {
+    perspective: 1400px;
+    position: relative; min-height: 260px;
+    margin-bottom: 18px; z-index: 2;
+  }
+  .cs-flashcard {
+    position: relative; width: 100%; min-height: 260px;
+    transition: transform 0.7s; transform-style: preserve-3d;
+    cursor: pointer;
+  }
+  .cs-flashcard.flipped { transform: rotateY(180deg); }
+  .cs-flash-face {
+    position: absolute; inset: 0;
+    padding: 34px;
+    border-radius: 18px;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    display: flex; flex-direction: column; justify-content: center; text-align: center;
+    min-height: 260px;
+  }
+  .cs-flash-front {
+    background: linear-gradient(135deg, rgba(122, 147, 255, 0.2), rgba(216, 216, 255, 0.08));
+    border: 1px solid rgba(122, 147, 255, 0.4);
+  }
+  .cs-flash-back {
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.16), rgba(122, 147, 255, 0.1));
+    border: 1px solid rgba(122, 147, 255, 0.4);
+    transform: rotateY(180deg);
+  }
+  .cs-flash-label {
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--cs-blue-4); margin-bottom: 12px;
+  }
+  .cs-flash-front-text { font-size: 24px; font-weight: 800; line-height: 1.3; color: white; }
+  .cs-flash-back-text { font-size: 15px; line-height: 1.65; color: #e5ecff; }
+  .cs-flash-tap {
+    position: absolute; bottom: 14px; left: 0; right: 0;
+    text-align: center; font-size: 12px; color: var(--cs-blue-4); font-weight: 700;
+  }
+
+  .cs-flash-controls {
+    position: relative; z-index: 2;
+    display: flex; gap: 10px; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .cs-flash-nav {
+    background: rgba(255, 255, 255, 0.06); color: #dbe4ff;
+    border: 1px solid rgba(122, 147, 255, 0.25);
+    padding: 10px 18px; border-radius: 10px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    transition: all 0.2s ease;
+  }
+  .cs-flash-nav:hover:not(:disabled) { background: rgba(122, 147, 255, 0.18); border-color: var(--cs-blue-4); }
+  .cs-flash-nav:disabled { opacity: 0.4; cursor: default; }
+  .cs-flash-counter { font-size: 13px; color: #c3cfe8; font-weight: 700; }
+
+  /* ============ TOOL STACK ============ */
+  .cs-tool-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 20px 0;
+  }
+  .cs-tool-card {
+    background: white;
+    border: 1px solid var(--cs-light-2);
+    border-radius: 16px; padding: 22px 24px;
+    transition: all 0.25s ease;
+  }
+  .cs-tool-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(0, 15, 77, 0.1);
+    border-color: var(--cs-blue-4);
+  }
+  .cs-tool-tag {
+    display: inline-block;
+    background: var(--cs-light-2); color: var(--cs-blue);
+    font-size: 10px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    padding: 4px 10px; border-radius: 100px;
+    margin-bottom: 10px;
+  }
+  .cs-tool-name { font-size: 17px; font-weight: 800; color: var(--cs-navy); margin-bottom: 6px; }
+  .cs-tool-job { font-size: 13px; color: var(--cs-ink); line-height: 1.55; margin: 0; }
+
+  /* ============ FAQ ============ */
+  .cs-faq-list { display: flex; flex-direction: column; gap: 10px; }
+  .cs-faq-item {
+    background: white;
+    border: 1px solid var(--cs-light-2);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+  .cs-faq-item.open { border-color: var(--cs-blue-4); box-shadow: 0 8px 20px rgba(0, 15, 77, 0.06); }
+  .cs-faq-q {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    width: 100%; text-align: left;
+    background: none; border: none;
+    padding: 20px 24px;
+    font-size: 15px; font-weight: 700; color: var(--cs-navy);
+    cursor: pointer; font-family: inherit;
+  }
+  .cs-faq-q:hover { color: var(--cs-blue); }
+  .cs-faq-chev {
+    flex: 0 0 auto; font-size: 14px; color: var(--cs-blue);
+    font-weight: 900; transition: transform 0.3s ease;
+  }
+  .cs-faq-item.open .cs-faq-chev { transform: rotate(180deg); }
+  .cs-faq-a {
+    padding: 0 24px 22px;
+    font-size: 14px; color: var(--cs-ink); line-height: 1.65;
+  }
+
+  /* ============ ACTION LIST ============ */
+  .cs-action-list { list-style: none; padding: 0; margin: 20px 0; }
+  .cs-action-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: white;
+    border: 1px solid var(--cs-light-2);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .cs-action-item:hover { border-color: var(--cs-blue-4); transform: translateY(-1px); }
+  .cs-action-item.done { background: rgba(52, 211, 153, 0.06); border-color: rgba(52, 211, 153, 0.3); }
+  .cs-action-check {
+    flex: 0 0 26px; height: 26px; border-radius: 8px;
+    border: 2px solid var(--cs-blue-4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 900; color: white;
+    margin-top: 1px; transition: all 0.2s ease;
+  }
+  .cs-action-item.done .cs-action-check {
+    background: var(--cs-green); border-color: var(--cs-green);
+  }
+  .cs-action-text { font-size: 15px; color: var(--cs-ink); line-height: 1.55; }
+  .cs-action-item.done .cs-action-text { color: var(--cs-ink-soft); text-decoration: line-through; }
+
+  /* ============ COMPLETION / CERTIFICATE ============ */
+  .cs-completion {
+    background: linear-gradient(135deg, #152237 0%, #000f4d 100%);
+    color: white;
+    border-radius: 24px;
+    padding: 48px 44px;
+    margin-top: 40px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 24px 56px rgba(0, 15, 77, 0.3);
+  }
+  .cs-completion::before {
+    content: ""; position: absolute; top: -30%; left: -10%;
+    width: 500px; height: 500px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(216, 216, 255, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cs-completion-inner { position: relative; z-index: 2; }
+  .cs-completion h2 { color: white; }
+  .cs-completion p { color: #c3cfe8; }
+  .cs-cert {
+    background: linear-gradient(135deg, rgba(216, 216, 255, 0.1), rgba(122, 147, 255, 0.08));
+    border: 1px solid rgba(216, 216, 255, 0.25);
+    border-radius: 18px;
+    padding: 36px 40px;
+    margin-top: 24px;
+    text-align: center;
+  }
+  .cs-cert-stamp {
+    display: inline-block;
+    background: rgba(52, 211, 153, 0.18);
+    color: var(--cs-green);
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    padding: 7px 14px; border-radius: 100px;
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    margin-bottom: 16px;
+  }
+  .cs-cert-name {
+    font-size: 34px; font-weight: 900;
+    color: white; margin: 12px 0;
+    background: linear-gradient(135deg, #ffffff 0%, #dbe4ff 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .cs-cert-body { color: #c3cfe8; font-size: 15px; max-width: 480px; margin: 0 auto; }
+
+  .cs-form { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; max-width: 460px; }
+  .cs-form-field { display: flex; flex-direction: column; gap: 6px; }
+  .cs-form-label { font-size: 13px; font-weight: 700; color: #c3cfe8; }
+  .cs-form-input {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(122, 147, 255, 0.35);
+    color: white; font-size: 15px;
+    padding: 13px 16px; border-radius: 11px;
+    font-family: inherit;
+  }
+  .cs-form-input:focus { outline: none; border-color: var(--cs-blue-4); }
+  .cs-form-check {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: #c3cfe8; line-height: 1.5;
+  }
+  .cs-form-check input { margin-top: 3px; }
+
+  .cs-resume-banner {
+    display: flex; align-items: center; gap: 14px;
+    background: linear-gradient(135deg, #eef4fd 0%, #f8fbff 100%);
+    border: 1px solid rgba(41, 79, 246, 0.2);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+  .cs-resume-icon { font-size: 22px; }
+  .cs-resume-text { flex: 1; font-size: 14px; color: var(--cs-navy); }
+  .cs-resume-btn {
+    background: var(--cs-blue); color: white; border: none;
+    padding: 10px 18px; border-radius: 10px;
+    font-size: 13px; font-weight: 800;
+    cursor: pointer; font-family: inherit;
+  }
+
+  /* ============ ANIMATIONS ============ */
+  .cs-fade-in {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .cs-fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @keyframes cs-pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  .cs-phase-check { animation: cs-pop 0.5s ease; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 960px) {
+    #itwin-course { grid-template-columns: 1fr; gap: 0; padding: 16px 12px 80px; }
+    .cs-sidebar {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(320px, 90vw);
+      height: 100vh; max-height: 100vh;
+      border-radius: 20px 0 0 20px;
+      transform: translateX(110%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 115;
+    }
+    .cs-sidebar.open { transform: translateX(0); }
+    .cs-drawer-toggle { display: inline-flex; align-items: center; gap: 8px; }
+    .cs-drawer-backdrop { display: block; }
+    .cs-drawer-close { display: flex; align-items: center; justify-content: center; }
+    .cs-hero { padding: 40px 28px; }
+    .cs-intro-card { padding: 28px 22px; }
+    .cs-phase-header { padding: 22px 20px; gap: 14px; }
+    .cs-phase-num { flex: 0 0 54px; height: 54px; font-size: 24px; border-radius: 14px; }
+    .cs-step { padding: 24px 22px; }
+    .cs-quiz, .cs-deck, .cs-completion { padding: 30px 24px; }
+    .cs-two-col, .cs-tool-grid { grid-template-columns: 1fr; }
+    .cs-cert { padding: 28px 22px; }
+    .cs-cert-name { font-size: 26px; }
+  }
+`;
+
+// ============================================================
+// HELPER COMPONENTS
+// ============================================================
+
+function ProgressRing({ percent }) {
+  const radius = 32;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percent / 100) * circumference;
+  return (
+    <div className="cs-ring">
+      <svg width="78" height="78" viewBox="0 0 78 78">
+        <circle className="cs-ring-bg" cx="39" cy="39" r={radius} fill="none" strokeWidth="7" />
+        <circle
+          className="cs-ring-fill"
+          cx="39" cy="39" r={radius}
+          fill="none" strokeWidth="7"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="cs-ring-label">{percent}%</div>
+    </div>
+  );
+}
+
+function NavItem({ tile, label, active, done, onClick, isSub }) {
+  const cls = ["cs-nav-item"];
+  if (active) cls.push("active");
+  if (done) cls.push("done");
+  if (isSub) cls.push("sub");
+  return (
+    <button className={cls.join(" ")} onClick={onClick}>
+      {tile && <span className="cs-nav-tile">{done ? "✓" : tile}</span>}
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function Sidebar({ state, percent, activeId, onNavigate, drawerOpen, setDrawerOpen }) {
+  const completedCount = state.completedPhases.filter(Boolean).length;
+  return (
+    <>
+      <button className="cs-drawer-toggle" onClick={() => setDrawerOpen(true)} aria-label="Open table of contents">
+        ☰ Contents · {percent}%
+      </button>
+      {drawerOpen && <div className="cs-drawer-backdrop" onClick={() => setDrawerOpen(false)} />}
+      <aside className={"cs-sidebar" + (drawerOpen ? " open" : "")}>
+        <button className="cs-drawer-close" onClick={() => setDrawerOpen(false)} aria-label="Close">×</button>
+
+        <div className="cs-sidebar-eyebrow">Creator Scans · Free Mini Course</div>
+
+        <div className="cs-ring-wrap">
+          <ProgressRing percent={percent} />
+          <div className="cs-ring-meta">
+            <strong>{completedCount} of {TOTAL_PHASES} phases</strong>
+            Progress saved automatically
+          </div>
+        </div>
+
+        <div className="cs-nav-section-label">Course</div>
+        <NavItem label="Overview" active={activeId === "hero" || activeId === "intro"} onClick={() => onNavigate("hero")} />
+
+        {PHASES.map((phase) => {
+          const done = state.completedPhases[phase.number - 1];
+          const phaseActive = activeId === phase.id || phase.steps.some(s => s.id === activeId);
+          return (
+            <div key={phase.id}>
+              <NavItem
+                tile={phase.number}
+                label={phase.shortTitle}
+                active={phaseActive}
+                done={done}
+                onClick={() => onNavigate(phase.id)}
+              />
+              {phaseActive && phase.steps.map((step) => (
+                <NavItem
+                  key={step.id}
+                  label={step.label}
+                  active={activeId === step.id}
+                  onClick={() => onNavigate(step.id)}
+                  isSub
+                />
+              ))}
+            </div>
+          );
+        })}
+
+        <div className="cs-nav-section-label">Reference</div>
+        <NavItem label="Tool Stack" active={activeId === "tool-stack"} onClick={() => onNavigate("tool-stack")} />
+        <NavItem label="FAQ" active={activeId === "faq"} onClick={() => onNavigate("faq")} />
+        <NavItem label="What to do right now" active={activeId === "action-plan"} onClick={() => onNavigate("action-plan")} />
+        <NavItem label="Get your certificate" active={activeId === "completion"} onClick={() => onNavigate("completion")} />
+      </aside>
+    </>
+  );
+}
+
+function Quiz({ phase, data, done, onAnswer }) {
+  const [attempts, setAttempts] = useState(new Set());
+  const [answered, setAnswered] = useState(done);
+  const [showHint, setShowHint] = useState(false);
+
+  useEffect(() => { setAnswered(done); }, [done]);
+
+  const handleClick = (idx) => {
+    if (answered) return;
+    const opt = data.options[idx];
+    if (opt.correct) {
+      setAnswered(true);
+      onAnswer(phase, true);
+    } else {
+      setAttempts((prev) => new Set(prev).add(idx));
+    }
+  };
+
+  return (
+    <div className="cs-quiz">
+      <span className="cs-quiz-eyebrow">Quick check · Phase {phase}</span>
+      <h3 className="cs-quiz-question">{data.question}</h3>
+      <div className="cs-quiz-options">
+        {data.options.map((opt, idx) => {
+          const isWrong = attempts.has(idx);
+          const isRight = answered && opt.correct;
+          const cls = "cs-quiz-option" + (isRight ? " correct" : "") + (isWrong ? " incorrect" : "");
+          return (
+            <button
+              key={idx}
+              className={cls}
+              onClick={() => handleClick(idx)}
+              disabled={answered || isWrong}
+            >
+              {opt.text}
+            </button>
+          );
+        })}
+      </div>
+
+      {!answered && (
+        <>
+          <button className="cs-hint-btn" onClick={() => setShowHint((v) => !v)}>
+            💡 {showHint ? "Hide hint" : "Show hint"}
+          </button>
+          {showHint && <div className="cs-hint-box">{data.hint}</div>}
+          {attempts.size > 0 && (
+            <div className="cs-feedback incorrect">Not quite — try another, or tap the hint.</div>
+          )}
+        </>
+      )}
+
+      {answered && (
+        <div className="cs-feedback correct">✓ {data.correctMessage}</div>
+      )}
+    </div>
+  );
+}
+
+function Flashcards({ phase, cards, done, onComplete }) {
+  const [idx, setIdx] = useState(0);
+  const [flipped, setFlipped] = useState(() => done ? new Set(cards.map((_, i) => i)) : new Set());
+  const [currentFlipped, setCurrentFlipped] = useState(done);
+
+  useEffect(() => { setCurrentFlipped(flipped.has(idx)); }, [idx, flipped]);
+
+  const allFlipped = flipped.size === cards.length;
+
+  const handleFlip = () => {
+    setCurrentFlipped((f) => !f);
+    if (!flipped.has(idx)) {
+      setFlipped((prev) => new Set(prev).add(idx));
+    }
+  };
+
+  const handleComplete = () => {
+    if (!done && allFlipped) onComplete(phase, true);
+  };
+
+  return (
+    <div className="cs-deck">
+      <span className="cs-quiz-eyebrow">Flashcards · Phase {phase}</span>
+      <h3 className="cs-deck-title">Lock it in</h3>
+      <p className="cs-deck-sub">Tap each card to flip. Flip all {cards.length} to mark this phase complete.</p>
+
+      <div className="cs-deck-progress">
+        <div className="cs-deck-progress-fill" style={{ width: `${(flipped.size / cards.length) * 100}%` }} />
+      </div>
+
+      <div className="cs-flash-stage">
+        <div className={"cs-flashcard" + (currentFlipped ? " flipped" : "")} onClick={handleFlip}>
+          <div className="cs-flash-face cs-flash-front">
+            <div className="cs-flash-label">Concept</div>
+            <div className="cs-flash-front-text">{cards[idx].front}</div>
+            <div className="cs-flash-tap">Tap to reveal →</div>
+          </div>
+          <div className="cs-flash-face cs-flash-back">
+            <div className="cs-flash-label">In plain English</div>
+            <div className="cs-flash-back-text">{cards[idx].back}</div>
+            <div className="cs-flash-tap">Tap to flip back</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="cs-flash-controls">
+        <button
+          className="cs-flash-nav"
+          onClick={() => setIdx((i) => Math.max(0, i - 1))}
+          disabled={idx === 0}
+        >← Prev</button>
+        <span className="cs-flash-counter">{idx + 1} / {cards.length}</span>
+        <button
+          className="cs-flash-nav"
+          onClick={() => setIdx((i) => Math.min(cards.length - 1, i + 1))}
+          disabled={idx === cards.length - 1}
+        >Next →</button>
+      </div>
+
+      <button
+        className="cs-next-btn"
+        onClick={handleComplete}
+        disabled={done || !allFlipped}
+      >
+        {done ? "✓ Phase " + phase + " complete" : allFlipped ? `Mark Phase ${phase} complete →` : `Flip ${cards.length - flipped.size} more card(s)`}
+      </button>
+    </div>
+  );
+}
+
+function FAQItem({ q: question, a, open, onToggle }) {
+  return (
+    <div className={"cs-faq-item" + (open ? " open" : "")}>
+      <button className="cs-faq-q" onClick={onToggle}>
+        <span>{question}</span>
+        <span className="cs-faq-chev">▾</span>
+      </button>
+      {open && <div className="cs-faq-a">{a}</div>}
+    </div>
+  );
+}
+
+function LinkCard({ icon, title, sub, href }) {
+  return (
+    <a className="cs-link-card" href={href} target="_blank" rel="noopener noreferrer">
+      <div className="cs-link-card-icon">{icon}</div>
+      <div className="cs-link-card-body">
+        <div className="cs-link-card-title">{title}</div>
+        <div className="cs-link-card-sub">{sub}</div>
+      </div>
+      <div className="cs-link-card-arrow">→</div>
+    </a>
+  );
+}
+
+function GuideImage({ src, alt, caption }) {
+  return (
+    <figure className="cs-img-wrap">
+      <img src={src} alt={alt} loading="lazy" />
+      {caption && <figcaption className="cs-img-caption">{caption}</figcaption>}
+    </figure>
+  );
+}
+
+function PhaseHeader({ number, title, duration, done, registerSection, id }) {
+  return (
+    <div className="cs-phase-header" id={id} ref={registerSection(id)}>
+      <div className="cs-phase-num">{number}</div>
+      <div className="cs-phase-meta">
+        <div className="cs-phase-meta-label">Phase {number} of {TOTAL_PHASES}</div>
+        <h2>{title}</h2>
+        <div className="cs-phase-meta-duration">~{duration} read</div>
+      </div>
+      {done && <div className="cs-phase-check" aria-label="Phase complete">✓</div>}
+    </div>
+  );
+}
+
+function Step({ num, title, id, registerSection, children }) {
+  return (
+    <section className="cs-step" id={id} ref={registerSection(id)}>
+      <div className="cs-step-head">
+        <div className="cs-step-num">{num}</div>
+        <h3>{title}</h3>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+// ============================================================
+// MAIN BLOCK
+// ============================================================
+
+export default function Block() {
+  const [state, setState] = useState(() => loadState());
+  const [activeId, setActiveId] = useState("hero");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState(null);
+  const sectionsRef = useRef({});
+  const startTimeRef = useRef(Date.now());
+
+  // Submission state
+  const [formName, setFormName] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formConsent, setFormConsent] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  let createRecord;
+  try {
+    createRecord = useRecordCreate({ fields: createFields });
+  } catch (e) {
+    createRecord = { enabled: false, mutateAsync: async () => {} };
+  }
+
+  // Persist state
+  useEffect(() => { saveState(state); }, [state]);
+
+  // Track active section via IntersectionObserver
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.target.offsetTop - b.target.offsetTop);
+        if (visible.length > 0) setActiveId(visible[0].target.id);
+      },
+      { rootMargin: "-30% 0px -55% 0px", threshold: 0 }
+    );
+    Object.values(sectionsRef.current).forEach((el) => { if (el) observer.observe(el); });
+    return () => observer.disconnect();
+  }, []);
+
+  // Fade-in on scroll
+  useEffect(() => {
+    const els = document.querySelectorAll("#itwin-course .cs-fade-in");
+    if (!els.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("visible");
+            observer.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  const registerSection = useCallback((id) => (el) => {
+    if (el) sectionsRef.current[id] = el;
+  }, []);
+
+  const scrollToSection = useCallback((id) => {
+    const el = sectionsRef.current[id];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setDrawerOpen(false);
+    }
+  }, []);
+
+  const markPhaseDone = useCallback((phase, correct) => {
+    setState((prev) => {
+      const completedPhases = [...prev.completedPhases];
+      const quizCorrect = [...prev.quizCorrect];
+      completedPhases[phase - 1] = true;
+      quizCorrect[phase - 1] = !!correct;
+      const completed = completedPhases.every(Boolean);
+      return { ...prev, completedPhases, quizCorrect, completed };
+    });
+    setTimeout(() => {
+      const nextPhase = phase + 1;
+      if (nextPhase <= TOTAL_PHASES) {
+        const el = sectionsRef.current["phase-" + nextPhase];
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        const el = sectionsRef.current["completion"];
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 700);
+  }, []);
+
+  const toggleActionStep = (idx) => {
+    setState((prev) => {
+      const actionStepsDone = [...prev.actionStepsDone];
+      actionStepsDone[idx] = !actionStepsDone[idx];
+      return { ...prev, actionStepsDone };
+    });
+  };
+
+  const resetCourse = () => {
+    if (!window.confirm("Reset course progress? This can't be undone.")) return;
+    localStorage.removeItem(STATE_KEY);
+    setState(defaultState());
+    setActiveId("hero");
+    scrollToSection("hero");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formName.trim() || !formEmail.trim()) {
+      toast.error("Please enter your name and email");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      if (createRecord && createRecord.enabled) {
+        const score = state.quizCorrect.filter(Boolean).length;
+        const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
+        await createRecord.mutateAsync({
+          email: formEmail.trim(),
+          full_name: formName.trim(),
+          completed_at: new Date().toISOString().slice(0, 10),
+          source: "Mini Course - AI Twin",
+          phase_1_quiz_correct: state.quizCorrect[0],
+          phase_2_quiz_correct: state.quizCorrect[1],
+          phase_3_quiz_correct: state.quizCorrect[2],
+          phase_4_quiz_correct: state.quizCorrect[3],
+          phase_5_quiz_correct: state.quizCorrect[4],
+          quiz_score: score,
+          time_on_course: timeSpent,
+          user_agent: navigator.userAgent,
+          marketing_consent: formConsent,
+        });
+      }
+      setState((prev) => ({ ...prev, submitted: true, name: formName.trim(), email: formEmail.trim() }));
+      toast.success("You're in! Your certificate is ready.");
+    } catch (err) {
+      console.error("Course completion save failed:", err);
+      toast.error("Couldn't save your details", { description: err.message || "Please try again" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const completedCount = state.completedPhases.filter(Boolean).length;
+  const percent = Math.round((completedCount / TOTAL_PHASES) * 100);
+  const hasProgress = completedCount > 0 && !state.completed;
+  const nextPhaseToDo = state.completedPhases.findIndex((c) => !c) + 1;
+
+  return (
+    <div id="itwin-course">
+      <style>{STYLES}</style>
+
+      <Sidebar
+        state={state}
+        percent={percent}
+        activeId={activeId}
+        onNavigate={scrollToSection}
+        drawerOpen={drawerOpen}
+        setDrawerOpen={setDrawerOpen}
+      />
+
+      <main className="cs-main">
+        {/* ====================== HERO ====================== */}
+        <section className="cs-hero" id="hero" ref={registerSection("hero")}>
+          <div className="cs-hero-inner">
+            <div className="cs-hero-eyebrow">Creator Scans · Free Mini Course</div>
+            <h1>How to Build a Realistic AI Twin for TikTok Shop</h1>
+            <p className="cs-hero-sub">
+              The complete guide to building a hyper-realistic digital avatar that sells TikTok Shop products on autopilot — without ever filming another ad. Your phone, a few AI tools, and a system you can repeat for every product.
+            </p>
+            <div className="cs-chips">
+              <span className="cs-chip">5 phases</span>
+              <span className="cs-chip">~15 min read</span>
+              <span className="cs-chip">Free certificate</span>
+              <span className="cs-chip">Downloadable PDF</span>
+            </div>
+            <div className="cs-hero-ctas">
+              <button className="cs-btn-primary" onClick={() => scrollToSection("phase-1")}>
+                Start the course →
+              </button>
+              <button className="cs-btn-secondary" onClick={() => scrollToSection("completion")}>
+                Get the PDF
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* ====================== RESUME BANNER ====================== */}
+        {hasProgress && (
+          <div className="cs-resume-banner">
+            <div className="cs-resume-icon">📚</div>
+            <div className="cs-resume-text">
+              You're <strong>{percent}% through</strong>. Pick up from Phase {nextPhaseToDo}.
+            </div>
+            <button className="cs-resume-btn" onClick={() => scrollToSection("phase-" + nextPhaseToDo)}>
+              Resume →
+            </button>
+          </div>
+        )}
+
+        {/* ====================== INTRO ====================== */}
+        <section className="cs-section cs-intro-card cs-fade-in" id="intro" ref={registerSection("intro")}>
+          <span className="cs-section-eyebrow">What you'll learn</span>
+          <h2>Most TikTok Shop affiliates hit the same wall.</h2>
+          <p>
+            They find winning products, but they can't produce enough content to keep up. Filming, editing, and re-shooting eats hours. And if a hook flops, you have to start again from scratch.
+          </p>
+          <p>
+            AI twins change that. With the right setup, you can generate dozens of realistic UGC-style videos of "you" reviewing products — in different rooms, wearing different outfits, holding different items — all from a single photo shoot you do once.
+          </p>
+          <p>
+            This guide walks you through the entire process in five phases: capturing your reference assets, finding and scripting your ad, generating your twin image, bringing it to life with video and voice, and scaling to maximise your GMV. No professional studio. No editing skills. Just your phone, a few AI tools, and a system you can repeat for every product you promote.
+          </p>
+          <GuideImage
+            src={IMG.overview}
+            alt="The five-phase AI Twin system overview"
+            caption="The 5-phase system, from raw assets to scaled GMV"
+          />
+        </section>
+
+        {/* ====================== PHASE 1 ====================== */}
+        <section className="cs-section cs-fade-in">
+          <PhaseHeader
+            number={1}
+            id="phase-1"
+            title="Build Your Asset Library"
+            duration="4 min"
+            done={state.completedPhases[0]}
+            registerSection={registerSection}
+          />
+          <p>
+            Before any AI tool can create a convincing version of you, it needs raw material to work from. This phase is a one-time setup. Do it properly once, and you'll use these assets for every product you promote going forward.
+          </p>
+          <p>
+            You need four things: photos of yourself, photos of your home, short videos of you talking, and a voice sample.
+          </p>
+
+          <Step num="1" title="Your Face and Body Photos (The 20–30 Rule)" id="phase-1-step-1" registerSection={registerSection}>
+            <p>
+              AI image generators need 20 to 30 clear photos of you from different angles to accurately recreate your face and body. You'll build two sets.
+            </p>
+            <div className="cs-two-col">
+              <div className="cs-mini">
+                <h4>Set A — The Studio Set</h4>
+                <p>Stand against a plain white wall or green screen. Wear very plain clothing — a white t-shirt and neutral trousers work perfectly. Take 15 to 20 photos from slightly different angles: straight on, slight left turn, slight right turn, looking up slightly, looking down slightly. No filters, no sunglasses, no other people in the frame.</p>
+              </div>
+              <div className="cs-mini">
+                <h4>Set B — The Lifestyle Set</h4>
+                <p>Take the remaining 10 photos naturally around your home. Same rule on clothing — keep it plain. These give the AI a more natural, relaxed version of you to reference, which is exactly what UGC-style content needs.</p>
+              </div>
+            </div>
+            <div className="cs-callout">
+              <strong>Why plain clothing matters:</strong> Plain clothing is essential because it makes it incredibly easy for the AI to swap your outfit later — which is exactly what you need when you're creating ads across different product categories.
+            </div>
+            <p>
+              Tools like <strong>Fal.ai</strong> (an AI platform that lets you run multiple image and video generation models in one place) use these reference photos to "learn" your exact facial features, body proportions, and natural expressions. The more angles you provide, the more realistic your twin becomes.
+            </p>
+            <GuideImage src={IMG.photoGrid} alt="The 20-30 rule photo grid showing studio and lifestyle photo requirements" caption="Set A: 15–20 studio photos. Set B: 10 lifestyle photos. All in plain clothing." />
+          </Step>
+
+          <Step num="2" title="Capture Your Background Plates" id="phase-1-step-2" registerSection={registerSection}>
+            <p>
+              Your twin needs realistic places to "film" in. Instead of letting the AI generate fake rooms (which always look slightly off), you'll photograph your actual home. This is what gives your ads that raw, authentic UGC feel that performs so well on TikTok.
+            </p>
+            <div className="cs-callout">
+              <strong>The method:</strong> Go into a room, stand in the corner, and take a photo using your phone's <strong>0.5x wide-angle lens</strong>. Do this from all four corners to capture a full 360-degree view of the space. Make sure you are not in the frame.
+            </div>
+            <p>
+              <strong>What to shoot:</strong> Think about the products you plan to promote and capture the rooms that match. Selling beauty products? Shoot your bathroom. Kitchen gadgets? Shoot your counters and stovetop area. Lifestyle or clothing items? Shoot your bedroom, living room, hallway, garden, or even your driveway.
+            </p>
+            <p>
+              The more rooms you capture, the more variety you'll have when generating ads later.
+            </p>
+            <GuideImage src={IMG.backgrounds} alt="Background plate examples across different rooms" caption="Shoot each room from all four corners using your 0.5x lens." />
+          </Step>
+
+          <Step num="3" title="Record Your Reference Videos (2 Minutes Each)" id="phase-1-step-3" registerSection={registerSection}>
+            <p>
+              In addition to still photos, you need short videos of yourself talking. These give the AI the data it needs to animate your twin's mouth, head movements, and natural gestures convincingly.
+            </p>
+            <p><strong>What to record:</strong> You need just four simple clips, each around two minutes long.</p>
+            <ul>
+              <li>Sitting down, filmed horizontally (landscape)</li>
+              <li>Sitting down, filmed vertically (portrait)</li>
+              <li>Standing up, filmed horizontally</li>
+              <li>Standing up, filmed vertically</li>
+            </ul>
+            <p>
+              <strong>How to record:</strong> Speak directly to the camera as if you're reviewing a product. It doesn't matter what you say — the AI is learning your movement patterns, not your words. The key is to be as expressive with your mouth as possible. Exaggerate slightly. This is what allows the AI to lip-sync perfectly to your scripts later.
+            </p>
+            <div className="cs-callout">
+              Shoot these on a plain white background so you can easily green-screen yourself into different environments later.
+            </div>
+          </Step>
+
+          <Step num="4" title="Clone Your Voice" id="phase-1-step-4" registerSection={registerSection}>
+            <p>
+              Your twin needs to sound exactly like you. You have two routes depending on how much time you have and how realistic you need the result.
+            </p>
+            <div className="cs-two-col">
+              <div className="cs-mini">
+                <h4>Option 1 — Speed Route (Voice Cloning)</h4>
+                <p>If you need to produce content quickly, use <strong>ElevenLabs</strong> — an AI voice cloning tool that replicates your voice from a short audio sample. Record a clean 30–60 second sample, upload it, and the platform creates a digital clone. From that point on, you just type your scripts and the AI generates audio that sounds like you.</p>
+              </div>
+              <div className="cs-mini">
+                <h4>Option 2 — Realism Route (Manual Voiceover)</h4>
+                <p>If you want the most convincing result possible, skip the typed clone. Record yourself actually reading the script out loud, then upload this audio directly into HeyGen, Higgsfield, or Fal.ai. Real pauses, real breaths, real inflections — the final video becomes almost indistinguishable from a real recording.</p>
+              </div>
+            </div>
+            <div className="cs-callout tip">
+              <strong>Pro tip:</strong> Combine both. Use the manual voiceover for your hero ads (the ones you expect to scale), and use the ElevenLabs clone for rapid testing of new hooks and products.
+            </div>
+            <GuideImage src={IMG.voice} alt="Voice cloning: speed vs realism routes" caption="Speed route for volume testing, realism route for your hero ads." />
+          </Step>
+
+          <Quiz phase={1} data={QUIZZES[1]} done={state.completedPhases[0]} onAnswer={markPhaseDone} />
+        </section>
+
+        {/* ====================== PHASE 2 ====================== */}
+        <section className="cs-section cs-fade-in">
+          <PhaseHeader
+            number={2}
+            id="phase-2"
+            title="Find Your Product & Write Your Script"
+            duration="4 min"
+            done={state.completedPhases[1]}
+            registerSection={registerSection}
+          />
+          <p>
+            Before you generate any images, you need to know exactly what you're selling and how to sell it. This phase covers finding a winning product, cloning a proven script, and preparing the visual brief your AI tools will need.
+          </p>
+
+          <Step num="1" title="Find a Trending Product" id="phase-2-step-1" registerSection={registerSection}>
+            <p>
+              You cannot script an ad without a product. Use TikTok Shop analytics tools like <strong>Kalodata</strong> or <strong>Social1</strong> (paid platforms that track which products are trending and generating the highest GMV across TikTok Shop) to identify what's currently selling.
+            </p>
+            <p>
+              Alternatively, Creator Scans maintains a free TikTok Shop Products page that's updated weekly with the top trending TikTok Shop UK products. Click into any product and you'll see the exact top-performing videos for that item — giving you a ready-made template to work from.
+            </p>
+            <LinkCard
+              icon="🔥"
+              title="Creator Scans Viral TikTok Shop Products"
+              sub="Free, updated weekly. Top trending TikTok Shop UK items with their best-performing ads."
+              href="https://www.creatorscans.com/viral-tiktok-shop-products"
+            />
+            <p>
+              Once you've picked a product, use those same tools to filter for the top-performing UGC ads for that specific item. Find an ad with a high conversion rate and save the video to your phone or computer. This is the ad you're going to reverse-engineer.
+            </p>
+          </Step>
+
+          <Step num="2" title="Clone the Winning Script" id="phase-2-step-2" registerSection={registerSection}>
+            <p>
+              You don't need to be a copywriter. You just need a proven script and the right AI tool to adapt it.
+            </p>
+            <p>
+              Take the winning video you just saved and upload it into an AI assistant like <strong>Gemini</strong> (Google's AI that can watch and transcribe video). You can also use <strong>TokScript</strong> (tokscript.com), a free tool that extracts video transcripts from TikTok — then paste that transcript into Claude or ChatGPT.
+            </p>
+            <div className="cs-callout">
+              Ask the AI to do three things: <strong>transcribe</strong> the video word-for-word, <strong>break down why the hook works</strong> (what makes someone stop scrolling), and <strong>rewrite</strong> the script to fit your specific product and your AI twin's persona.
+            </div>
+            <p>
+              The goal is a script that sounds like a real, casual review — not a polished commercial. Keep the language conversational. Keep it under 60 seconds for TikTok.
+            </p>
+          </Step>
+
+          <Step num="3" title="Craft Your Visual Prompt — The Deconstruction Method" id="phase-2-step-3" registerSection={registerSection}>
+            <p>
+              Now that you have your script, you need to tell the image generator exactly what the scene should look like. This is where most people get vague and end up with mediocre results. Be specific.
+            </p>
+            <p>
+              Instead of guessing at your visual layout, take a screenshot or thumbnail from the winning ad you downloaded in Step 1. Upload it into Claude and ask the AI to deconstruct the ad's visual DNA: the shot type, camera angle, framing, background, text overlay placement, product positioning, and the subject's body language.
+            </p>
+            <p>
+              Once Claude breaks the image down into a detailed text description, instruct it to rebuild that exact structure using your reference assets from Phase 1 — your face, your room, and the new product. This gives you a visual prompt that's based on a proven, high-converting layout rather than guesswork.
+            </p>
+            <GuideImage src={IMG.deconstruction} alt="The Deconstruction Method in action" caption="Drop a winning ad into Claude, extract its visual DNA, rebuild with your assets." />
+          </Step>
+
+          <Step num="4" title="Build Your Prompt System — The 6-Layer Stack" id="phase-2-step-4" registerSection={registerSection}>
+            <p>
+              If you want to produce content consistently and at scale, set up a structured AI workspace in Claude that feeds your image generator exactly what it needs every time. Think of this as your production line.
+            </p>
+            <GuideImage src={IMG.layerStack} alt="The 6-layer prompt stack diagram" caption="Six layers stacked, fed into one master prompt. Your content production line." />
+            <div className="cs-two-col">
+              <div className="cs-mini">
+                <h4>Layer 1 — Product Extraction</h4>
+                <p>Feed Claude the TikTok Shop product page URL. Ask it to extract what the product does, who the target customer is, and the emotional angle (the problem it solves or the desire it fulfils).</p>
+              </div>
+              <div className="cs-mini">
+                <h4>Layer 2 — Your Twin Profile</h4>
+                <p>Upload your best reference photos from Phase 1 and write a short description of your twin's look: skin tone, hair, build, typical expressions. This becomes a reusable character brief the AI references every time.</p>
+              </div>
+              <div className="cs-mini">
+                <h4>Layer 3 — Your Backgrounds</h4>
+                <p>Upload your background plates from Phase 1. Label each one (kitchen, bathroom, bedroom, living room) so you can drop them into prompts quickly.</p>
+              </div>
+              <div className="cs-mini">
+                <h4>Layer 4 — Brand Reference Cards</h4>
+                <p>Use Claude to generate a "Brand Spec Card" (fonts, exact hex colours from the product packaging) and a "Visual Style Card" (photography mood — warm, cool, bright, moody). Feed these as reference images into your image generator so your twin's aesthetic stays consistent.</p>
+              </div>
+              <div className="cs-mini">
+                <h4>Layer 5 — Format Templates (Cookbook)</h4>
+                <p>Create "recipe cards" for different UGC video formats — Before &amp; After, Yapper (talking head review), POV, Product Close-Up, Get Ready With Me. Each recipe tells Claude how to structure the script and visual layout for that specific format.</p>
+              </div>
+              <div className="cs-mini">
+                <h4>Layer 6 — Quality Control Agents</h4>
+                <p>Before generating any images, run your script past two checks. First, a "Persona Fit" check — does this sound like a real person or an ad? Second, a "Conversion" check — does the hook stop the scroll, does the body build desire, does the CTA drive action? Iterate until it scores 90+ out of 100.</p>
+              </div>
+            </div>
+            <p>
+              Once your brief passes quality control, ask Claude to convert it into a ready-to-use image generation prompt. Be specific: describe the plain clothing your twin is wearing, the exact room they're standing in (referencing your Phase 1 backgrounds), and precisely how they're holding the product.
+            </p>
+            <LinkCard
+              icon="📚"
+              title="Creator Scans AI UGC Prompt Library"
+              sub="Ready-made prompts using this 6-layer system. Skip the setup, start generating."
+              href="https://www.creatorscans.com/ai-ugc-for-tiktok-shop-prompt-library"
+            />
+          </Step>
+
+          <Flashcards phase={2} cards={FLASHCARDS[2]} done={state.completedPhases[1]} onComplete={markPhaseDone} />
+        </section>
+
+        {/* ====================== PHASE 3 ====================== */}
+        <section className="cs-section cs-fade-in">
+          <PhaseHeader
+            number={3}
+            id="phase-3"
+            title="Generate Your AI Twin Image"
+            duration="2 min"
+            done={state.completedPhases[2]}
+            registerSection={registerSection}
+          />
+          <p>
+            This is where your reference assets and your prompt system come together to produce a hyper-realistic static image of your twin holding a TikTok Shop product in your actual home.
+          </p>
+
+          <Step num="1" title="Generate the Master Image" id="phase-3-step-1" registerSection={registerSection}>
+            <p>
+              Head to <strong>Fal.ai</strong> and select the <strong>Nano Banana 2</strong> model (currently the strongest model for realistic AI image generation with reference photos). Upload three things: your best reference selfie from Phase 1, a clean product photo (a cutout on a white background works best), and your detailed prompt from Phase 2.
+            </p>
+            <div className="cs-callout">
+              The AI blends these together, generating a high-quality image of your exact face naturally holding the product in the setting you described. Expect to run two or three generations to get the positioning right — this is normal.
+            </div>
+            <GuideImage src={IMG.imageGen} alt="The Fal.ai Nano Banana 2 image generation process" caption="Selfie + product + prompt → Nano Banana 2 → your master image." />
+            <LinkCard
+              icon="🎨"
+              title="Creator Scans Image Prompter"
+              sub="Our free tool for building cleaner, more realistic image prompts."
+              href="https://www.creatorscans.com"
+            />
+          </Step>
+
+          <Step num="2" title="Apply the BOPA Framework" id="phase-3-step-2" registerSection={registerSection}>
+            <p>
+              BOPA stands for <strong>Backgrounds, Outfits, Poses, and Angles</strong>. It's how you turn one master image into dozens of variations without starting from scratch.
+            </p>
+            <GuideImage src={IMG.bopa} alt="The BOPA framework: Backgrounds, Outfits, Poses, Angles" caption="Four levers that turn one master image into a whole ad library." />
+            <div className="cs-two-col">
+              <div className="cs-mini">
+                <h4>B — Backgrounds</h4>
+                <p>Take your master image and swap the background using your Phase 1 room photos. Your twin reviewing a skincare product in the bathroom. The same twin reviewing it in the bedroom. Same product, different setting, completely different ad.</p>
+              </div>
+              <div className="cs-mini">
+                <h4>O — Outfits</h4>
+                <p>Because you wore plain clothing in your reference photos, you can command the AI to swap your twin's outfit to match the new scene. A bathrobe in the bathroom. A hoodie in the living room. Gym clothes in the garden.</p>
+              </div>
+              <div className="cs-mini">
+                <h4>P — Poses</h4>
+                <p>Adjust how your twin is holding or interacting with the product. Holding it up to camera. Applying it. Setting it down on a counter. Each pose creates a different visual hook.</p>
+              </div>
+              <div className="cs-mini">
+                <h4>A — Angles</h4>
+                <p>Change the camera angle — straight on, slightly above (the classic selfie angle), side profile. Each angle produces a different thumbnail and catches different scrollers.</p>
+              </div>
+            </div>
+            <div className="cs-callout tip">
+              <strong>The payoff:</strong> With BOPA, a single product can generate 20 to 30 unique ad variations in under an hour. This is what makes AI twins so powerful for affiliate scaling — you're not re-filming, you're re-prompting.
+            </div>
+          </Step>
+
+          <Quiz phase={3} data={QUIZZES[3]} done={state.completedPhases[2]} onAnswer={markPhaseDone} />
+        </section>
+
+        {/* ====================== PHASE 4 ====================== */}
+        <section className="cs-section cs-fade-in">
+          <PhaseHeader
+            number={4}
+            id="phase-4"
+            title="Bring Your Twin to Life (Video and Voice)"
+            duration="3 min"
+            done={state.completedPhases[3]}
+            registerSection={registerSection}
+          />
+          <p>
+            A static image gets attention, but a video sells products. This phase turns your AI-generated image into a moving, talking, product-reviewing twin.
+          </p>
+
+          <Step num="1" title="Generate Your Start and End Frames" id="phase-4-step-1" registerSection={registerSection}>
+            <p>
+              Don't just hit "animate" on your master image. Instead, use <strong>Nano Banana 2</strong> to generate two specific frames: a <strong>Start Frame</strong> (the opening shot of your ad — maybe your twin looking at the camera with the product in hand) and an <strong>End Frame</strong> (the closing shot — perhaps holding the product up closer to the lens, or a different angle entirely).
+            </p>
+            <div className="cs-callout">
+              These two frames give the video AI clear instructions for how the scene should begin and end, which dramatically reduces visual glitches and "AI weirdness."
+            </div>
+          </Step>
+
+          <Step num="2" title="Animate with a Video Model" id="phase-4-step-2" registerSection={registerSection}>
+            <p>
+              Upload both frames into a video generation model. The strongest options right now are <strong>Veo 3.1</strong>, <strong>Seedance 2.0</strong>, and <strong>Kling 3.0</strong> — all of which you can access through Fal.ai or their native platforms.
+            </p>
+            <p>
+              Use a structured prompt that tells the model exactly how to move between the two frames. Describe the motion you want: "slight camera push-in," "subject maintains eye contact throughout," "natural hand movement as they hold up the product." Being explicit about movement prevents text warping, product distortion, and the uncanny-valley drift that ruins most AI videos.
+            </p>
+          </Step>
+
+          <Step num="3" title="Sync Your Voiceover" id="phase-4-step-3" registerSection={registerSection}>
+            <p>
+              Bring your animated video into <strong>HeyGen</strong>. Upload either your manual voiceover recording (Option 2 from Phase 1) or generate the audio from your ElevenLabs voice clone (Option 1).
+            </p>
+            <p>
+              HeyGen maps your twin's lip movements to the audio, syncing mouth shapes to your exact words. If you recorded the voiceover yourself, the AI captures your natural pauses, breaths, and inflections — making the final video almost indistinguishable from a real recording.
+            </p>
+            <GuideImage src={IMG.animation} alt="The animation pipeline: start frame → video model → end frame → voice sync" caption="Start → Animate → Sync → Ready to post." />
+            <div className="cs-callout tip">
+              <strong>The result:</strong> A fully animated, voice-synced video of your AI twin reviewing a TikTok Shop product in your actual home, using a script cloned from a proven high-converting ad. Ready to post.
+            </div>
+          </Step>
+
+          <Flashcards phase={4} cards={FLASHCARDS[4]} done={state.completedPhases[3]} onComplete={markPhaseDone} />
+        </section>
+
+        {/* ====================== PHASE 5 ====================== */}
+        <section className="cs-section cs-fade-in">
+          <PhaseHeader
+            number={5}
+            id="phase-5"
+            title="Scale Your GMV"
+            duration="2 min"
+            done={state.completedPhases[4]}
+            registerSection={registerSection}
+          />
+          <p>
+            The real power of AI twins isn't making one good ad. It's making fifty and finding out which one converts best — in the time it used to take to film a single video.
+          </p>
+
+          <Step num="1" title="Test Your Hooks in Bulk" id="phase-5-step-1" registerSection={registerSection}>
+            <p>
+              Because Fal.ai supports concurrent generation runs, you can produce 5 to 10 different versions of the same ad simultaneously. Same product, same room, same twin — but with a different opening hook each time.
+            </p>
+            <div className="cs-callout">
+              Upload all of them to TikTok, let them run for 48 hours, and kill everything except the top performer. Then double down on the winning hook with more BOPA variations (different backgrounds, outfits, angles) to squeeze maximum GMV from it.
+            </div>
+          </Step>
+
+          <Step num="2" title="Scale Across Products" id="phase-5-step-2" registerSection={registerSection}>
+            <p>
+              Once your asset library and prompt system are built, promoting a new product takes minutes, not hours. Drop the new product URL into your Layer 1 prompt. Run it through your quality control agents. Generate the master image. Apply BOPA. Animate. Post.
+            </p>
+            <GuideImage src={IMG.flywheel} alt="The scaling flywheel: generate, deploy, analyse, scale" caption="Generate → Deploy → Analyse → Scale. The flywheel that compounds your GMV." />
+            <div className="cs-callout tip">
+              The affiliates who win on TikTok Shop aren't the ones with the best single ad — they're the ones who test the most variations and scale the winners fastest. Your AI twin lets you do exactly that.
+            </div>
+          </Step>
+
+          <Quiz phase={5} data={QUIZZES[5]} done={state.completedPhases[4]} onAnswer={markPhaseDone} />
+        </section>
+
+        {/* ====================== TOOL STACK ====================== */}
+        <section className="cs-section cs-fade-in" id="tool-stack" ref={registerSection("tool-stack")}>
+          <span className="cs-section-eyebrow">Quick reference</span>
+          <h2>Your Tool Stack</h2>
+          <p>Every platform referenced in this course, with its job in one line. Bookmark this section — you'll come back to it.</p>
+          <GuideImage src={IMG.toolStack} alt="Tool stack cheat sheet" caption="The full generative software stack for AI twin production." />
+          <div className="cs-tool-grid">
+            {TOOL_STACK.map((tool) => (
+              <div className="cs-tool-card" key={tool.name}>
+                <span className="cs-tool-tag">{tool.category}</span>
+                <div className="cs-tool-name">{tool.name}</div>
+                <p className="cs-tool-job">{tool.job}</p>
+              </div>
+            ))}
+          </div>
+          <LinkCard
+            icon="📚"
+            title="Creator Scans AI UGC Prompt Library"
+            sub="Ready-made prompts for every tool above. Stop guessing, start generating."
+            href="https://www.creatorscans.com/ai-ugc-for-tiktok-shop-prompt-library"
+          />
+          <LinkCard
+            icon="🔥"
+            title="Viral TikTok Shop Products"
+            sub="Weekly-updated list of top-trending products with their best-performing ads."
+            href="https://www.creatorscans.com/viral-tiktok-shop-products"
+          />
+        </section>
+
+        {/* ====================== FAQ ====================== */}
+        <section className="cs-section cs-fade-in" id="faq" ref={registerSection("faq")}>
+          <span className="cs-section-eyebrow">Frequently asked questions</span>
+          <h2>Things people ask before they start</h2>
+          <p>Tap any question to expand.</p>
+          <div className="cs-faq-list">
+            {FAQS.map((item, idx) => (
+              <FAQItem
+                key={idx}
+                q={item.q}
+                a={item.a}
+                open={openFaq === idx}
+                onToggle={() => setOpenFaq((o) => (o === idx ? null : idx))}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* ====================== ACTION PLAN ====================== */}
+        <section className="cs-section cs-fade-in" id="action-plan" ref={registerSection("action-plan")}>
+          <span className="cs-section-eyebrow">Your afternoon action plan</span>
+          <h2>What to Do Right Now</h2>
+          <p>
+            You've learned the system. Block out one focused afternoon and work through this checklist. By dinner, you'll have your first AI twin ad live on TikTok. Tick each step off as you go — your progress saves automatically.
+          </p>
+          <GuideImage src={IMG.nextSteps} alt="Your first afternoon action plan" caption="Zero to posted AI twin in roughly four focused hours." />
+          <ul className="cs-action-list">
+            {ACTION_STEPS.map((step, idx) => (
+              <li
+                key={idx}
+                className={"cs-action-item" + (state.actionStepsDone[idx] ? " done" : "")}
+                onClick={() => toggleActionStep(idx)}
+              >
+                <div className="cs-action-check">{state.actionStepsDone[idx] ? "✓" : ""}</div>
+                <div className="cs-action-text">{step}</div>
+              </li>
+            ))}
+          </ul>
+          <p>
+            You now have a repeatable system. Every new product is just a new prompt.
+          </p>
+        </section>
+
+        {/* ====================== COMPLETION ====================== */}
+        <section className="cs-section cs-fade-in cs-completion" id="completion" ref={registerSection("completion")}>
+          <div className="cs-completion-inner">
+            <span className="cs-quiz-eyebrow">Course completion</span>
+            {!state.completed ? (
+              <>
+                <h2>You're {percent}% of the way there</h2>
+                <p>
+                  Finish the remaining phases to unlock your certificate and downloadable PDF. Your progress is saved — you can come back any time.
+                </p>
+                <button className="cs-btn-primary" onClick={() => scrollToSection("phase-" + Math.max(1, nextPhaseToDo))}>
+                  Resume Phase {Math.max(1, nextPhaseToDo)} →
+                </button>
+              </>
+            ) : state.submitted ? (
+              <>
+                <h2>You did it. 🎉</h2>
+                <p>
+                  Welcome to the (growing) community of affiliates who know how to build an AI twin. Your certificate is ready and your downloadable PDF is below — keep it for reference.
+                </p>
+                <div className="cs-cert">
+                  <span className="cs-cert-stamp">✓ Certified · AI Twin System</span>
+                  <div className="cs-cert-name">{state.name}</div>
+                  <p className="cs-cert-body">
+                    has completed the Creator Scans AI Twin Mini Course and now knows how to build a hyper-realistic TikTok Shop AI twin from scratch — the full five-phase system, start to finish.
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 24 }}>
+                  <a
+                    className="cs-btn-primary"
+                    href="https://github.com/BeeSidez/creatorscans-softr-code-blocks/blob/main/lead-magnet/itwin/assets/couse-pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    📥 Download your PDF
+                  </a>
+                  <a
+                    className="cs-btn-secondary"
+                    href="https://www.creatorscans.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Join Creator Scans →
+                  </a>
+                </div>
+                <p style={{ marginTop: 18, fontSize: 13, color: "#a4b0d4" }}>
+                  Imagine what we teach <em>inside</em> the agency. If this free course was useful, the full system is on another level.
+                </p>
+                <button
+                  onClick={resetCourse}
+                  style={{
+                    background: "transparent",
+                    border: "1px dashed rgba(122,147,255,0.3)",
+                    color: "#a4b0d4",
+                    padding: "8px 14px",
+                    borderRadius: 100,
+                    fontSize: 12,
+                    fontFamily: "inherit",
+                    cursor: "pointer",
+                    marginTop: 18,
+                  }}
+                >
+                  Reset course progress
+                </button>
+              </>
+            ) : (
+              <>
+                <h2>You finished the course. 🎉</h2>
+                <p>
+                  Drop your name and email and we'll generate your certificate and send you the downloadable PDF. No spam — just your certificate, the PDF, and occasional tips from Creator Scans.
+                </p>
+                <form className="cs-form" onSubmit={handleSubmit}>
+                  <div className="cs-form-field">
+                    <label className="cs-form-label">Your name</label>
+                    <input
+                      className="cs-form-input"
+                      type="text"
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      placeholder="e.g. Alex Morgan"
+                      required
+                    />
+                  </div>
+                  <div className="cs-form-field">
+                    <label className="cs-form-label">Your email</label>
+                    <input
+                      className="cs-form-input"
+                      type="email"
+                      value={formEmail}
+                      onChange={(e) => setFormEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </div>
+                  <label className="cs-form-check">
+                    <input
+                      type="checkbox"
+                      checked={formConsent}
+                      onChange={(e) => setFormConsent(e.target.checked)}
+                    />
+                    <span>Yes, I want occasional tips from Creator Scans on scaling TikTok Shop affiliates with AI twins.</span>
+                  </label>
+                  <button className="cs-btn-primary" type="submit" disabled={submitting}>
+                    {submitting ? "Saving..." : "Get my certificate →"}
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
