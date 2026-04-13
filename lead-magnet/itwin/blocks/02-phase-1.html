@@ -1,0 +1,573 @@
+export default function Block() {
+  return (
+    <div id="itwin-phase-1">
+      <style>{`
+        #itwin-phase-1 {
+          --cs-blue: #294ff6;
+          --cs-blue-2: #4466f8;
+          --cs-blue-3: #5e7bf6;
+          --cs-blue-4: #7a93ff;
+          --cs-navy: #000f4d;
+          --cs-navy-2: #001364;
+          --cs-navy-3: #152237;
+          --cs-light-1: #f8fbff;
+          --cs-light-2: #eef4fd;
+          --cs-light-3: #fafbff;
+          --cs-lavender: #d8d8ff;
+          --cs-red: #fe2c55;
+
+          max-width: 960px;
+          margin: 0 auto;
+          padding: 32px 16px 24px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          font-size: 16px;
+          line-height: 1.65;
+          color: var(--cs-navy);
+          scroll-margin-top: 120px;
+        }
+
+        #itwin-phase-1 *,
+        #itwin-phase-1 *::before,
+        #itwin-phase-1 *::after {
+          box-sizing: border-box;
+        }
+
+        #itwin-phase-1 h2 {
+          font-size: clamp(24px, 3.2vw, 34px);
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          line-height: 1.2;
+          margin: 0 0 14px;
+          color: var(--cs-navy);
+        }
+
+        #itwin-phase-1 h3 {
+          font-size: 20px;
+          font-weight: 800;
+          margin: 0 0 10px;
+          color: var(--cs-navy);
+          letter-spacing: -0.01em;
+        }
+
+        #itwin-phase-1 h4 {
+          font-size: 15px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: var(--cs-blue);
+          margin: 0 0 8px;
+        }
+
+        #itwin-phase-1 p {
+          margin: 0 0 14px;
+          color: #1c274c;
+        }
+
+        .itwin-phase-hero {
+          background: linear-gradient(135deg, #eef4fd 0%, #f8fbff 60%, #d8d8ff 100%);
+          border: 1px solid rgba(41, 79, 246, 0.12);
+          border-radius: 20px;
+          padding: 32px 30px;
+          margin-bottom: 24px;
+          box-shadow: 0 6px 20px rgba(0, 15, 77, 0.06);
+        }
+
+        .itwin-phase-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: var(--cs-blue);
+          color: white;
+          font-size: 12px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          padding: 7px 14px;
+          border-radius: 100px;
+          margin-bottom: 14px;
+        }
+
+        .itwin-phase-intro {
+          color: #334172;
+          font-size: 16px;
+          line-height: 1.65;
+          max-width: 720px;
+        }
+
+        .itwin-phase-image {
+          width: 100%;
+          height: auto;
+          border-radius: 16px;
+          display: block;
+          margin: 0 0 12px;
+          box-shadow: 0 6px 20px rgba(0, 15, 77, 0.08);
+          background: var(--cs-light-2);
+        }
+
+        .itwin-image-caption {
+          font-size: 13px;
+          color: #5a6690;
+          text-align: center;
+          margin-bottom: 24px;
+        }
+
+        .itwin-section-card {
+          background: white;
+          border: 1px solid var(--cs-light-2);
+          border-radius: 18px;
+          padding: 28px 28px 18px;
+          margin-bottom: 22px;
+          box-shadow: 0 4px 14px rgba(0, 15, 77, 0.05);
+        }
+
+        .itwin-step-row {
+          display: flex;
+          gap: 14px;
+          align-items: flex-start;
+          margin-bottom: 10px;
+        }
+
+        .itwin-step-number {
+          flex: 0 0 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: var(--cs-blue);
+          color: white;
+          font-size: 16px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .itwin-callout {
+          background: linear-gradient(135deg, #eef4fd 0%, #f8fbff 100%);
+          border-left: 4px solid var(--cs-blue);
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 14px 0;
+          font-size: 15px;
+          color: var(--cs-navy);
+        }
+
+        .itwin-callout strong {
+          color: var(--cs-blue);
+        }
+
+        .itwin-two-col {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+          margin: 16px 0;
+        }
+
+        @media (max-width: 640px) {
+          .itwin-two-col {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .itwin-mini-card {
+          background: var(--cs-light-1);
+          border: 1px solid var(--cs-light-2);
+          border-radius: 12px;
+          padding: 16px 18px;
+        }
+
+        .itwin-mini-card h4 {
+          color: var(--cs-blue);
+          margin-bottom: 6px;
+        }
+
+        .itwin-mini-card p {
+          font-size: 14px;
+          margin: 0;
+          color: #334172;
+        }
+
+        .itwin-quiz-card {
+          background: linear-gradient(135deg, #152237 0%, #000f4d 100%);
+          color: white;
+          border-radius: 20px;
+          padding: 32px 30px;
+          margin-top: 28px;
+          box-shadow: 0 12px 32px rgba(0, 15, 77, 0.25);
+        }
+
+        .itwin-quiz-eyebrow {
+          display: inline-block;
+          background: rgba(122, 147, 255, 0.18);
+          color: var(--cs-blue-4);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          padding: 6px 12px;
+          border-radius: 100px;
+          margin-bottom: 14px;
+        }
+
+        .itwin-quiz-question {
+          font-size: 20px;
+          font-weight: 700;
+          line-height: 1.4;
+          margin: 0 0 18px;
+          color: white;
+        }
+
+        .itwin-quiz-option {
+          display: block;
+          width: 100%;
+          text-align: left;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(122, 147, 255, 0.25);
+          color: #e5ecff;
+          font-size: 15px;
+          font-weight: 600;
+          padding: 14px 16px;
+          margin-bottom: 10px;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-family: inherit;
+        }
+
+        .itwin-quiz-option:hover:not(:disabled) {
+          background: rgba(122, 147, 255, 0.18);
+          border-color: var(--cs-blue-4);
+          transform: translateY(-1px);
+        }
+
+        .itwin-quiz-option.correct {
+          background: rgba(52, 211, 153, 0.18);
+          border-color: #34d399;
+          color: #d1fae5;
+        }
+
+        .itwin-quiz-option.incorrect {
+          background: rgba(254, 44, 85, 0.18);
+          border-color: var(--cs-red);
+          color: #ffe3ea;
+        }
+
+        .itwin-quiz-option:disabled {
+          cursor: default;
+          opacity: 0.85;
+        }
+
+        .itwin-hint-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: transparent;
+          color: var(--cs-blue-4);
+          border: 1px dashed rgba(122, 147, 255, 0.45);
+          padding: 8px 14px;
+          border-radius: 100px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          margin-top: 6px;
+          font-family: inherit;
+        }
+
+        .itwin-hint-button:hover {
+          background: rgba(122, 147, 255, 0.12);
+        }
+
+        .itwin-hint-box {
+          margin-top: 12px;
+          padding: 12px 14px;
+          background: rgba(122, 147, 255, 0.1);
+          border-left: 3px solid var(--cs-blue-4);
+          border-radius: 10px;
+          font-size: 14px;
+          color: #dbe4ff;
+          display: none;
+        }
+
+        .itwin-hint-box.visible {
+          display: block;
+        }
+
+        .itwin-feedback {
+          margin-top: 16px;
+          padding: 14px 16px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 600;
+          display: none;
+        }
+
+        .itwin-feedback.visible {
+          display: block;
+        }
+
+        .itwin-feedback.correct {
+          background: rgba(52, 211, 153, 0.18);
+          color: #d1fae5;
+          border: 1px solid rgba(52, 211, 153, 0.35);
+        }
+
+        .itwin-feedback.incorrect {
+          background: rgba(254, 44, 85, 0.18);
+          color: #ffe3ea;
+          border: 1px solid rgba(254, 44, 85, 0.35);
+        }
+
+        .itwin-next-button {
+          margin-top: 18px;
+          background: var(--cs-blue);
+          color: white;
+          border: none;
+          padding: 14px 22px;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          font-family: inherit;
+          box-shadow: 0 6px 18px rgba(41, 79, 246, 0.35);
+          display: none;
+        }
+
+        .itwin-next-button.visible {
+          display: inline-block;
+        }
+
+        .itwin-next-button:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 10px 24px rgba(41, 79, 246, 0.45);
+        }
+
+        .itwin-done-stamp {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(52, 211, 153, 0.18);
+          color: #a7f3d0;
+          border: 1px solid rgba(52, 211, 153, 0.35);
+          padding: 8px 14px;
+          border-radius: 100px;
+          font-size: 12px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          margin-left: 10px;
+        }
+      `}</style>
+
+      <div className="itwin-phase-hero">
+        <span className="itwin-phase-badge">Phase 1 of 5</span>
+        <h2>Build Your Asset Library</h2>
+        <p className="itwin-phase-intro">
+          Before any AI tool can create a convincing version of you, it needs raw material to work from. This is a one-time setup — do it properly once and you'll reuse these assets for every product you promote going forward.
+        </p>
+      </div>
+
+      <img
+        className="itwin-phase-image"
+        src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085844/04-five-phase-overview_spniws.png"
+        alt="The five-phase AI Twin pipeline"
+      />
+      <div className="itwin-image-caption">The 5-phase system — you are here: Phase 1, Raw Materials.</div>
+
+      <section className="itwin-section-card">
+        <div className="itwin-step-row">
+          <div className="itwin-step-number">1</div>
+          <h3>The 20–30 Photo Rule</h3>
+        </div>
+        <p>
+          AI image generators need 20 to 30 clear photos of you from different angles to accurately recreate your face and body. You'll build two sets: a studio set and a lifestyle set.
+        </p>
+        <img
+          className="itwin-phase-image"
+          src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085844/05-studio-set-lifestyle-set-photos_jgjkcd.png"
+          alt="Studio set and lifestyle set photo requirements"
+        />
+        <div className="itwin-two-col">
+          <div className="itwin-mini-card">
+            <h4>Set A — Studio</h4>
+            <p>15–20 photos against a plain white wall or green screen. Plain clothing (white tee, neutral trousers). Slight angles: straight on, left, right, up, down.</p>
+          </div>
+          <div className="itwin-mini-card">
+            <h4>Set B — Lifestyle</h4>
+            <p>10 natural photos around your home. Keep the clothing plain so the AI can swap outfits later. No filters, no sunglasses, no other people.</p>
+          </div>
+        </div>
+        <div className="itwin-callout">
+          <strong>Why plain clothing?</strong> Because your twin will wear a different outfit in every ad — bathrobe, hoodie, gym kit — and plain reference clothes make outfit swapping incredibly clean.
+        </div>
+      </section>
+
+      <section className="itwin-section-card">
+        <div className="itwin-step-row">
+          <div className="itwin-step-number">2</div>
+          <h3>Capture Your Background Plates</h3>
+        </div>
+        <p>
+          Your twin needs realistic places to "film" in. Instead of letting the AI hallucinate fake rooms, you'll photograph your actual home — this is what gives your ads that raw, authentic UGC feel.
+        </p>
+        <img
+          className="itwin-phase-image"
+          src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085845/06-environmental-plates-room-mapping_cztyp6.png"
+          alt="Environmental plates room mapping diagram"
+        />
+        <div className="itwin-callout">
+          <strong>The method:</strong> Stand in a corner of the room and take a photo with your phone's 0.5x wide-angle lens. Do this from all four corners. Make sure you are <em>not</em> in the frame.
+        </div>
+        <p>
+          Shoot the rooms that match your products: bathroom for beauty, kitchen for gadgets, bedroom or living room for lifestyle. The more rooms, the more variety you'll have later.
+        </p>
+      </section>
+
+      <section className="itwin-section-card">
+        <div className="itwin-step-row">
+          <div className="itwin-step-number">3</div>
+          <h3>Record Four Reference Videos</h3>
+        </div>
+        <p>
+          Still photos teach the AI your face. Short videos teach it your movement — how your mouth shapes words, how your head tilts, how you naturally gesture. You need just four 2-minute clips.
+        </p>
+        <div className="itwin-two-col">
+          <div className="itwin-mini-card">
+            <h4>Clip 1 &amp; 2</h4>
+            <p>Sitting down — one horizontal, one vertical. Speak directly to the camera as if you're reviewing a product.</p>
+          </div>
+          <div className="itwin-mini-card">
+            <h4>Clip 3 &amp; 4</h4>
+            <p>Standing up — one horizontal, one vertical. Exaggerate your mouth slightly. The AI is learning how you talk.</p>
+          </div>
+        </div>
+        <div className="itwin-callout">
+          It doesn't matter what you say — the AI is learning your <strong>movement patterns</strong>, not your words. Plain white background makes green-screening easy.
+        </div>
+      </section>
+
+      <section className="itwin-section-card">
+        <div className="itwin-step-row">
+          <div className="itwin-step-number">4</div>
+          <h3>Clone Your Voice</h3>
+        </div>
+        <p>
+          Your twin needs to sound exactly like you. You have two routes depending on how much time you have and how realistic you need the result.
+        </p>
+        <img
+          className="itwin-phase-image"
+          src="https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085833/07-audio-pipeline-instant-vs-professional_jpcqrr.png"
+          alt="ElevenLabs voice pipeline decision tree"
+        />
+        <div className="itwin-two-col">
+          <div className="itwin-mini-card">
+            <h4>Speed Route</h4>
+            <p>ElevenLabs instant clone. Record a 30–60s sample, upload it, and from then on you just type scripts. Fast and scales well.</p>
+          </div>
+          <div className="itwin-mini-card">
+            <h4>Realism Route</h4>
+            <p>Record the voiceover yourself, then feed the audio into HeyGen. Real breaths, pauses, inflections. The most convincing result.</p>
+          </div>
+        </div>
+        <div className="itwin-callout">
+          <strong>Pro move:</strong> Combine both. Use manual voiceover for your hero ads and the ElevenLabs clone for rapid hook testing.
+        </div>
+      </section>
+
+      <div className="itwin-quiz-card" id="itwin-phase-1-quiz-card">
+        <span className="itwin-quiz-eyebrow">Quick Check · Phase 1</span>
+        <h3 className="itwin-quiz-question">How many reference photos should your AI twin learn from in total?</h3>
+        <div id="itwin-phase-1-options">
+          <button className="itwin-quiz-option" data-correct="false">A five-photo selfie burst is plenty</button>
+          <button className="itwin-quiz-option" data-correct="true">20–30 photos — about 15–20 studio plus 10 lifestyle</button>
+          <button className="itwin-quiz-option" data-correct="false">50+ from every possible angle</button>
+          <button className="itwin-quiz-option" data-correct="false">One high-quality headshot</button>
+        </div>
+        <button className="itwin-hint-button" id="itwin-phase-1-hint-btn">💡 Show hint</button>
+        <div className="itwin-hint-box" id="itwin-phase-1-hint">
+          You're building <strong>two sets</strong>: one against a plain wall, one around your home. Together they give the AI enough angles to rebuild your face without over-fitting.
+        </div>
+        <div className="itwin-feedback" id="itwin-phase-1-feedback"></div>
+        <button className="itwin-next-button" id="itwin-phase-1-next">Continue to Phase 2 →</button>
+      </div>
+
+      <script dangerouslySetInnerHTML={{__html: `
+        (function() {
+          const PHASE = 1;
+          const root = document.getElementById('itwin-phase-1');
+          if (!root) return;
+
+          function waitForCourse(cb) {
+            if (window.itwinCourse) { cb(); return; }
+            let tries = 0;
+            const iv = setInterval(() => {
+              tries++;
+              if (window.itwinCourse || tries > 100) {
+                clearInterval(iv);
+                if (window.itwinCourse) cb();
+              }
+            }, 50);
+          }
+
+          function init() {
+            const options = root.querySelectorAll('#itwin-phase-1-options .itwin-quiz-option');
+            const feedback = root.querySelector('#itwin-phase-1-feedback');
+            const nextBtn = root.querySelector('#itwin-phase-1-next');
+            const hintBtn = root.querySelector('#itwin-phase-1-hint-btn');
+            const hintBox = root.querySelector('#itwin-phase-1-hint');
+
+            hintBtn.addEventListener('click', () => {
+              hintBox.classList.toggle('visible');
+              hintBtn.textContent = hintBox.classList.contains('visible') ? '💡 Hide hint' : '💡 Show hint';
+            });
+
+            function lockAnswer(correct) {
+              options.forEach(o => { o.disabled = true; });
+              feedback.classList.add('visible');
+              if (correct) {
+                feedback.classList.add('correct');
+                feedback.innerHTML = '✓ Spot on. Two sets, plain clothing, plain background — your AI twin has everything it needs.';
+                nextBtn.classList.add('visible');
+                window.itwinCourse.completePhase(PHASE, true);
+              } else {
+                feedback.classList.add('incorrect');
+                feedback.innerHTML = 'Not quite. Try another — or tap the hint.';
+              }
+            }
+
+            options.forEach(opt => {
+              opt.addEventListener('click', () => {
+                const correct = opt.dataset.correct === 'true';
+                if (correct) {
+                  opt.classList.add('correct');
+                  lockAnswer(true);
+                } else {
+                  opt.classList.add('incorrect');
+                  opt.disabled = true;
+                  feedback.classList.add('visible', 'incorrect');
+                  feedback.innerHTML = 'Not quite — try again or tap the hint.';
+                }
+              });
+            });
+
+            nextBtn.addEventListener('click', () => {
+              window.itwinCourse.goToPhase(2);
+            });
+
+            // Restore state if user already completed this phase
+            const state = window.itwinCourse.getState();
+            if (state.completedPhases[PHASE - 1]) {
+              options.forEach(o => {
+                o.disabled = true;
+                if (o.dataset.correct === 'true') o.classList.add('correct');
+              });
+              feedback.classList.add('visible', 'correct');
+              feedback.innerHTML = '✓ Already completed. Jump to the next phase whenever you\\'re ready.';
+              nextBtn.classList.add('visible');
+            }
+          }
+
+          waitForCourse(init);
+        })();
+      `}} />
+    </div>
+  );
+}
