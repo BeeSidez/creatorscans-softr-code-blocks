@@ -148,12 +148,12 @@ export default function Block() {
   const currentFeatures = activeTab === "live" ? liveCreatorsFeatures : shopCreatorsFeatures;
 
   return (
-    <div className="w-full py-[100px]" style={{ background: "linear-gradient(180deg, #000B3A 0%, #001364 100%)" }}>
+    <div className="w-full py-24" style={{ background: "linear-gradient(180deg, #000B3A 0%, #001364 100%)" }}>
       <div className="container">
-        <div className="content max-w-[1200px] mx-auto">
+        <div className="content max-w-6xl mx-auto">
           {/* Header */}
           <div className="text-center mb-10">
-            <h2 className="text-[48px] font-bold leading-tight mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
               <span className="text-white">Why Join </span>
               <span style={{ color: "#7A93FF" }}>Creator Scans</span>
               <span className="text-white">?</span>

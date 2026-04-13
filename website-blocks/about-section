@@ -48,7 +48,7 @@ export default function Block() {
     <section
       ref={sectionRef}
       style={{ backgroundColor: '#000B3A' }}
-      className="py-20"
+      className="py-24"
     >
       <div className="container mx-auto px-4">
         <div className="max-w-6xl">
@@ -71,15 +71,15 @@ export default function Block() {
                 transform: "translateY(20px)",
               }}
             />
-            <h1
-              className={`text-5xl md:text-6xl font-bold mb-6 relative transition-all duration-700 delay-200 ${
+            <h2
+              className={`text-4xl md:text-5xl lg:text-6xl font-bold mb-6 relative transition-all duration-700 delay-200 leading-tight ${
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
               }`}
             >
               <span style={{ color: '#ffffff' }}>We Help You Make </span>
               <span style={{ color: '#7a93ff' }}>Real Money</span>
               <span style={{ color: '#ffffff' }}> on TikTok</span>
-            </h1>
+            </h2>
           </div>
 
           {/* Subtitle - Reduced size */}
