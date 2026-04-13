@@ -33,7 +33,7 @@ const ICONS = {
 };
 
 const IMG = {
-  hero: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085824/image-1-hero-cover_g59qxj.png",
+  hero: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776105836/hero-image-34_potkxf.png",
   overview: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085818/image-2-_phase-overview_yvepgj.png",
   photoGrid: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085819/image-3-photo-grid-rule-v1_ohdjei.png",
   backgrounds: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776085826/image-4-background-examples_mzcydf.png",
@@ -430,31 +430,21 @@ const STYLES = `
   .cs-hero-grid {
     position: relative; z-index: 2;
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-    gap: 44px;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 48px;
     align-items: center;
   }
   .cs-hero-inner { position: relative; z-index: 2; min-width: 0; }
-  .cs-hero-visual { position: relative; min-width: 0; }
-  .cs-hero-visual a { display: block; text-decoration: none; }
+  .cs-hero-visual {
+    position: relative; min-width: 0;
+    display: flex; justify-content: center;
+  }
   .cs-hero-visual img {
     width: 100%; height: auto;
-    border-radius: 18px; display: block;
-    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(122, 147, 255, 0.3);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  .cs-hero-visual a:hover img {
-    transform: translateY(-3px) scale(1.01);
-    box-shadow: 0 30px 64px rgba(0, 0, 0, 0.55);
-  }
-  .cs-hero-visual-caption {
-    margin-top: 10px;
-    font-size: 12px;
-    color: var(--cs-blue-4);
-    text-align: center;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    max-width: 420px;
+    border-radius: 20px; display: block;
+    box-shadow: 0 30px 64px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(122, 147, 255, 0.35);
   }
   .cs-hero-eyebrow {
     display: inline-block;
@@ -1024,6 +1014,7 @@ const STYLES = `
     .cs-hero { padding: 40px 28px; }
     .cs-hero-grid { grid-template-columns: 1fr; gap: 28px; }
     .cs-hero-visual { order: -1; }
+    .cs-hero-visual img { max-width: 320px; }
     .cs-intro-card { padding: 28px 22px; }
     .cs-phase-header { padding: 22px 20px; gap: 14px; }
     .cs-phase-num { flex: 0 0 54px; height: 54px; font-size: 24px; border-radius: 14px; }
