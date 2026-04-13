@@ -284,6 +284,8 @@ const STYLES = `
   #itwin-course h4 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cs-blue); }
   #itwin-course p { margin: 0 0 16px; color: var(--cs-ink); }
   #itwin-course a { color: var(--cs-blue); text-decoration: underline; text-underline-offset: 3px; }
+  #itwin-course a.cs-btn-primary,
+  #itwin-course a.cs-btn-secondary { color: white; text-decoration: none; }
   #itwin-course strong { color: var(--cs-navy); }
   #itwin-course ul { margin: 0 0 16px; padding-left: 20px; }
   #itwin-course li { margin-bottom: 6px; color: var(--cs-ink); }
@@ -418,7 +420,35 @@ const STYLES = `
     background: radial-gradient(circle, rgba(94, 123, 246, 0.35) 0%, transparent 70%);
     pointer-events: none;
   }
-  .cs-hero-inner { position: relative; z-index: 2; max-width: 640px; }
+  .cs-hero-grid {
+    position: relative; z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 44px;
+    align-items: center;
+  }
+  .cs-hero-inner { position: relative; z-index: 2; min-width: 0; }
+  .cs-hero-visual { position: relative; min-width: 0; }
+  .cs-hero-visual a { display: block; text-decoration: none; }
+  .cs-hero-visual img {
+    width: 100%; height: auto;
+    border-radius: 18px; display: block;
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(122, 147, 255, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .cs-hero-visual a:hover img {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 30px 64px rgba(0, 0, 0, 0.55);
+  }
+  .cs-hero-visual-caption {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--cs-blue-4);
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
   .cs-hero-eyebrow {
     display: inline-block;
     background: rgba(122, 147, 255, 0.18);
@@ -970,6 +1000,8 @@ const STYLES = `
     .cs-drawer-backdrop { display: block; }
     .cs-drawer-close { display: flex; align-items: center; justify-content: center; }
     .cs-hero { padding: 40px 28px; }
+    .cs-hero-grid { grid-template-columns: 1fr; gap: 28px; }
+    .cs-hero-visual { order: -1; }
     .cs-intro-card { padding: 28px 22px; }
     .cs-phase-header { padding: 22px 20px; gap: 14px; }
     .cs-phase-num { flex: 0 0 54px; height: 54px; font-size: 24px; border-radius: 14px; }
@@ -1420,25 +1452,37 @@ export default function Block() {
       <main className="cs-main">
         {/* ====================== HERO ====================== */}
         <section className="cs-hero" id="hero" ref={registerSection("hero")}>
-          <div className="cs-hero-inner">
-            <div className="cs-hero-eyebrow">Creator Scans · Free Mini Course</div>
-            <h1>How to Build a Realistic AI Twin for TikTok Shop</h1>
-            <p className="cs-hero-sub">
-              The complete guide to building a hyper-realistic digital avatar that sells TikTok Shop products on autopilot — without ever filming another ad. Your phone, a few AI tools, and a system you can repeat for every product.
-            </p>
-            <div className="cs-chips">
-              <span className="cs-chip">5 phases</span>
-              <span className="cs-chip">~15 min read</span>
-              <span className="cs-chip">Free certificate</span>
-              <span className="cs-chip">Downloadable PDF</span>
+          <div className="cs-hero-grid">
+            <div className="cs-hero-inner">
+              <div className="cs-hero-eyebrow">Creator Scans · Free Mini Course</div>
+              <h1>How to Build a Realistic AI Twin for TikTok Shop</h1>
+              <p className="cs-hero-sub">
+                The complete guide to building a hyper-realistic digital avatar that sells TikTok Shop products on autopilot — without ever filming another ad. Your phone, a few AI tools, and a system you can repeat for every product.
+              </p>
+              <div className="cs-chips">
+                <span className="cs-chip">5 phases</span>
+                <span className="cs-chip">~15 min read</span>
+                <span className="cs-chip">Free certificate</span>
+                <span className="cs-chip">Downloadable PDF</span>
+              </div>
+              <div className="cs-hero-ctas">
+                <button className="cs-btn-primary" onClick={() => scrollToSection("phase-1")}>
+                  Start the course →
+                </button>
+                <button className="cs-btn-secondary" onClick={() => scrollToSection("completion")}>
+                  Get the PDF
+                </button>
+              </div>
             </div>
-            <div className="cs-hero-ctas">
-              <button className="cs-btn-primary" onClick={() => scrollToSection("phase-1")}>
-                Start the course →
-              </button>
-              <button className="cs-btn-secondary" onClick={() => scrollToSection("completion")}>
-                Get the PDF
-              </button>
+            <div className="cs-hero-visual">
+              <a
+                href="https://www.creatorscans.com/ai-ugc-for-tiktok-shop-prompt-library"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={IMG.hero} alt="AI Twin vs Real Me — the Creator Scans AI Twin system" />
+              </a>
+              <div className="cs-hero-visual-caption">↑ Grab the free prompt library</div>
             </div>
           </div>
         </section>
@@ -1701,12 +1745,6 @@ export default function Block() {
               The AI blends these together, generating a high-quality image of your exact face naturally holding the product in the setting you described. Expect to run two or three generations to get the positioning right — this is normal.
             </div>
             <GuideImage src={IMG.imageGen} alt="The Fal.ai Nano Banana 2 image generation process" caption="Selfie + product + prompt → Nano Banana 2 → your master image." />
-            <LinkCard
-              icon="🎨"
-              title="Creator Scans Image Prompter"
-              sub="Our free tool for building cleaner, more realistic image prompts."
-              href="https://www.creatorscans.com"
-            />
           </Step>
 
           <Step num="2" title="Apply the BOPA Framework" id="phase-3-step-2" registerSection={registerSection}>
@@ -1926,11 +1964,21 @@ export default function Block() {
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 24 }}>
                   <a
                     className="cs-btn-primary"
-                    href="https://github.com/BeeSidez/creatorscans-softr-code-blocks/blob/main/lead-magnet/itwin/assets/couse-pdf"
+                    href="https://tables-api.softr.io/v1/attachments/46e257fa-5265-4041-bf88-8f96540742a2/tifkUtUrpgKACz/QcxZm1Pe6Bmbgc/wqzC2/aca4394b-3260-407f-910f-0b5dec3bd6c7/7d8cafab-c8c0-4b4d-b74e-d7015d978d5b"
                     target="_blank"
                     rel="noopener noreferrer"
+                    download
                   >
-                    📥 Download your PDF
+                    📥 Download the PDF guide
+                  </a>
+                  <a
+                    className="cs-btn-primary"
+                    href="https://tables-api.softr.io/v1/attachments/46e257fa-5265-4041-bf88-8f96540742a2/tifkUtUrpgKACz/QcxZm1Pe6Bmbgc/hUQjl/5094b2f6-d525-41a6-9d85-4237ca392737/148e605f-abf1-4f4e-92e2-5487408ee164"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                  >
+                    🎓 Download your certificate
                   </a>
                   <a
                     className="cs-btn-secondary"
