@@ -24,7 +24,11 @@ import { ArrowRight, ChevronDown } from "lucide-react";
 // ================================================================
 
 const DEMO_VIDEO_URL = "https://res.cloudinary.com/dmrekfwpj/video/upload/f_auto,q_auto/v1/TODO-replace-with-real-demo-video.mp4";
-const DEMO_VIDEO_POSTER = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104089/engraving_angel-halo-emoji-face-smiling-innocent_yzb9kc.png"; // TODO: replace with video poster frame
+// Poster shown while the video loads (or if it fails). Replace with a still
+// frame from the real video once uploaded. Leaving empty for now — the
+// <video> element's CSS background will show a dark navy box until the
+// real asset is in place.
+const DEMO_VIDEO_POSTER = "";
 
 const TRUSTED_BY_COUNT = "50+";
 const TRUSTED_BY_HEADSHOTS = [
@@ -379,7 +383,7 @@ export default function Block() {
               muted
               loop
               playsInline
-              poster={DEMO_VIDEO_POSTER}
+              {...(DEMO_VIDEO_POSTER ? { poster: DEMO_VIDEO_POSTER } : {})}
               preload="metadata"
             >
               <source src={DEMO_VIDEO_URL} type="video/mp4" />
