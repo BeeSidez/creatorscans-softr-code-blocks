@@ -1,0 +1,13 @@
+Paste all Cloudinary image URLs here with a short label for each, so I know what's what.
+
+Format:
+[label] https://res.cloudinary.com/...
+
+Example:
+[hero] https://res.cloudinary.com/.../itwin-hero.jpg
+[phase1-diagram] https://res.cloudinary.com/.../phase1.png
+[infographic] https://res.cloudinary.com/.../infographic-full.png
+[certificate-bg] https://res.cloudinary.com/.../cert-background.png
+
+Also paste the PDF URL from your Softr Database here once you've uploaded it:
+[pdf] https://...
