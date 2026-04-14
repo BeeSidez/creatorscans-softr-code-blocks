@@ -5,7 +5,7 @@
 
 ## Database: Content Tracking App
 **ID:** `11fb1760-0482-40fb-be23-52537f179e3f`  
-**Tables:** 24
+**Tables:** 25
 
 ### Table directory
 
@@ -33,12 +33,13 @@
 - **Videos** — `dk40PsHx4tsnIi`
 - **Script** — `ct0pnjOpnV7oy8`
 - **Storyboard/Script** — `moJabgXWJZmGeK`
+- **Lesson Completions** — `hsDFWXx7nTzEAn`
 
 ---
 
 ## Users
 **Table ID:** `yZSKdACWobx3KB`  
-**Field count:** 102
+**Field count:** 103
 
 | Field | Type | ID | Options / Notes |
 |-------|------|----|-----------------|
@@ -144,6 +145,7 @@
 | cycle_start | FORMULA | plMBT | `DATEADD({join_date}, {active_months}, 'month')` |
 | cycle_end | FORMULA | 0D4ds | `DATEADD({join_date}, {active_months} + 1, 'month')` |
 | current billing cycle | FORMULA | xO029 | `AND(   {join_date} >= ({cycle_start}),   {join_date} < ({cycle_end}) )` |
+| Lesson Completions | LINKED_RECORD | 70l4m | → Lesson Completions (multi) |
 
 ## Creator Dashboard
 **Table ID:** `pDZdDmwgLdfYqQ`  
@@ -650,7 +652,7 @@
 
 ## Course
 **Table ID:** `FhDJfPPcLJEKHT`  
-**Field count:** 15
+**Field count:** 16
 
 | Field | Type | ID | Options / Notes |
 |-------|------|----|-----------------|
@@ -669,6 +671,7 @@
 | Host | ATTACHMENT | BoJCO | multi |
 | Host name | SINGLE_LINE_TEXT | DqLWF |  |
 | Overview | LONG_TEXT | f32JB |  |
+| Lesson Completions | LINKED_RECORD | HuH3o | → Lesson Completions (multi) |
 
 ## Lessons
 **Table ID:** `gFW6PZeT2JHVCk`  
@@ -692,11 +695,11 @@
 | Lesson | LONG_TEXT | 0wTBQ |  |
 | Explainer | URL | DqSLD |  |
 | Podcast | ATTACHMENT | uU6oS |  |
-| TOC | LONG_TEXT | elIo9 |  |
 | Slides | ATTACHMENT | nINLz |  |
 | Record ID | RECORD_ID | jvoYu |  |
 | Next ID | SINGLE_LINE_TEXT | DESfb |  |
 | Next Lesson | FORMULA | ZKKVg | `"/lessons-details?recordId=" & {Next ID}` |
+| Lesson Completions | LINKED_RECORD | NlCfN | → Lesson Completions (multi) |
 
 ## Events
 **Table ID:** `tfAkfTmkZCkEUr`  
@@ -917,4 +920,16 @@
 | Script Table | LINKED_RECORD | a0meB | → Script (multi) |
 | Screenshot | URL | wRqHF |  |
 | Shot | FORMULA | d6Bn6 | `IF({Screenshot} != "", {Screenshot}, {Visual Action Example}) ` |
+
+## Lesson Completions
+**Table ID:** `hsDFWXx7nTzEAn`  
+**Field count:** 5
+
+| Field | Type | ID | Options / Notes |
+|-------|------|----|-----------------|
+| Completion | SINGLE_LINE_TEXT | sCtys |  |
+| User | LINKED_RECORD | oie3o | → Users |
+| Lesson | LINKED_RECORD | ZpVkx | → Lessons |
+| Course | LINKED_RECORD | sUNbZ | → Course |
+| Completed At | DATETIME | pigYM |  |
 
