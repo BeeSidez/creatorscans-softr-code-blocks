@@ -17,446 +17,46 @@ import {
 // =====================================================================
 // TikTok Academy — Lesson page (v3)
 // Source tab: Lessons table (gFW6PZeT2JHVCk) in Content Tracking App DB
-// No Actions tab wiring needed — completion is stored client-side only
-// for now; server-side persistence to Lesson Completions will come from
-// a separate block/webhook path.
+// No Actions tab wiring needed — completion persists to localStorage.
 // =====================================================================
 
 const lessonFields = q.select({
-  name: "4e8yM",            // SINGLE_LINE_TEXT — Name
-  lessonNumber: "42btG",    // SINGLE_LINE_TEXT — Lesson Number ("Lesson 1")
-  category: "jXSnc",        // SELECT — SHOP/LIVE/ORGANIC/PLATFORM
-  difficulty: "5khor",      // SELECT
-  description: "ck1JJ",     // LONG_TEXT — hero description
-  duration: "VB4oU",        // SINGLE_LINE_TEXT — "30:00"
-  body: "0wTBQ",            // LONG_TEXT — lesson body HTML (whitelist format)
-  explainer: "DqSLD",       // URL — Canva video embed URL
-  podcast: "uU6oS",         // ATTACHMENT — audio file
-  slides: "nINLz",          // ATTACHMENT — slide deck download
+  name: "4e8yM",
+  lessonNumber: "42btG",
+  category: "jXSnc",
+  difficulty: "5khor",
+  description: "ck1JJ",
+  duration: "VB4oU",
+  body: "0wTBQ",
+  explainer: "DqSLD",
+  podcast: "uU6oS",
+  slides: "nINLz",
 });
 
 // =====================================================================
-// Scoped CSS — everything lives under #tta-lesson so nothing leaks.
+// Brand palette — matches lead-magnet/itwin/blocks/itwin-course.html
 // =====================================================================
-const STYLES = `
-  #tta-lesson {
-    --cs-blue: #294ff6;
-    --cs-blue-2: #4466f8;
-    --cs-blue-3: #5e7bf6;
-    --cs-blue-4: #7a93ff;
-    --cs-navy: #000f4d;
-    --cs-navy-2: #001364;
-    --cs-navy-3: #152237;
-    --cs-light-1: #f8fbff;
-    --cs-light-2: #eef4fd;
-    --cs-light-3: #fafbff;
-    --cs-lavender: #d8d8ff;
-    --cs-red: #fe2c55;
-    --cs-green: #34d399;
-    --cs-ink: #1c274c;
-    --cs-ink-soft: #5a6690;
+const C = {
+  blue: "#294ff6",
+  blue2: "#4466f8",
+  blue3: "#5e7bf6",
+  blue4: "#7a93ff",
+  navy: "#000f4d",
+  navy2: "#001364",
+  navy3: "#152237",
+  light1: "#f8fbff",
+  light2: "#eef4fd",
+  light3: "#fafbff",
+  lavender: "#d8d8ff",
+  red: "#fe2c55",
+  green: "#34d399",
+  ink: "#1c274c",
+  inkSoft: "#5a6690",
+  white: "#ffffff",
+};
 
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 24px 16px 60px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    font-size: 16px;
-    line-height: 1.65;
-    color: var(--cs-navy);
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 40px;
-  }
-  #tta-lesson *, #tta-lesson *::before, #tta-lesson *::after { box-sizing: border-box; }
-  #tta-lesson h1, #tta-lesson h2, #tta-lesson h3, #tta-lesson h4 {
-    color: var(--cs-navy);
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-    margin: 0 0 14px;
-    font-weight: 800;
-  }
-  #tta-lesson p { margin: 0 0 16px; color: var(--cs-ink); }
-  #tta-lesson a { color: var(--cs-blue); text-decoration: underline; text-underline-offset: 3px; }
-  #tta-lesson strong { color: var(--cs-navy); }
-
-  /* ============ SIDEBAR ============ */
-  #tta-lesson .tta-sidebar {
-    position: sticky;
-    top: 24px;
-    align-self: start;
-    max-height: calc(100vh - 48px);
-    overflow-y: auto;
-    background: white;
-    border: 1px solid var(--cs-light-2);
-    border-radius: 20px;
-    padding: 26px 22px;
-    box-shadow: 0 8px 28px rgba(0, 15, 77, 0.06);
-    scrollbar-width: thin;
-    scrollbar-color: var(--cs-lavender) transparent;
-  }
-  #tta-lesson .tta-sidebar::-webkit-scrollbar { width: 6px; }
-  #tta-lesson .tta-sidebar::-webkit-scrollbar-thumb { background: var(--cs-lavender); border-radius: 10px; }
-  #tta-lesson .tta-side-eyebrow {
-    font-size: 10px; font-weight: 800; text-transform: uppercase;
-    letter-spacing: 0.14em; color: var(--cs-blue); margin-bottom: 16px;
-  }
-  #tta-lesson .tta-ring-wrap {
-    display: flex; align-items: center; gap: 16px;
-    margin-bottom: 22px; padding-bottom: 22px;
-    border-bottom: 1px solid var(--cs-light-2);
-  }
-  #tta-lesson .tta-ring { position: relative; width: 84px; height: 84px; flex-shrink: 0; }
-  #tta-lesson .tta-ring svg { transform: rotate(-90deg); }
-  #tta-lesson .tta-ring-bg { stroke: var(--cs-light-2); }
-  #tta-lesson .tta-ring-fill { stroke: var(--cs-blue); transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-  #tta-lesson .tta-ring-label {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 900; color: var(--cs-navy);
-  }
-  #tta-lesson .tta-ring-meta { font-size: 13px; color: var(--cs-ink-soft); line-height: 1.4; }
-  #tta-lesson .tta-ring-meta strong { color: var(--cs-navy); display: block; font-size: 14px; margin-bottom: 2px; }
-
-  #tta-lesson .tta-side-btn {
-    display: flex; align-items: center; gap: 10px;
-    width: 100%; text-align: left;
-    background: var(--cs-light-1);
-    border: 1px solid var(--cs-light-2);
-    padding: 12px 14px; border-radius: 12px;
-    font-size: 14px; font-weight: 700; color: var(--cs-navy);
-    cursor: pointer; font-family: inherit;
-    margin-bottom: 10px; text-decoration: none;
-    transition: all 0.2s ease;
-  }
-  #tta-lesson .tta-side-btn:hover { background: var(--cs-light-2); transform: translateY(-1px); }
-  #tta-lesson .tta-side-btn svg { color: var(--cs-blue); flex-shrink: 0; }
-  #tta-lesson .tta-side-btn.primary {
-    background: var(--cs-blue); border-color: var(--cs-blue); color: white;
-    box-shadow: 0 8px 20px rgba(41, 79, 246, 0.35);
-  }
-  #tta-lesson .tta-side-btn.primary:hover { background: var(--cs-blue-2); }
-  #tta-lesson .tta-side-btn.primary svg { color: white; }
-  #tta-lesson .tta-side-btn.success {
-    background: rgba(52, 211, 153, 0.12);
-    border-color: rgba(52, 211, 153, 0.4);
-    color: #0f9e6e;
-  }
-  #tta-lesson .tta-side-btn.success svg { color: #0f9e6e; }
-  #tta-lesson .tta-side-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-  #tta-lesson .tta-side-section {
-    margin-top: 22px; padding-top: 22px;
-    border-top: 1px solid var(--cs-light-2);
-  }
-
-  /* ============ MAIN ============ */
-  #tta-lesson .tta-main { min-width: 0; }
-
-  /* ============ HERO ============ */
-  #tta-lesson .tta-hero {
-    position: relative;
-    background: linear-gradient(135deg, #152237 0%, #000f4d 60%, #1a2d6b 100%);
-    border-radius: 24px;
-    padding: 56px 48px;
-    color: white;
-    margin-bottom: 32px;
-    overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0, 15, 77, 0.22);
-  }
-  #tta-lesson .tta-hero::before {
-    content: ""; position: absolute; top: -60%; right: -20%;
-    width: 600px; height: 600px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(94, 123, 246, 0.35) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  #tta-lesson .tta-hero-inner { position: relative; z-index: 2; max-width: 700px; }
-  #tta-lesson .tta-hero-eyebrow {
-    display: inline-block;
-    background: rgba(122, 147, 255, 0.18);
-    color: var(--cs-blue-4);
-    border: 1px solid rgba(122, 147, 255, 0.3);
-    font-size: 12px; font-weight: 800;
-    text-transform: uppercase; letter-spacing: 0.14em;
-    padding: 7px 14px; border-radius: 100px;
-    margin-bottom: 22px;
-  }
-  #tta-lesson .tta-hero h1 {
-    color: white; margin-bottom: 18px;
-    font-size: clamp(30px, 4.4vw, 46px);
-  }
-  #tta-lesson .tta-hero-sub {
-    font-size: 17px; line-height: 1.6;
-    color: #c3cfe8; margin-bottom: 26px; max-width: 620px;
-  }
-  #tta-lesson .tta-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
-  #tta-lesson .tta-chip {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(122, 147, 255, 0.3);
-    color: #dbe4ff; font-size: 12px; font-weight: 700;
-    padding: 7px 14px; border-radius: 100px;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-  #tta-lesson .tta-chip svg { width: 13px; height: 13px; }
-  #tta-lesson .tta-hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
-  #tta-lesson .tta-btn-primary {
-    background: var(--cs-blue); color: white; border: none;
-    padding: 15px 26px; border-radius: 14px;
-    font-size: 15px; font-weight: 800;
-    cursor: pointer; font-family: inherit;
-    box-shadow: 0 10px 28px rgba(41, 79, 246, 0.45);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    display: inline-flex; align-items: center; gap: 8px;
-  }
-  #tta-lesson .tta-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(41, 79, 246, 0.55); }
-  #tta-lesson .tta-btn-secondary {
-    background: rgba(255, 255, 255, 0.08);
-    color: white;
-    border: 1px solid rgba(122, 147, 255, 0.4);
-    padding: 15px 24px; border-radius: 14px;
-    font-size: 15px; font-weight: 700;
-    cursor: pointer; font-family: inherit;
-    transition: all 0.2s ease;
-    display: inline-flex; align-items: center; gap: 8px;
-  }
-  #tta-lesson .tta-btn-secondary:hover { background: rgba(122, 147, 255, 0.2); }
-
-  /* ============ RESUME BANNER ============ */
-  #tta-lesson .tta-resume {
-    display: flex; align-items: center; gap: 16px;
-    padding: 18px 22px; margin-bottom: 28px;
-    background: linear-gradient(135deg, #eef4fd 0%, #f8fbff 100%);
-    border: 1px solid rgba(41, 79, 246, 0.2);
-    border-radius: 16px;
-  }
-  #tta-lesson .tta-resume-icon {
-    flex: 0 0 44px; height: 44px; border-radius: 12px;
-    background: var(--cs-blue); color: white;
-    display: flex; align-items: center; justify-content: center;
-  }
-  #tta-lesson .tta-resume-body { flex: 1; font-size: 14px; color: var(--cs-ink); }
-  #tta-lesson .tta-resume-body strong { color: var(--cs-navy); display: block; margin-bottom: 2px; }
-  #tta-lesson .tta-resume-btn {
-    background: var(--cs-blue); color: white; border: none;
-    padding: 10px 18px; border-radius: 10px;
-    font-size: 13px; font-weight: 800;
-    cursor: pointer; font-family: inherit;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-
-  /* ============ MEDIA CARDS (video + podcast) ============ */
-  #tta-lesson .tta-media-grid {
-    display: grid; grid-template-columns: 1fr; gap: 18px;
-    margin-bottom: 36px;
-  }
-  #tta-lesson .tta-media-card {
-    background: white;
-    border: 1px solid var(--cs-light-2);
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 6px 20px rgba(0, 15, 77, 0.05);
-  }
-  #tta-lesson .tta-media-head {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-  }
-  #tta-lesson .tta-media-tile {
-    flex: 0 0 42px; height: 42px; border-radius: 12px;
-    background: var(--cs-light-2); color: var(--cs-blue);
-    display: flex; align-items: center; justify-content: center;
-  }
-  #tta-lesson .tta-media-head-text h3 {
-    font-size: 16px; margin: 0; color: var(--cs-navy);
-  }
-  #tta-lesson .tta-media-head-text p {
-    font-size: 13px; margin: 2px 0 0; color: var(--cs-ink-soft);
-  }
-  #tta-lesson .tta-video-frame {
-    position: relative; width: 100%;
-    padding-top: 56.25%;
-    border-radius: 14px; overflow: hidden;
-    background: var(--cs-light-2);
-  }
-  #tta-lesson .tta-video-frame iframe {
-    position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
-  }
-
-  /* podcast player row */
-  #tta-lesson .tta-pod-row {
-    display: flex; align-items: center; gap: 16px;
-  }
-  #tta-lesson .tta-pod-play {
-    flex: 0 0 52px; height: 52px; border-radius: 50%;
-    background: var(--cs-blue); color: white; border: none;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; box-shadow: 0 8px 20px rgba(41, 79, 246, 0.35);
-  }
-  #tta-lesson .tta-pod-track { flex: 1; min-width: 0; }
-  #tta-lesson .tta-pod-scrub {
-    height: 6px; background: var(--cs-light-2);
-    border-radius: 100px; overflow: hidden; cursor: pointer; margin-bottom: 6px;
-  }
-  #tta-lesson .tta-pod-scrub-fill { height: 100%; background: var(--cs-blue); border-radius: 100px; }
-  #tta-lesson .tta-pod-time {
-    display: flex; justify-content: space-between;
-    font-size: 12px; color: var(--cs-ink-soft);
-  }
-
-  /* ============ LESSON BODY (.lesson-prose whitelist) ============ */
-  #tta-lesson .lesson-prose { color: var(--cs-ink); }
-  #tta-lesson .lesson-prose h2 {
-    font-size: clamp(22px, 2.6vw, 30px);
-    color: var(--cs-navy);
-    margin: 44px 0 18px;
-    padding-top: 8px;
-    scroll-margin-top: 24px;
-    position: relative;
-  }
-  #tta-lesson .lesson-prose h2::before {
-    content: "";
-    display: block;
-    width: 46px; height: 4px;
-    background: var(--cs-blue);
-    border-radius: 100px;
-    margin-bottom: 12px;
-  }
-  #tta-lesson .lesson-prose > h2:first-child { margin-top: 0; }
-  #tta-lesson .lesson-prose p { font-size: 16px; line-height: 1.7; margin: 0 0 16px; }
-  #tta-lesson .lesson-prose ul, #tta-lesson .lesson-prose ol {
-    margin: 0 0 20px; padding-left: 22px;
-  }
-  #tta-lesson .lesson-prose li { margin-bottom: 8px; color: var(--cs-ink); line-height: 1.65; }
-  #tta-lesson .lesson-prose a { color: var(--cs-blue); }
-
-  #tta-lesson .lesson-prose img.lesson-slide {
-    width: 100%; height: auto;
-    border-radius: 16px; display: block;
-    margin: 16px 0 22px;
-    box-shadow: 0 14px 36px rgba(0, 15, 77, 0.14);
-    background: var(--cs-light-2);
-    border: 1px solid var(--cs-light-2);
-  }
-
-  #tta-lesson .lesson-prose .callout {
-    background: linear-gradient(135deg, #eef4fd 0%, #f8fbff 100%);
-    border-left: 4px solid var(--cs-blue);
-    border-radius: 14px;
-    padding: 18px 22px;
-    margin: 22px 0;
-  }
-  #tta-lesson .lesson-prose .callout p { margin: 0 0 10px; color: var(--cs-navy); }
-  #tta-lesson .lesson-prose .callout p:last-child { margin-bottom: 0; }
-  #tta-lesson .lesson-prose .callout strong { color: var(--cs-blue); }
-
-  /* Quiz — re-rendered as dark gradient card on enhance */
-  #tta-lesson .lesson-prose .quiz {
-    background: linear-gradient(135deg, #152237 0%, #000f4d 100%);
-    color: white;
-    border-radius: 22px;
-    padding: 32px 30px;
-    margin: 32px 0;
-    box-shadow: 0 16px 40px rgba(0, 15, 77, 0.28);
-    position: relative;
-    overflow: hidden;
-  }
-  #tta-lesson .lesson-prose .quiz::before {
-    content: ""; position: absolute;
-    top: -50%; right: -20%; width: 420px; height: 420px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(94, 123, 246, 0.22) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  #tta-lesson .lesson-prose .quiz .tta-q-eyebrow {
-    position: relative; z-index: 2;
-    display: inline-block;
-    background: rgba(122, 147, 255, 0.2);
-    color: var(--cs-blue-4);
-    border: 1px solid rgba(122, 147, 255, 0.3);
-    font-size: 11px; font-weight: 800;
-    text-transform: uppercase; letter-spacing: 0.14em;
-    padding: 6px 12px; border-radius: 100px;
-    margin-bottom: 14px;
-  }
-  #tta-lesson .lesson-prose .quiz .tta-q-question {
-    position: relative; z-index: 2;
-    font-size: 21px; font-weight: 800; line-height: 1.4;
-    margin: 0 0 22px; color: white;
-  }
-  #tta-lesson .lesson-prose .quiz .tta-q-options { position: relative; z-index: 2; }
-  #tta-lesson .lesson-prose .quiz .tta-q-opt {
-    display: block; width: 100%; text-align: left;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(122, 147, 255, 0.25);
-    color: #e5ecff; font-size: 15px; font-weight: 600;
-    padding: 15px 18px; margin-bottom: 10px; border-radius: 13px;
-    cursor: pointer; transition: all 0.25s ease;
-    font-family: inherit;
-  }
-  #tta-lesson .lesson-prose .quiz .tta-q-opt:hover:not(:disabled) {
-    background: rgba(122, 147, 255, 0.18);
-    border-color: var(--cs-blue-4);
-    transform: translateY(-1px);
-  }
-  #tta-lesson .lesson-prose .quiz .tta-q-opt.correct {
-    background: rgba(52, 211, 153, 0.22);
-    border-color: var(--cs-green);
-    color: #d1fae5;
-    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
-  }
-  #tta-lesson .lesson-prose .quiz .tta-q-opt.incorrect {
-    background: rgba(254, 44, 85, 0.18);
-    border-color: var(--cs-red);
-    color: #ffe3ea;
-  }
-  #tta-lesson .lesson-prose .quiz .tta-q-opt:disabled { cursor: default; }
-  #tta-lesson .lesson-prose .quiz .tta-q-feedback {
-    position: relative; z-index: 2;
-    margin-top: 16px; padding: 13px 16px;
-    border-radius: 12px;
-    font-size: 14px; font-weight: 600;
-  }
-  #tta-lesson .lesson-prose .quiz .tta-q-feedback.correct {
-    background: rgba(52, 211, 153, 0.2); color: #d1fae5;
-    border: 1px solid rgba(52, 211, 153, 0.35);
-  }
-  #tta-lesson .lesson-prose .quiz .tta-q-feedback.incorrect {
-    background: rgba(254, 44, 85, 0.18); color: #ffe3ea;
-    border: 1px solid rgba(254, 44, 85, 0.35);
-  }
-
-  /* ============ COMPLETE CARD ============ */
-  #tta-lesson .tta-complete {
-    margin-top: 52px; padding: 36px 34px;
-    background: linear-gradient(135deg, #eef4fd 0%, #f8fbff 60%, #d8d8ff 100%);
-    border: 1px solid rgba(41, 79, 246, 0.2);
-    border-radius: 22px;
-    text-align: center;
-  }
-  #tta-lesson .tta-complete h3 { font-size: 24px; margin-bottom: 10px; }
-  #tta-lesson .tta-complete p { margin-bottom: 22px; color: var(--cs-ink); }
-  #tta-lesson .tta-complete .tta-btn-primary { box-shadow: 0 12px 32px rgba(41, 79, 246, 0.45); }
-
-  /* ============ LOADING / EMPTY ============ */
-  #tta-lesson .tta-loading, #tta-lesson .tta-error {
-    grid-column: 1 / -1;
-    min-height: 420px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--cs-ink-soft); font-size: 15px;
-  }
-
-  /* ============ RESPONSIVE ============ */
-  @media (max-width: 960px) {
-    #tta-lesson {
-      grid-template-columns: 1fr;
-      gap: 24px;
-      padding: 16px 14px 48px;
-    }
-    #tta-lesson .tta-sidebar {
-      position: static; max-height: none;
-      order: 2;
-    }
-    #tta-lesson .tta-main { order: 1; }
-    #tta-lesson .tta-hero { padding: 40px 28px; }
-    #tta-lesson .tta-hero h1 { font-size: 30px; }
-  }
-`;
+const FONT_STACK =
+  '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 // =====================================================================
 // Helpers
@@ -476,11 +76,18 @@ function firstAttachment(val) {
   return null;
 }
 
-// Convert a Canva edit URL to an embed URL if needed.
+// Softr SELECT fields can come back as an object {id, label}, an array of
+// those, or a plain string — normalise to a readable label.
+function selectLabel(val) {
+  if (val == null) return "";
+  if (Array.isArray(val)) return selectLabel(val[0]);
+  if (typeof val === "object") return val.label || val.name || "";
+  return String(val);
+}
+
 function normaliseCanvaUrl(url) {
   if (!url) return null;
   if (url.includes("/embed")) return url;
-  // https://www.canva.com/design/XXXX/YYYY/view  →  .../view?embed
   if (url.includes("canva.com/design/")) {
     return url.includes("?") ? `${url}&embed` : `${url}?embed`;
   }
@@ -488,33 +95,750 @@ function normaliseCanvaUrl(url) {
 }
 
 // =====================================================================
-// Sub-components
+// Style objects
+// =====================================================================
+
+const S = {
+  root: (mobile) => ({
+    maxWidth: 1280,
+    margin: "0 auto",
+    padding: mobile ? "16px 14px 48px" : "24px 16px 60px",
+    fontFamily: FONT_STACK,
+    fontSize: 16,
+    lineHeight: 1.65,
+    color: C.navy,
+    display: "grid",
+    gridTemplateColumns: mobile ? "1fr" : "280px 1fr",
+    gap: mobile ? 24 : 40,
+    boxSizing: "border-box",
+  }),
+
+  // ---------- SIDEBAR ----------
+  sidebar: (mobile) => ({
+    position: mobile ? "static" : "sticky",
+    top: 24,
+    alignSelf: "start",
+    maxHeight: mobile ? "none" : "calc(100vh - 48px)",
+    overflowY: "auto",
+    background: C.white,
+    border: `1px solid ${C.light2}`,
+    borderRadius: 20,
+    padding: "26px 22px",
+    boxShadow: "0 8px 28px rgba(0, 15, 77, 0.06)",
+    order: mobile ? 2 : 0,
+  }),
+  sideEyebrow: {
+    fontSize: 10,
+    fontWeight: 800,
+    textTransform: "uppercase",
+    letterSpacing: "0.14em",
+    color: C.blue,
+    marginBottom: 16,
+  },
+  ringWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+    marginBottom: 22,
+    paddingBottom: 22,
+    borderBottom: `1px solid ${C.light2}`,
+  },
+  ringBox: { position: "relative", width: 84, height: 84, flexShrink: 0 },
+  ringLabel: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 18,
+    fontWeight: 900,
+    color: C.navy,
+  },
+  ringMeta: { fontSize: 13, color: C.inkSoft, lineHeight: 1.4 },
+  ringMetaStrong: {
+    color: C.navy,
+    display: "block",
+    fontSize: 14,
+    marginBottom: 2,
+    fontWeight: 800,
+  },
+
+  navSection: {
+    fontSize: 10,
+    fontWeight: 800,
+    textTransform: "uppercase",
+    letterSpacing: "0.14em",
+    color: C.inkSoft,
+    margin: "18px 0 10px 4px",
+  },
+  navItem: (active, visited) => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    width: "100%",
+    textAlign: "left",
+    background: active ? C.light2 : "transparent",
+    border: "none",
+    padding: "9px 10px",
+    borderRadius: 8,
+    fontSize: 13,
+    fontWeight: active ? 800 : 600,
+    color: active ? C.navy : visited ? C.navy : C.inkSoft,
+    cursor: "pointer",
+    fontFamily: FONT_STACK,
+    marginBottom: 2,
+    transition: "background 0.2s ease",
+  }),
+  navTile: (active, visited) => ({
+    flex: "0 0 22px",
+    height: 22,
+    borderRadius: 6,
+    background: active ? C.blue : visited ? C.green : C.light2,
+    color: active || visited ? C.white : C.inkSoft,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 10,
+    fontWeight: 900,
+    flexShrink: 0,
+  }),
+  navText: {
+    flex: 1,
+    minWidth: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+
+  sideBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    width: "100%",
+    textAlign: "left",
+    background: C.light1,
+    border: `1px solid ${C.light2}`,
+    padding: "11px 14px",
+    borderRadius: 12,
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.navy,
+    cursor: "pointer",
+    fontFamily: FONT_STACK,
+    marginTop: 8,
+    textDecoration: "none",
+  },
+  sideBtnPrimary: {
+    background: C.blue,
+    borderColor: C.blue,
+    color: C.white,
+    boxShadow: "0 8px 20px rgba(41, 79, 246, 0.35)",
+  },
+  sideBtnSuccess: {
+    background: "rgba(52, 211, 153, 0.12)",
+    borderColor: "rgba(52, 211, 153, 0.4)",
+    color: "#0f9e6e",
+  },
+  sideDivider: {
+    marginTop: 22,
+    paddingTop: 22,
+    borderTop: `1px solid ${C.light2}`,
+  },
+
+  // ---------- MAIN ----------
+  main: { minWidth: 0, order: 1 },
+
+  // ---------- HERO ----------
+  hero: (mobile) => ({
+    position: "relative",
+    background:
+      "linear-gradient(135deg, #152237 0%, #000f4d 60%, #1a2d6b 100%)",
+    borderRadius: 24,
+    padding: mobile ? "40px 28px" : "56px 48px",
+    color: C.white,
+    marginBottom: 32,
+    overflow: "hidden",
+    boxShadow: "0 20px 50px rgba(0, 15, 77, 0.22)",
+  }),
+  heroGlow: {
+    content: '""',
+    position: "absolute",
+    top: "-60%",
+    right: "-20%",
+    width: 600,
+    height: 600,
+    borderRadius: "50%",
+    background:
+      "radial-gradient(circle, rgba(94, 123, 246, 0.35) 0%, transparent 70%)",
+    pointerEvents: "none",
+  },
+  heroInner: { position: "relative", zIndex: 2, maxWidth: 700 },
+  heroEyebrow: {
+    display: "inline-block",
+    background: "rgba(122, 147, 255, 0.18)",
+    color: C.blue4,
+    border: "1px solid rgba(122, 147, 255, 0.3)",
+    fontSize: 12,
+    fontWeight: 800,
+    textTransform: "uppercase",
+    letterSpacing: "0.14em",
+    padding: "7px 14px",
+    borderRadius: 100,
+    marginBottom: 22,
+  },
+  heroTitle: (mobile) => ({
+    color: C.white,
+    margin: "0 0 18px",
+    fontSize: mobile ? 30 : 44,
+    fontWeight: 800,
+    letterSpacing: "-0.02em",
+    lineHeight: 1.15,
+  }),
+  heroSub: {
+    fontSize: 17,
+    lineHeight: 1.6,
+    color: "#c3cfe8",
+    margin: "0 0 26px",
+    maxWidth: 620,
+  },
+  chips: {
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+    marginBottom: 28,
+  },
+  chip: {
+    background: "rgba(255, 255, 255, 0.08)",
+    border: "1px solid rgba(122, 147, 255, 0.3)",
+    color: "#dbe4ff",
+    fontSize: 12,
+    fontWeight: 700,
+    padding: "7px 14px",
+    borderRadius: 100,
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+  },
+  heroCtas: { display: "flex", gap: 12, flexWrap: "wrap" },
+  btnPrimary: {
+    background: C.blue,
+    color: C.white,
+    border: "none",
+    padding: "15px 26px",
+    borderRadius: 14,
+    fontSize: 15,
+    fontWeight: 800,
+    cursor: "pointer",
+    fontFamily: FONT_STACK,
+    boxShadow: "0 10px 28px rgba(41, 79, 246, 0.45)",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    textDecoration: "none",
+  },
+  btnSecondary: {
+    background: "rgba(255, 255, 255, 0.08)",
+    color: C.white,
+    border: "1px solid rgba(122, 147, 255, 0.4)",
+    padding: "15px 24px",
+    borderRadius: 14,
+    fontSize: 15,
+    fontWeight: 700,
+    cursor: "pointer",
+    fontFamily: FONT_STACK,
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    textDecoration: "none",
+  },
+
+  // ---------- RESUME BANNER ----------
+  resume: {
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+    padding: "18px 22px",
+    marginBottom: 28,
+    background: "linear-gradient(135deg, #eef4fd 0%, #f8fbff 100%)",
+    border: "1px solid rgba(41, 79, 246, 0.2)",
+    borderRadius: 16,
+  },
+  resumeIcon: {
+    flex: "0 0 44px",
+    height: 44,
+    borderRadius: 12,
+    background: C.blue,
+    color: C.white,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  resumeBody: { flex: 1, fontSize: 14, color: C.ink },
+  resumeStrong: { color: C.navy, display: "block", marginBottom: 2, fontWeight: 800 },
+  resumeBtn: {
+    background: C.blue,
+    color: C.white,
+    border: "none",
+    padding: "10px 18px",
+    borderRadius: 10,
+    fontSize: 13,
+    fontWeight: 800,
+    cursor: "pointer",
+    fontFamily: FONT_STACK,
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  // ---------- MEDIA CARDS ----------
+  mediaGrid: { display: "grid", gridTemplateColumns: "1fr", gap: 18, marginBottom: 36 },
+  mediaCard: {
+    background: C.white,
+    border: `1px solid ${C.light2}`,
+    borderRadius: 20,
+    padding: 24,
+    boxShadow: "0 6px 20px rgba(0, 15, 77, 0.05)",
+  },
+  mediaHead: { display: "flex", alignItems: "center", gap: 12, marginBottom: 16 },
+  mediaTile: {
+    flex: "0 0 42px",
+    height: 42,
+    borderRadius: 12,
+    background: C.light2,
+    color: C.blue,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mediaHeadTitle: { fontSize: 16, margin: 0, color: C.navy, fontWeight: 800 },
+  mediaHeadSub: { fontSize: 13, margin: "2px 0 0", color: C.inkSoft },
+  videoFrame: {
+    position: "relative",
+    width: "100%",
+    paddingTop: "56.25%",
+    borderRadius: 14,
+    overflow: "hidden",
+    background: C.light2,
+  },
+  videoIframe: {
+    position: "absolute",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    border: 0,
+  },
+
+  // Podcast
+  podRow: { display: "flex", alignItems: "center", gap: 16 },
+  podPlay: {
+    flex: "0 0 52px",
+    height: 52,
+    borderRadius: "50%",
+    background: C.blue,
+    color: C.white,
+    border: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    boxShadow: "0 8px 20px rgba(41, 79, 246, 0.35)",
+  },
+  podTrack: { flex: 1, minWidth: 0 },
+  podScrub: {
+    height: 6,
+    background: C.light2,
+    borderRadius: 100,
+    overflow: "hidden",
+    cursor: "pointer",
+    marginBottom: 6,
+  },
+  podScrubFill: { height: "100%", background: C.blue, borderRadius: 100 },
+  podTime: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: 12,
+    color: C.inkSoft,
+  },
+
+  // ---------- LESSON BODY ----------
+  sectionH2: {
+    fontSize: 30,
+    color: C.navy,
+    margin: "44px 0 16px",
+    paddingTop: 8,
+    scrollMarginTop: 24,
+    fontWeight: 800,
+    letterSpacing: "-0.02em",
+    lineHeight: 1.2,
+  },
+  sectionBar: {
+    display: "block",
+    width: 46,
+    height: 4,
+    background: C.blue,
+    borderRadius: 100,
+    marginBottom: 14,
+  },
+  p: {
+    fontSize: 16,
+    lineHeight: 1.75,
+    margin: "0 0 16px",
+    color: C.ink,
+  },
+  strong: { color: C.navy, fontWeight: 700 },
+  link: { color: C.blue, textDecoration: "underline", textUnderlineOffset: 3 },
+  ul: { margin: "0 0 20px", paddingLeft: 22 },
+  li: { marginBottom: 8, color: C.ink, lineHeight: 1.65 },
+  slide: {
+    width: "100%",
+    height: "auto",
+    borderRadius: 16,
+    display: "block",
+    margin: "16px 0 22px",
+    boxShadow: "0 14px 36px rgba(0, 15, 77, 0.14)",
+    background: C.light2,
+    border: `1px solid ${C.light2}`,
+  },
+  callout: {
+    background: "linear-gradient(135deg, #eef4fd 0%, #f8fbff 100%)",
+    borderLeft: `4px solid ${C.blue}`,
+    borderRadius: 14,
+    padding: "18px 22px",
+    margin: "22px 0",
+  },
+  calloutP: { margin: "0 0 10px", color: C.navy, fontSize: 16, lineHeight: 1.7 },
+
+  // Quiz
+  quiz: {
+    background: "linear-gradient(135deg, #152237 0%, #000f4d 100%)",
+    color: C.white,
+    borderRadius: 22,
+    padding: "32px 30px",
+    margin: "32px 0",
+    boxShadow: "0 16px 40px rgba(0, 15, 77, 0.28)",
+    position: "relative",
+    overflow: "hidden",
+  },
+  quizGlow: {
+    position: "absolute",
+    top: "-50%",
+    right: "-20%",
+    width: 420,
+    height: 420,
+    borderRadius: "50%",
+    background:
+      "radial-gradient(circle, rgba(94, 123, 246, 0.22) 0%, transparent 70%)",
+    pointerEvents: "none",
+  },
+  quizEyebrow: {
+    position: "relative",
+    zIndex: 2,
+    display: "inline-block",
+    background: "rgba(122, 147, 255, 0.2)",
+    color: C.blue4,
+    border: "1px solid rgba(122, 147, 255, 0.3)",
+    fontSize: 11,
+    fontWeight: 800,
+    textTransform: "uppercase",
+    letterSpacing: "0.14em",
+    padding: "6px 12px",
+    borderRadius: 100,
+    marginBottom: 14,
+  },
+  quizQuestion: {
+    position: "relative",
+    zIndex: 2,
+    fontSize: 21,
+    fontWeight: 800,
+    lineHeight: 1.4,
+    margin: "0 0 22px",
+    color: C.white,
+  },
+  quizOpts: { position: "relative", zIndex: 2 },
+  quizOpt: (state) => ({
+    display: "block",
+    width: "100%",
+    textAlign: "left",
+    background:
+      state === "correct"
+        ? "rgba(52, 211, 153, 0.22)"
+        : state === "wrong"
+        ? "rgba(254, 44, 85, 0.18)"
+        : "rgba(255, 255, 255, 0.06)",
+    border:
+      state === "correct"
+        ? `1px solid ${C.green}`
+        : state === "wrong"
+        ? `1px solid ${C.red}`
+        : "1px solid rgba(122, 147, 255, 0.25)",
+    color:
+      state === "correct" ? "#d1fae5" : state === "wrong" ? "#ffe3ea" : "#e5ecff",
+    fontSize: 15,
+    fontWeight: 600,
+    padding: "15px 18px",
+    marginBottom: 10,
+    borderRadius: 13,
+    cursor: state ? "default" : "pointer",
+    fontFamily: FONT_STACK,
+    boxShadow:
+      state === "correct" ? "0 0 0 3px rgba(52, 211, 153, 0.18)" : "none",
+  }),
+  quizFeedback: (correct) => ({
+    position: "relative",
+    zIndex: 2,
+    marginTop: 16,
+    padding: "13px 16px",
+    borderRadius: 12,
+    fontSize: 14,
+    fontWeight: 600,
+    background: correct ? "rgba(52, 211, 153, 0.2)" : "rgba(254, 44, 85, 0.18)",
+    color: correct ? "#d1fae5" : "#ffe3ea",
+    border: correct
+      ? "1px solid rgba(52, 211, 153, 0.35)"
+      : "1px solid rgba(254, 44, 85, 0.35)",
+  }),
+
+  // Complete card
+  completeCard: {
+    marginTop: 52,
+    padding: "36px 34px",
+    background:
+      "linear-gradient(135deg, #eef4fd 0%, #f8fbff 60%, #d8d8ff 100%)",
+    border: "1px solid rgba(41, 79, 246, 0.2)",
+    borderRadius: 22,
+    textAlign: "center",
+  },
+  completeTitle: {
+    fontSize: 24,
+    margin: "0 0 10px",
+    color: C.navy,
+    fontWeight: 800,
+    letterSpacing: "-0.02em",
+  },
+  completeSub: { margin: "0 0 22px", color: C.ink, fontSize: 16, lineHeight: 1.6 },
+
+  // Loading / error
+  center: {
+    gridColumn: "1 / -1",
+    minHeight: 420,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: C.inkSoft,
+    fontSize: 15,
+  },
+};
+
+// =====================================================================
+// Body HTML → JSX (no dangerouslySetInnerHTML, no external CSS)
+// =====================================================================
+
+function InlineChildren({ node }) {
+  // Walks inline children of a block element and renders text + <strong>,
+  // <em>, <a> as JSX. Anything else is stripped.
+  const children = Array.from(node.childNodes);
+  return (
+    <>
+      {children.map((n, i) => {
+        if (n.nodeType === 3) return n.textContent;
+        if (n.nodeType !== 1) return null;
+        const tag = n.tagName.toLowerCase();
+        if (tag === "strong" || tag === "b")
+          return <strong key={i} style={S.strong}>{n.textContent}</strong>;
+        if (tag === "em" || tag === "i") return <em key={i}>{n.textContent}</em>;
+        if (tag === "a")
+          return (
+            <a
+              key={i}
+              href={n.getAttribute("href") || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={S.link}
+            >
+              {n.textContent}
+            </a>
+          );
+        if (tag === "br") return <br key={i} />;
+        return n.textContent;
+      })}
+    </>
+  );
+}
+
+function Quiz({ question, options }) {
+  const [selected, setSelected] = useState(null);
+  const correctIdx = options.findIndex((o) => o.correct);
+  const answered = selected !== null;
+  const pickedCorrect = answered && options[selected]?.correct;
+
+  return (
+    <div style={S.quiz}>
+      <div style={S.quizGlow} />
+      <div style={S.quizEyebrow}>Quick check</div>
+      <p style={S.quizQuestion}>{question}</p>
+      <div style={S.quizOpts}>
+        {options.map((opt, i) => {
+          let state = null;
+          if (answered) {
+            if (i === correctIdx) state = "correct";
+            else if (i === selected) state = "wrong";
+          }
+          return (
+            <button
+              key={i}
+              type="button"
+              disabled={answered}
+              onClick={() => setSelected(i)}
+              style={S.quizOpt(state)}
+            >
+              {opt.text}
+            </button>
+          );
+        })}
+      </div>
+      {answered && (
+        <div style={S.quizFeedback(pickedCorrect)}>
+          {pickedCorrect
+            ? "Correct — nice one."
+            : "Not quite. The correct answer is highlighted in green."}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function renderBodyNodes(bodyEl) {
+  const nodes = Array.from(bodyEl.childNodes);
+  const out = [];
+  nodes.forEach((n, i) => {
+    if (n.nodeType !== 1) return;
+    const el = n;
+    const tag = el.tagName.toLowerCase();
+    const key = `n${i}`;
+
+    if (tag === "h2") {
+      out.push(
+        <h2 key={key} id={el.id || undefined} style={S.sectionH2}>
+          <span style={S.sectionBar} />
+          {el.textContent}
+        </h2>,
+      );
+      return;
+    }
+    if (tag === "p") {
+      out.push(
+        <p key={key} style={S.p}>
+          <InlineChildren node={el} />
+        </p>,
+      );
+      return;
+    }
+    if (tag === "ul" || tag === "ol") {
+      const ListTag = tag;
+      out.push(
+        <ListTag key={key} style={S.ul}>
+          {Array.from(el.children).map((li, j) => (
+            <li key={j} style={S.li}>
+              <InlineChildren node={li} />
+            </li>
+          ))}
+        </ListTag>,
+      );
+      return;
+    }
+    if (tag === "img") {
+      const src = el.getAttribute("src");
+      if (!src) return;
+      out.push(
+        <img
+          key={key}
+          src={src}
+          alt={el.getAttribute("alt") || ""}
+          style={S.slide}
+        />,
+      );
+      return;
+    }
+    if (tag === "div") {
+      const cls = el.className || "";
+      if (cls.includes("callout")) {
+        out.push(
+          <div key={key} style={S.callout}>
+            {Array.from(el.children).map((p, j) => (
+              <p
+                key={j}
+                style={{ ...S.calloutP, marginBottom: j === el.children.length - 1 ? 0 : 10 }}
+              >
+                <InlineChildren node={p} />
+              </p>
+            ))}
+          </div>,
+        );
+        return;
+      }
+      if (cls.includes("quiz")) {
+        const question = el.getAttribute("data-question") || "";
+        const options = Array.from(el.children).map((child) => ({
+          text: child.textContent || "",
+          correct: child.getAttribute("data-correct") === "true",
+        }));
+        if (!options.length) return;
+        out.push(<Quiz key={key} question={question} options={options} />);
+        return;
+      }
+    }
+    // Unknown tag — skip.
+  });
+  return out;
+}
+
+// Extract {id, text} for every <h2 id="sec-N"> in the body, used by the TOC.
+function extractSections(bodyEl) {
+  const h2s = Array.from(bodyEl.querySelectorAll('h2[id^="sec-"]'));
+  return h2s.map((h) => ({ id: h.id, text: h.textContent || "" }));
+}
+
+// =====================================================================
+// Progress ring
 // =====================================================================
 
 function ProgressRing({ percent }) {
   const radius = 34;
   const circ = 2 * Math.PI * radius;
-  const offset = circ - (Math.max(0, Math.min(100, percent)) / 100) * circ;
+  const clamped = Math.max(0, Math.min(100, percent));
+  const offset = circ - (clamped / 100) * circ;
   return (
-    <div className="tta-ring">
-      <svg width="84" height="84" viewBox="0 0 84 84">
-        <circle className="tta-ring-bg" cx="42" cy="42" r={radius} fill="none" strokeWidth="6" />
+    <div style={S.ringBox}>
+      <svg width="84" height="84" viewBox="0 0 84 84" style={{ transform: "rotate(-90deg)" }}>
         <circle
-          className="tta-ring-fill"
           cx="42"
           cy="42"
           r={radius}
           fill="none"
+          stroke={C.light2}
+          strokeWidth="6"
+        />
+        <circle
+          cx="42"
+          cy="42"
+          r={radius}
+          fill="none"
+          stroke={C.blue}
           strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={circ}
           strokeDashoffset={offset}
+          style={{ transition: "stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)" }}
         />
       </svg>
-      <div className="tta-ring-label">{Math.round(percent)}%</div>
+      <div style={S.ringLabel}>{Math.round(clamped)}%</div>
     </div>
   );
 }
+
+// =====================================================================
+// Podcast player
+// =====================================================================
 
 function PodcastCard({ podcast }) {
   const [isPlaying, setPlaying] = useState(false);
@@ -541,8 +865,13 @@ function PodcastCard({ podcast }) {
   const toggle = () => {
     const a = audioRef.current;
     if (!a) return;
-    if (isPlaying) { a.pause(); setPlaying(false); }
-    else { a.play(); setPlaying(true); }
+    if (isPlaying) {
+      a.pause();
+      setPlaying(false);
+    } else {
+      a.play();
+      setPlaying(true);
+    }
   };
 
   const seek = (e) => {
@@ -558,23 +887,32 @@ function PodcastCard({ podcast }) {
   const pct = duration ? (current / duration) * 100 : 0;
 
   return (
-    <div className="tta-media-card">
-      <div className="tta-media-head">
-        <div className="tta-media-tile"><Volume2 size={20} /></div>
-        <div className="tta-media-head-text">
-          <h3>Listen on the go</h3>
-          <p>Audio version of this lesson — perfect for walks, commutes, gym sessions.</p>
+    <div style={S.mediaCard}>
+      <div style={S.mediaHead}>
+        <div style={S.mediaTile}>
+          <Volume2 size={20} />
+        </div>
+        <div>
+          <h3 style={S.mediaHeadTitle}>Listen on the go</h3>
+          <p style={S.mediaHeadSub}>
+            Audio version of this lesson — perfect for walks, commutes, gym sessions.
+          </p>
         </div>
       </div>
-      <div className="tta-pod-row">
-        <button className="tta-pod-play" onClick={toggle} aria-label={isPlaying ? "Pause" : "Play"}>
+      <div style={S.podRow}>
+        <button
+          type="button"
+          style={S.podPlay}
+          onClick={toggle}
+          aria-label={isPlaying ? "Pause" : "Play"}
+        >
           {isPlaying ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: 2 }} />}
         </button>
-        <div className="tta-pod-track">
-          <div className="tta-pod-scrub" onClick={seek}>
-            <div className="tta-pod-scrub-fill" style={{ width: `${pct}%` }} />
+        <div style={S.podTrack}>
+          <div style={S.podScrub} onClick={seek}>
+            <div style={{ ...S.podScrubFill, width: `${pct}%` }} />
           </div>
-          <div className="tta-pod-time">
+          <div style={S.podTime}>
             <span>{formatTime(current)}</span>
             <span>{formatTime(duration)}</span>
           </div>
@@ -588,20 +926,25 @@ function PodcastCard({ podcast }) {
 function VideoCard({ embedUrl }) {
   if (!embedUrl) return null;
   return (
-    <div className="tta-media-card">
-      <div className="tta-media-head">
-        <div className="tta-media-tile"><Play size={20} /></div>
-        <div className="tta-media-head-text">
-          <h3>Watch the lesson video</h3>
-          <p>Start here — the slides below walk through everything in the video in detail.</p>
+    <div style={S.mediaCard}>
+      <div style={S.mediaHead}>
+        <div style={S.mediaTile}>
+          <Play size={20} />
+        </div>
+        <div>
+          <h3 style={S.mediaHeadTitle}>Watch the lesson video</h3>
+          <p style={S.mediaHeadSub}>
+            Start here — the slides below walk through everything in detail.
+          </p>
         </div>
       </div>
-      <div className="tta-video-frame">
+      <div style={S.videoFrame}>
         <iframe
           src={embedUrl}
           allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           title="Lesson video"
+          style={S.videoIframe}
         />
       </div>
     </div>
@@ -616,23 +959,21 @@ export default function Block() {
   const recordId = useCurrentRecordId();
   const { data, status } = useRecord({ recordId, select: lessonFields });
 
-  // Inject scoped CSS once into document.head (vibe blocks can't use <style> tags).
-  useEffect(() => {
-    const id = "tta-lesson-styles";
-    if (document.getElementById(id)) return;
-    const el = document.createElement("style");
-    el.id = id;
-    el.textContent = STYLES;
-    document.head.appendChild(el);
-  }, []);
-
+  const [isMobile, setIsMobile] = useState(false);
   const [activeSec, setActiveSec] = useState(null);
   const [visitedSecs, setVisitedSecs] = useState(new Set());
-  const [totalSecs, setTotalSecs] = useState(0);
   const [resumeSec, setResumeSec] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [completedLocal, setCompletedLocal] = useState(false);
   const proseRef = useRef(null);
+
+  // Responsive breakpoint — inline styles can't use media queries.
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 960);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const progressKey = recordId ? `tta-progress-${recordId}` : null;
   const completedKey = recordId ? `tta-completed-${recordId}` : null;
@@ -642,8 +983,8 @@ export default function Block() {
   const lessonNumber = data?.fields?.lessonNumber || "";
   const lessonDesc = data?.fields?.description || "";
   const lessonDuration = data?.fields?.duration || "";
-  const category = data?.fields?.category;
-  const difficulty = data?.fields?.difficulty;
+  const categoryLabel = selectLabel(data?.fields?.category);
+  const difficultyLabel = selectLabel(data?.fields?.difficulty);
   const podcast = firstAttachment(data?.fields?.podcast);
   const slides = firstAttachment(data?.fields?.slides);
   const explainerUrl = useMemo(
@@ -651,7 +992,22 @@ export default function Block() {
     [data?.fields?.explainer],
   );
 
-  // Load saved progress on first render for this lesson.
+  // Parse lesson body once per change: build JSX tree AND section list.
+  const { bodyJsx, sections } = useMemo(() => {
+    if (!lessonBody) return { bodyJsx: null, sections: [] };
+    try {
+      const doc = new DOMParser().parseFromString(lessonBody, "text/html");
+      return {
+        bodyJsx: renderBodyNodes(doc.body),
+        sections: extractSections(doc.body),
+      };
+    } catch (e) {
+      console.error("tta: failed to parse lesson body", e);
+      return { bodyJsx: null, sections: [] };
+    }
+  }, [lessonBody]);
+
+  // Load saved progress for this lesson.
   useEffect(() => {
     if (!progressKey) return;
     try {
@@ -665,7 +1021,7 @@ export default function Block() {
         setCompletedLocal(true);
       }
     } catch (e) {
-      console.warn("tta: failed to read saved progress", e);
+      /* noop */
     }
   }, [progressKey, completedKey]);
 
@@ -682,16 +1038,15 @@ export default function Block() {
         }),
       );
     } catch (e) {
-      /* quota / SSR */
+      /* noop */
     }
   }, [visitedSecs, activeSec, progressKey, resumeSec]);
 
-  // Scroll-spy + section counting. Runs after lesson HTML is rendered.
+  // Scroll-spy on h2[id^=sec-] inside the prose container.
   useEffect(() => {
-    if (!lessonBody || !proseRef.current) return;
+    if (!bodyJsx || !proseRef.current) return;
     const root = proseRef.current;
     const headings = Array.from(root.querySelectorAll('h2[id^="sec-"]'));
-    setTotalSecs(headings.length);
     if (headings.length === 0) return;
 
     const observer = new IntersectionObserver(
@@ -714,90 +1069,19 @@ export default function Block() {
 
     headings.forEach((h) => observer.observe(h));
     return () => observer.disconnect();
-  }, [lessonBody]);
+  }, [bodyJsx]);
 
-  // Quiz enhancer: convert whitelist <div class="quiz" data-question="..."><div>A</div>...</div>
-  // into an interactive card in-place. Idempotent — skips already-enhanced quizzes.
-  useEffect(() => {
-    if (!lessonBody || !proseRef.current) return;
-    const root = proseRef.current;
-    const quizzes = Array.from(root.querySelectorAll(".quiz"));
-    quizzes.forEach((quiz) => {
-      if (quiz.dataset.enhanced === "1") return;
-      const question = quiz.getAttribute("data-question") || "";
-      const optionEls = Array.from(quiz.querySelectorAll(":scope > div"));
-      if (optionEls.length === 0) return;
-      const options = optionEls.map((el) => ({
-        text: el.textContent || "",
-        correct: el.getAttribute("data-correct") === "true",
-      }));
-
-      // Clear and rebuild
-      quiz.innerHTML = "";
-      quiz.dataset.enhanced = "1";
-
-      const eyebrow = document.createElement("div");
-      eyebrow.className = "tta-q-eyebrow";
-      eyebrow.textContent = "Quick check";
-      quiz.appendChild(eyebrow);
-
-      const qEl = document.createElement("p");
-      qEl.className = "tta-q-question";
-      qEl.textContent = question;
-      quiz.appendChild(qEl);
-
-      const optsWrap = document.createElement("div");
-      optsWrap.className = "tta-q-options";
-      quiz.appendChild(optsWrap);
-
-      const feedback = document.createElement("div");
-      feedback.className = "tta-q-feedback";
-      feedback.style.display = "none";
-
-      const btns = [];
-      options.forEach((opt) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "tta-q-opt";
-        b.textContent = opt.text;
-        b.addEventListener("click", () => {
-          if (b.disabled) return;
-          btns.forEach((other) => { other.disabled = true; });
-          if (opt.correct) {
-            b.classList.add("correct");
-            feedback.className = "tta-q-feedback correct";
-            feedback.textContent = "Correct — nice one.";
-          } else {
-            b.classList.add("incorrect");
-            feedback.className = "tta-q-feedback incorrect";
-            feedback.textContent = "Not quite. The correct answer is highlighted in green.";
-            btns.forEach((other, i) => {
-              if (options[i].correct) other.classList.add("correct");
-            });
-          }
-          feedback.style.display = "block";
-        });
-        optsWrap.appendChild(b);
-        btns.push(b);
-      });
-
-      quiz.appendChild(feedback);
-    });
-  }, [lessonBody]);
-
+  const totalSecs = sections.length;
   const percent = totalSecs > 0 ? (visitedSecs.size / totalSecs) * 100 : 0;
-
-  const scrollToFirstSection = () => {
-    const root = proseRef.current;
-    if (!root) return;
-    const first = root.querySelector('h2[id^="sec-"]');
-    if (first) first.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 
   const scrollToSection = (id) => {
     if (!id) return;
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const scrollToFirst = () => {
+    if (sections[0]) scrollToSection(sections[0].id);
   };
 
   const handleComplete = () => {
@@ -811,7 +1095,7 @@ export default function Block() {
       setCompletedLocal(true);
       toast.success("Lesson complete. Nice work.");
     } catch (e) {
-      toast.error("Couldn't save progress", { description: e.message });
+      toast.error("Couldn't save progress");
     } finally {
       setSubmitting(false);
     }
@@ -821,57 +1105,94 @@ export default function Block() {
 
   if (status === "pending") {
     return (
-      <div id="tta-lesson">
-        <div className="tta-loading">Loading lesson…</div>
+      <div style={S.root(isMobile)}>
+        <div style={S.center}>Loading lesson…</div>
       </div>
     );
   }
 
   if (status === "error" || !data) {
     return (
-      <div id="tta-lesson">
-        <div className="tta-error">Lesson not found.</div>
+      <div style={S.root(isMobile)}>
+        <div style={S.center}>Lesson not found.</div>
       </div>
     );
   }
 
   return (
-    <div id="tta-lesson">
+    <div style={S.root(isMobile)}>
       {/* ============ SIDEBAR ============ */}
-      <aside className="tta-sidebar">
-        <div className="tta-side-eyebrow">Your progress</div>
-        <div className="tta-ring-wrap">
+      <aside style={S.sidebar(isMobile)}>
+        <div style={S.sideEyebrow}>Your progress</div>
+        <div style={S.ringWrap}>
           <ProgressRing percent={percent} />
-          <div className="tta-ring-meta">
-            <strong>{visitedSecs.size} / {totalSecs || "—"}</strong>
+          <div style={S.ringMeta}>
+            <strong style={S.ringMetaStrong}>
+              {visitedSecs.size} / {totalSecs || "—"}
+            </strong>
             sections viewed
           </div>
         </div>
 
-        <button className="tta-side-btn primary" onClick={scrollToFirstSection}>
-          <BookOpen size={16} />
-          {visitedSecs.size > 0 ? "Keep going" : "Start lesson"}
-        </button>
-
-        <button
-          className={`tta-side-btn ${completedLocal ? "success" : ""}`}
-          onClick={handleComplete}
-          disabled={submitting}
-        >
-          <CheckCircle2 size={16} />
-          {completedLocal ? "Lesson complete" : submitting ? "Saving…" : "Mark complete"}
-        </button>
-
-        {slides?.url && (
-          <a className="tta-side-btn" href={slides.url} target="_blank" rel="noopener noreferrer">
-            <Download size={16} />
-            Download slides
-          </a>
+        {sections.length > 0 && (
+          <>
+            <div style={S.navSection}>Sections</div>
+            {sections.map((sec, i) => {
+              const active = activeSec === sec.id;
+              const visited = visitedSecs.has(sec.id);
+              return (
+                <button
+                  key={sec.id}
+                  type="button"
+                  onClick={() => scrollToSection(sec.id)}
+                  style={S.navItem(active, visited)}
+                >
+                  <span style={S.navTile(active, visited)}>
+                    {visited && !active ? "✓" : i + 1}
+                  </span>
+                  <span style={S.navText}>{sec.text}</span>
+                </button>
+              );
+            })}
+          </>
         )}
 
-        <div className="tta-side-section">
-          <div className="tta-side-eyebrow">Next up</div>
-          <a className="tta-side-btn" href="/course">
+        <div style={S.sideDivider}>
+          <button
+            type="button"
+            style={{ ...S.sideBtn, ...S.sideBtnPrimary }}
+            onClick={scrollToFirst}
+          >
+            <BookOpen size={16} />
+            {visitedSecs.size > 0 ? "Keep going" : "Start lesson"}
+          </button>
+
+          <button
+            type="button"
+            style={{
+              ...S.sideBtn,
+              ...(completedLocal ? S.sideBtnSuccess : {}),
+            }}
+            onClick={handleComplete}
+            disabled={submitting}
+          >
+            <CheckCircle2 size={16} />
+            {completedLocal ? "Lesson complete" : submitting ? "Saving…" : "Mark complete"}
+          </button>
+
+          {slides?.url && (
+            <a
+              style={S.sideBtn}
+              href={slides.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Download size={16} />
+              Download slides
+            </a>
+          )}
+
+          <a style={S.sideBtn} href="/course">
             <Award size={16} />
             Back to course
           </a>
@@ -879,28 +1200,38 @@ export default function Block() {
       </aside>
 
       {/* ============ MAIN ============ */}
-      <main className="tta-main">
+      <main style={S.main}>
         {/* HERO */}
-        <div className="tta-hero">
-          <div className="tta-hero-inner">
-            {lessonNumber && <span className="tta-hero-eyebrow">{lessonNumber}</span>}
-            <h1>{lessonName}</h1>
-            {lessonDesc && <p className="tta-hero-sub">{lessonDesc}</p>}
-            <div className="tta-chips">
-              {category && (
-                <span className="tta-chip"><Sparkles /> {String(category).toUpperCase()}</span>
+        <div style={S.hero(isMobile)}>
+          <div style={S.heroGlow} />
+          <div style={S.heroInner}>
+            {lessonNumber && <span style={S.heroEyebrow}>{lessonNumber}</span>}
+            <h1 style={S.heroTitle(isMobile)}>{lessonName}</h1>
+            {lessonDesc && <p style={S.heroSub}>{lessonDesc}</p>}
+            <div style={S.chips}>
+              {categoryLabel && (
+                <span style={S.chip}>
+                  <Sparkles size={13} /> {categoryLabel.toUpperCase()}
+                </span>
               )}
-              {difficulty && <span className="tta-chip">{String(difficulty)}</span>}
+              {difficultyLabel && <span style={S.chip}>{difficultyLabel}</span>}
               {lessonDuration && (
-                <span className="tta-chip"><Clock /> {lessonDuration}</span>
+                <span style={S.chip}>
+                  <Clock size={13} /> {lessonDuration}
+                </span>
               )}
             </div>
-            <div className="tta-hero-ctas">
-              <button className="tta-btn-primary" onClick={scrollToFirstSection}>
+            <div style={S.heroCtas}>
+              <button type="button" style={S.btnPrimary} onClick={scrollToFirst}>
                 Start lesson <ArrowRight size={16} />
               </button>
               {slides?.url && (
-                <a className="tta-btn-secondary" href={slides.url} target="_blank" rel="noopener noreferrer">
+                <a
+                  style={S.btnSecondary}
+                  href={slides.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Download size={16} /> Download slides
                 </a>
               )}
@@ -910,13 +1241,19 @@ export default function Block() {
 
         {/* RESUME BANNER */}
         {resumeSec && visitedSecs.size > 0 && !completedLocal && (
-          <div className="tta-resume">
-            <div className="tta-resume-icon"><BookOpen size={20} /></div>
-            <div className="tta-resume-body">
-              <strong>Pick up where you left off</strong>
+          <div style={S.resume}>
+            <div style={S.resumeIcon}>
+              <BookOpen size={20} />
+            </div>
+            <div style={S.resumeBody}>
+              <strong style={S.resumeStrong}>Pick up where you left off</strong>
               You've viewed {visitedSecs.size} of {totalSecs} sections so far.
             </div>
-            <button className="tta-resume-btn" onClick={() => scrollToSection(resumeSec)}>
+            <button
+              type="button"
+              style={S.resumeBtn}
+              onClick={() => scrollToSection(resumeSec)}
+            >
               Resume <ArrowRight size={14} />
             </button>
           </div>
@@ -924,40 +1261,40 @@ export default function Block() {
 
         {/* MEDIA (video + podcast) */}
         {(explainerUrl || podcast?.url) && (
-          <div className="tta-media-grid">
+          <div style={S.mediaGrid}>
             {explainerUrl && <VideoCard embedUrl={explainerUrl} />}
             {podcast?.url && <PodcastCard podcast={podcast} />}
           </div>
         )}
 
         {/* LESSON BODY */}
-        <div
-          className="lesson-prose"
-          ref={proseRef}
-          dangerouslySetInnerHTML={{ __html: lessonBody }}
-        />
+        <div ref={proseRef}>{bodyJsx}</div>
 
         {/* COMPLETE CARD */}
-        <div className="tta-complete">
-          <h3>{completedLocal ? "Lesson complete — nice work." : "Finished the lesson?"}</h3>
-          <p>
+        <div style={S.completeCard}>
+          <h3 style={S.completeTitle}>
+            {completedLocal ? "Lesson complete — nice work." : "Finished the lesson?"}
+          </h3>
+          <p style={S.completeSub}>
             {completedLocal
               ? "Your progress is saved. Head back to the course for what's next."
               : "Mark this lesson complete to track your progress across the Academy."}
           </p>
-          <button
-            className="tta-btn-primary"
-            onClick={completedLocal ? () => { window.location.href = "/course"; } : handleComplete}
-            disabled={submitting}
-          >
-            {completedLocal ? (
-              <>Back to course <ArrowRight size={16} /></>
-            ) : submitting ? (
-              "Saving…"
-            ) : (
-              <><CheckCircle2 size={16} /> Mark lesson complete</>
-            )}
-          </button>
+          {completedLocal ? (
+            <a style={S.btnPrimary} href="/course">
+              Back to course <ArrowRight size={16} />
+            </a>
+          ) : (
+            <button
+              type="button"
+              style={S.btnPrimary}
+              onClick={handleComplete}
+              disabled={submitting}
+            >
+              <CheckCircle2 size={16} />
+              {submitting ? "Saving…" : "Mark lesson complete"}
+            </button>
+          )}
         </div>
       </main>
     </div>
