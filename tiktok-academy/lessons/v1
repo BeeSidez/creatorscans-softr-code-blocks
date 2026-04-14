@@ -1,0 +1,272 @@
+import { useRecord, useCurrentRecordId, q } from "@/lib/datasource";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useEffect, useState, useRef } from "react";
+import { Play, Pause, Volume2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+
+const select = q.select({
+  name: "4e8yM",
+  lessonNumber: "42btG",
+  category: "jXSnc",
+  difficulty: "5khor",
+  description: "ck1JJ",
+  duration: "VB4oU",
+  lesson: "0wTBQ",
+  toc: "elIo9",
+  podcast: "uU6oS",
+});
+
+function PodcastPlayer({ podcast }: { podcast: { url: string; filename: string | null } | null }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateDuration = () => setDuration(audio.duration);
+
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("loadedmetadata", updateDuration);
+
+    return () => {
+      audio.removeEventListener("timeupdate", updateTime);
+      audio.removeEventListener("loadedmetadata", updateDuration);
+    };
+  }, []);
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleSeek = (value: number[]) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = value[0];
+      setCurrentTime(value[0]);
+    }
+  };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  if (!podcast?.url) return null;
+
+  return (
+    <Card className="mb-8">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-4">
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-12 w-12 rounded-full"
+            onClick={togglePlay}
+          >
+            {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+          </Button>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Volume2 className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Listen to this lesson</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground w-12">{formatTime(currentTime)}</span>
+              <Slider
+                value={[currentTime]}
+                max={duration || 100}
+                step={1}
+                onValueChange={handleSeek}
+                className="flex-1"
+              />
+              <span className="text-xs text-muted-foreground w-12 text-right">{formatTime(duration)}</span>
+            </div>
+          </div>
+        </div>
+        <audio ref={audioRef} src={podcast.url} />
+      </CardContent>
+    </Card>
+  );
+}
+
+function TableOfContents({ toc, activeSection }: { toc: string; activeSection: string }) {
+  const sections = toc.split("\n").filter(line => line.trim());
+
+  const scrollToSection = (sectionTitle: string) => {
+    const element = document.getElementById(`section-${sectionTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  return (
+    <div className="sticky top-nav bg-background border rounded-lg p-6 h-fit">
+      <h3 className="font-heading text-lg font-semibold mb-4">Table of Contents</h3>
+      <nav className="space-y-2">
+        {sections.map((section, index) => {
+          const sectionId = section.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+          const isActive = activeSection === sectionId;
+          return (
+            <button
+              key={index}
+              onClick={() => scrollToSection(section)}
+              className={`block w-full text-left text-sm py-2 px-3 rounded-md transition-colors ${
+                isActive
+                  ? "bg-primary text-primary-foreground font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+            >
+              {section}
+            </button>
+          );
+        })}
+      </nav>
+      <div className="mt-6 pt-6 border-t">
+        <div className="text-xs text-muted-foreground mb-2">Progress</div>
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary transition-all duration-300"
+            style={{
+              width: `${((sections.indexOf(sections.find(s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-") === activeSection) || "") + 1) / sections.length) * 100}%`,
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Block() {
+  const recordId = useCurrentRecordId();
+  const { data, status } = useRecord({ recordId, select });
+  const [activeSection, setActiveSection] = useState("");
+
+  useEffect(() => {
+    if (!data?.fields.toc) return;
+
+    const sections = data.fields.toc.split("\n").filter(line => line.trim());
+    const sectionIds = sections.map(s => `section-${s.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id.replace("section-", ""));
+          }
+        });
+      },
+      { rootMargin: "-20% 0px -70% 0px" }
+    );
+
+    sectionIds.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, [data?.fields.toc]);
+
+  if (status === "pending") {
+    return (
+      <div className="container py-12">
+        <div className="content flex items-center justify-center min-h-[400px]">
+          <div className="text-muted-foreground">Loading lesson...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "error" || !data) {
+    return (
+      <div className="container py-12">
+        <div className="content flex items-center justify-center min-h-[400px]">
+          <div className="text-muted-foreground">Lesson not found</div>
+        </div>
+      </div>
+    );
+  }
+
+  const { name, lessonNumber, category, difficulty, description, duration, lesson, toc, podcast } = data.fields;
+  const sections = toc ? toc.split("\n").filter(line => line.trim()) : [];
+  const lessonParagraphs = lesson ? lesson.split("\n\n").filter(p => p.trim()) : [];
+
+  return (
+    <div className="container py-12">
+      <div className="content max-w-7xl mx-auto">
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            {lessonNumber && (
+              <Badge variant="outline" className="text-xs">
+                Lesson {lessonNumber}
+              </Badge>
+            )}
+            {category && Array.isArray(category) && category[0] && (
+              <Badge className="text-xs">{category[0].label}</Badge>
+            )}
+            {difficulty && Array.isArray(difficulty) && difficulty[0] && (
+              <Badge variant="secondary" className="text-xs">
+                {difficulty[0].label}
+              </Badge>
+            )}
+            {duration && (
+              <span className="text-sm text-muted-foreground">{duration}</span>
+            )}
+          </div>
+          <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">{name}</h1>
+          {description && (
+            <p className="text-lg text-muted-foreground max-w-3xl">{description}</p>
+          )}
+        </div>
+
+        <PodcastPlayer podcast={podcast} />
+
+        <div className="grid lg:grid-cols-[1fr_300px] gap-8">
+          <div className="prose prose-slate max-w-none">
+            {sections.map((section, sectionIndex) => {
+              const sectionId = `section-${section.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+              const sectionContent = lessonParagraphs.slice(
+                sectionIndex * Math.ceil(lessonParagraphs.length / sections.length),
+                (sectionIndex + 1) * Math.ceil(lessonParagraphs.length / sections.length)
+              );
+
+              return (
+                <section key={sectionIndex} id={sectionId} className="mb-12 scroll-mt-24">
+                  <h2 className="font-heading text-2xl font-semibold mb-4 text-foreground">{section}</h2>
+                  {sectionContent.map((paragraph, pIndex) => (
+                    <p key={pIndex} className="text-foreground leading-relaxed mb-4">
+                      {paragraph}
+                    </p>
+                  ))}
+                </section>
+              );
+            })}
+            {sections.length === 0 && lessonParagraphs.map((paragraph, index) => (
+              <p key={index} className="text-foreground leading-relaxed mb-4">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
+          {toc && sections.length > 0 && (
+            <div className="hidden lg:block">
+              <TableOfContents toc={toc} activeSection={activeSection} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
