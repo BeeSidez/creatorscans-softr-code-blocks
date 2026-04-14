@@ -1,0 +1,103 @@
+"<div id=""lesson-toc"" style=""font-family:inherit; padding:1.2em 1em; background:#fff; border-radius:12px; border:1px solid #e3e8ef; box-shadow:0 2px 8px rgba(0,0,0,0.04);"">
+
+  <p style=""font-size:0.75em; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#718096; margin:0 0 0.5em 0;"">Lesson Progress</p>
+
+  <div style=""height:8px; background:#edf2f7; border-radius:999px; overflow:hidden; margin-bottom:0.5em;"">
+    <div class=""toc-progress-bar"" style=""height:100%; width:0%; background:linear-gradient(90deg,#4299e1,#2f855a); border-radius:999px; transition:width 0.4s ease;""></div>
+  </div>
+  <p class=""toc-progress-label"" style=""font-size:0.8em; color:#4a5568; margin:0 0 1.2em 0;"">0 of 14 complete</p>
+
+  <p style=""font-size:0.75em; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#718096; margin:0 0 0.6em 0;"">Contents</p>
+
+  <nav style=""display:flex; flex-direction:column; gap:0.15em;"">
+    <a href=""#sec-1"" data-sec=""sec-1"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>1. You don't need to be famous to start</span></a>
+    <a href=""#sec-2"" data-sec=""sec-2"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>2. The ecosystem: 4 ways to shop & sell</span></a>
+    <a href=""#sec-3"" data-sec=""sec-3"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>3. How you get paid: the 4 revenue models</span></a>
+    <a href=""#sec-4"" data-sec=""sec-4"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>4. Performance vs. retainer</span></a>
+    <a href=""#sec-5"" data-sec=""sec-5"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>5. Who can get behind the wheel?</span></a>
+    <a href=""#sec-6"" data-sec=""sec-6"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>6. What is ""binding""?</span></a>
+    <a href=""#sec-7"" data-sec=""sec-7"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>7. The TAP advantage</span></a>
+    <a href=""#sec-8"" data-sec=""sec-8"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>8. Choose your lane</span></a>
+    <a href=""#sec-9"" data-sec=""sec-9"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>9. Avoiding bans & violations</span></a>
+    <a href=""#sec-10"" data-sec=""sec-10"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>10. The driver's seat philosophy</span></a>
+    <a href=""#sec-11"" data-sec=""sec-11"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>11. Why we need to see you drive</span></a>
+    <a href=""#sec-12"" data-sec=""sec-12"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>12. The reality check</span></a>
+    <a href=""#sec-13"" data-sec=""sec-13"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>13. Your one action item</span></a>
+    <a href=""#sec-14"" data-sec=""sec-14"" style=""display:flex; align-items:flex-start; gap:0.5em; padding:0.45em 0.6em; border-radius:6px; font-size:0.9em; line-height:1.4; color:#2d3748; text-decoration:none;""><span class=""toc-check"" style=""display:inline-block; width:1em; color:#cbd5e0;"">○</span><span>14. What you walk away with</span></a>
+  </nav>
+</div>
+
+<style>
+  #lesson-toc a:hover { background:#f7fafc; }
+  #lesson-toc a.active { background:#ebf8ff; color:#2b6cb0; font-weight:600; }
+  #lesson-toc a.visited .toc-check { color:#2f855a !important; }
+  #lesson-toc a.visited { color:#4a5568; }
+</style>
+
+<script>
+(function(){
+  var LESSON_ID = 'shop-lesson-01';
+  var STORAGE_KEY = 'tta-progress-' + LESSON_ID;
+
+  function init(){
+    var headings = document.querySelectorAll('h2[id^=""sec-""]');
+    if (!headings.length) { setTimeout(init, 400); return; }
+
+    var total = document.querySelectorAll('#lesson-toc a[data-sec]').length;
+    var visited;
+    try { visited = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
+    catch(e) { visited = new Set(); }
+
+    function render(){
+      var count = 0;
+      document.querySelectorAll('#lesson-toc a[data-sec]').forEach(function(a){
+        var id = a.getAttribute('data-sec');
+        var check = a.querySelector('.toc-check');
+        if (visited.has(id)) {
+          a.classList.add('visited');
+          if (check) check.textContent = '✓';
+          count++;
+        }
+      });
+      var pct = total ? Math.round((count/total)*100) : 0;
+      var bar = document.querySelector('#lesson-toc .toc-progress-bar');
+      var label = document.querySelector('#lesson-toc .toc-progress-label');
+      if (bar) bar.style.width = pct + '%';
+      if (label) label.textContent = count + ' of ' + total + ' complete';
+    }
+
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) {
+          var id = e.target.id;
+          if (!visited.has(id)) {
+            visited.add(id);
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(visited))); } catch(e){}
+          }
+          document.querySelectorAll('#lesson-toc a[data-sec]').forEach(function(a){
+            a.classList.toggle('active', a.getAttribute('data-sec') === id);
+          });
+          render();
+        }
+      });
+    }, { rootMargin: '0px 0px -50% 0px' });
+
+    headings.forEach(function(h){ observer.observe(h); });
+    render();
+
+    document.querySelectorAll('#lesson-toc a[data-sec]').forEach(function(a){
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        var target = document.getElementById(this.getAttribute('data-sec'));
+        if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>"
