@@ -1,11 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  useRecord,
-  useCurrentRecordId,
-  useRecordCreate,
-  q,
-} from "@/lib/datasource";
-import { useCurrentUser } from "@/lib/user";
+import { useRecord, useCurrentRecordId, q } from "@/lib/datasource";
 import { toast } from "sonner";
 import {
   Play,
@@ -23,9 +17,9 @@ import {
 // =====================================================================
 // TikTok Academy — Lesson page (v3)
 // Source tab: Lessons table (gFW6PZeT2JHVCk) in Content Tracking App DB
-// Actions tab: one Add Record action targeting Lesson Completions
-//   (hsDFWXx7nTzEAn) with field aliases: completionUser, completionLesson,
-//   completionCourse, completedAt — matching the IDs in completionFields below.
+// No Actions tab wiring needed — completion is stored client-side only
+// for now; server-side persistence to Lesson Completions will come from
+// a separate block/webhook path.
 // =====================================================================
 
 const lessonFields = q.select({
@@ -39,16 +33,6 @@ const lessonFields = q.select({
   explainer: "DqSLD",       // URL — Canva video embed URL
   podcast: "uU6oS",         // ATTACHMENT — audio file
   slides: "nINLz",          // ATTACHMENT — slide deck download
-  course: "v5YZr",          // LINKED_RECORD → Course
-});
-
-// Lesson Completions table field IDs. See note above: these must be wired
-// into an Add Record action in the Actions tab that targets Lesson Completions.
-const completionFields = q.select({
-  completionUser: "oie3o",   // LINKED_RECORD → Users
-  completionLesson: "ZpVkx", // LINKED_RECORD → Lessons
-  completionCourse: "sUNbZ", // LINKED_RECORD → Course
-  completedAt: "pigYM",      // DATETIME
 });
 
 // =====================================================================
@@ -629,12 +613,18 @@ function VideoCard({ embedUrl }) {
 // =====================================================================
 
 export default function Block() {
-  const user = useCurrentUser();
   const recordId = useCurrentRecordId();
   const { data, status } = useRecord({ recordId, select: lessonFields });
 
-  // Writes to Lesson Completions (configured in Actions tab).
-  const createCompletion = useRecordCreate({ fields: completionFields });
+  // Inject scoped CSS once into document.head (vibe blocks can't use <style> tags).
+  useEffect(() => {
+    const id = "tta-lesson-styles";
+    if (document.getElementById(id)) return;
+    const el = document.createElement("style");
+    el.id = id;
+    el.textContent = STYLES;
+    document.head.appendChild(el);
+  }, []);
 
   const [activeSec, setActiveSec] = useState(null);
   const [visitedSecs, setVisitedSecs] = useState(new Set());
@@ -810,46 +800,18 @@ export default function Block() {
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleComplete = async () => {
+  const handleComplete = () => {
     if (completedLocal) {
       toast.success("Already marked complete");
       return;
     }
-    if (!user?.id) {
-      toast.error("Please log in to mark lessons complete");
-      return;
-    }
     setSubmitting(true);
-
-    // Optimistic local flag so the UI updates even if the Action isn't wired.
     try {
       if (completedKey) localStorage.setItem(completedKey, String(Date.now()));
       setCompletedLocal(true);
-    } catch (e) { /* noop */ }
-
-    try {
-      if (createCompletion.enabled) {
-        const courseIds = Array.isArray(data?.fields?.course)
-          ? data.fields.course
-          : data?.fields?.course
-            ? [data.fields.course]
-            : [];
-        await createCompletion.mutateAsync({
-          completionUser: user.id,
-          completionLesson: [{ id: recordId }],
-          completionCourse: courseIds.map((c) => (typeof c === "object" ? c : { id: c })),
-          completedAt: new Date().toISOString(),
-        });
-        toast.success("Lesson complete. Nice work.");
-      } else {
-        toast.success("Lesson marked complete");
-        console.warn(
-          "tta: createCompletion.enabled is false — wire the Lesson Completions Action in the Actions tab to persist server-side.",
-        );
-      }
+      toast.success("Lesson complete. Nice work.");
     } catch (e) {
-      console.error("tta: failed to record completion", e);
-      toast.error("Saved locally, but couldn't sync", { description: e.message });
+      toast.error("Couldn't save progress", { description: e.message });
     } finally {
       setSubmitting(false);
     }
@@ -860,7 +822,6 @@ export default function Block() {
   if (status === "pending") {
     return (
       <div id="tta-lesson">
-        <style dangerouslySetInnerHTML={{ __html: STYLES }} />
         <div className="tta-loading">Loading lesson…</div>
       </div>
     );
@@ -869,7 +830,6 @@ export default function Block() {
   if (status === "error" || !data) {
     return (
       <div id="tta-lesson">
-        <style dangerouslySetInnerHTML={{ __html: STYLES }} />
         <div className="tta-error">Lesson not found.</div>
       </div>
     );
@@ -877,8 +837,6 @@ export default function Block() {
 
   return (
     <div id="tta-lesson">
-      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-
       {/* ============ SIDEBAR ============ */}
       <aside className="tta-sidebar">
         <div className="tta-side-eyebrow">Your progress</div>
