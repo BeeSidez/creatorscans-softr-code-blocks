@@ -30,7 +30,9 @@ const lessonFields = q.select({
   body: "0wTBQ",
   explainer: "DqSLD",
   podcast: "uU6oS",
-  slides: "nINLz",
+  slides: "nINLz",       // ATTACHMENT — Download PDF
+  nextLesson: "ZKKVg",   // URL — /lessons-details?recordId=…
+  courseUrl: "AbVlh",    // URL — /course-details?recordId=…
 });
 
 // =====================================================================
@@ -71,8 +73,13 @@ function formatTime(t) {
 
 function firstAttachment(val) {
   if (!val) return null;
-  if (Array.isArray(val)) return val[0] || null;
-  if (typeof val === "object" && val.url) return val;
+  if (Array.isArray(val)) return firstAttachment(val[0]);
+  if (typeof val === "object") {
+    // Softr can return { url, filename } or { url, name } or nested { value }.
+    if (val.url) return val;
+    if (val.value) return firstAttachment(val.value);
+  }
+  if (typeof val === "string") return { url: val, filename: "" };
   return null;
 }
 
@@ -1004,6 +1011,8 @@ export default function Block() {
     () => normaliseCanvaUrl(data?.fields?.explainer),
     [data?.fields?.explainer],
   );
+  const nextLessonUrl = data?.fields?.nextLesson || null;
+  const courseUrl = data?.fields?.courseUrl || "/course";
 
   // Parse lesson body once per change: build JSX tree AND section list.
   const { bodyJsx, sections } = useMemo(() => {
@@ -1201,11 +1210,18 @@ export default function Block() {
               rel="noopener noreferrer"
             >
               <Download size={16} />
-              Download slides
+              Download PDF
             </a>
           )}
 
-          <a style={S.sideBtn} href="/course">
+          {nextLessonUrl && (
+            <a style={S.sideBtn} href={nextLessonUrl}>
+              <ArrowRight size={16} />
+              Next lesson
+            </a>
+          )}
+
+          <a style={S.sideBtn} href={courseUrl}>
             <Award size={16} />
             Back to course
           </a>
@@ -1245,7 +1261,7 @@ export default function Block() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Download size={16} /> Download slides
+                  <Download size={16} /> Download PDF
                 </a>
               )}
             </div>
@@ -1290,24 +1306,50 @@ export default function Block() {
           </h3>
           <p style={S.completeSub}>
             {completedLocal
-              ? "Your progress is saved. Head back to the course for what's next."
+              ? nextLessonUrl
+                ? "Your progress is saved. Keep the momentum — next lesson is ready."
+                : "Your progress is saved. Head back to the course for what's next."
               : "Mark this lesson complete to track your progress across the Academy."}
           </p>
-          {completedLocal ? (
-            <a style={S.btnPrimary} href="/course">
-              Back to course <ArrowRight size={16} />
-            </a>
-          ) : (
-            <button
-              type="button"
-              style={S.btnPrimary}
-              onClick={handleComplete}
-              disabled={submitting}
-            >
-              <CheckCircle2 size={16} />
-              {submitting ? "Saving…" : "Mark lesson complete"}
-            </button>
-          )}
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              flexWrap: "wrap",
+              justifyContent: "center",
+            }}
+          >
+            {!completedLocal && (
+              <button
+                type="button"
+                style={S.btnPrimary}
+                onClick={handleComplete}
+                disabled={submitting}
+              >
+                <CheckCircle2 size={16} />
+                {submitting ? "Saving…" : "Mark lesson complete"}
+              </button>
+            )}
+            {completedLocal && nextLessonUrl && (
+              <a style={S.btnPrimary} href={nextLessonUrl}>
+                Next lesson <ArrowRight size={16} />
+              </a>
+            )}
+            {completedLocal && (
+              <a
+                style={{
+                  ...S.btnPrimary,
+                  background: C.white,
+                  color: C.navy,
+                  border: `1px solid ${C.light2}`,
+                  boxShadow: "0 4px 14px rgba(0, 15, 77, 0.06)",
+                }}
+                href={courseUrl}
+              >
+                <Award size={16} /> Back to course
+              </a>
+            )}
+          </div>
         </div>
       </main>
     </div>
