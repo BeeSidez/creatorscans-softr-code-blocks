@@ -1,0 +1,199 @@
+---
+name: tiktok-academy-lesson-author
+description: Author new TikTok Academy lesson body HTML for the Lessons table in Softr. Use this skill whenever writing, rewriting, or cleaning a lesson's Lesson field (LONG_TEXT, id 0wTBQ) in the Content Tracking App database. Produces plain, semantic HTML that matches the tag whitelist the lesson block expects — no inline styles, no <style>, no <script>, no iframes. Also triggers when asked to turn a Canva slide PDF into a lesson, migrate an old lesson off the inline-styled format, add quizzes or callouts to an existing lesson, or check that a lesson body is valid for the v3 lesson block.
+---
+
+# TikTok Academy Lesson Author
+
+## What this skill is for
+
+Writing the `Lesson` field body HTML for any record in the **Lessons** table (`gFW6PZeT2JHVCk`) in the **Content Tracking App** database. The React lesson block (`tiktok-academy/lessons/page-structure-v3.jsx`) renders this field as scoped HTML inside a `.lesson-prose` wrapper and styles everything via CSS. That means your HTML must be plain, semantic, and whitelist-compliant — all visual styling happens in the block, not the database.
+
+Do NOT embed inline styles, `<style>` tags, `<script>` tags, or Canva `<iframe>` wrappers. If you do, the lesson will look wrong and future design updates will be painful.
+
+## Where each piece of lesson content lives
+
+Before writing HTML, know which field holds what. Do not duplicate content across fields.
+
+| Content | Field | Type | ID |
+|---|---|---|---|
+| Lesson title | `Name` | SINGLE_LINE_TEXT | `4e8yM` |
+| Lesson number ("Lesson 1") | `Lesson Number` | SINGLE_LINE_TEXT | `42btG` |
+| Category (SHOP/LIVE/ORGANIC/PLATFORM) | `Category` | SELECT | `jXSnc` |
+| Difficulty | `Difficulty` | SELECT | `5khor` |
+| Short description (hero paragraph) | `Description` | LONG_TEXT | `ck1JJ` |
+| Duration ("30:00") | `Duration` | SINGLE_LINE_TEXT | `VB4oU` |
+| **Lesson body HTML** | **`Lesson`** | **LONG_TEXT** | **`0wTBQ`** |
+| Canva video embed URL | `Explainer` | URL | `DqSLD` |
+| Podcast audio file (listen on the go) | `Podcast` | ATTACHMENT | `uU6oS` |
+| Slide deck download (optional) | `Slides` | ATTACHMENT | `nINLz` |
+| Linked Course | `Course` | LINKED_RECORD → Course | `v5YZr` |
+
+**Do not** put the Canva video iframe inside the `Lesson` body — the block renders it from the `Explainer` URL. **Do not** upload the podcast into the lesson body — it's a separate audio asset. **Do not** store the TOC anywhere; the block auto-derives section navigation from `<h2 id="sec-N">` headings in the body at render time (a dedicated TOC sidebar is not rendered — sections are used only for scroll-tracking and the optional "resume where you left off" feature).
+
+## Tag whitelist
+
+Use only these tags in the `Lesson` body. Anything else will be stripped or misrender.
+
+### Section headings
+```html
+<h2 id="sec-1">First section title</h2>
+<h2 id="sec-2">Second section title</h2>
+```
+- IDs must be sequential starting at `sec-1`. No gaps. No other IDs. The lesson block uses these for scroll-spy and resume progress.
+- No `<h1>`, no `<h3>`–`<h6>`. Only `<h2>` for sections.
+
+### Paragraphs and inline formatting
+```html
+<p>Body copy. Emphasis goes in <strong>bold</strong> or <em>italic</em>. Link out with <a href="https://example.com">a plain anchor</a>.</p>
+```
+- Allowed inline tags: `<strong>`, `<em>`, `<a href="…">`.
+- No inline `style="…"` attributes anywhere.
+- No `<br>` — use separate `<p>` blocks.
+
+### Lists
+```html
+<ul>
+  <li>Unordered item</li>
+  <li>Another one</li>
+</ul>
+
+<ol>
+  <li>Step one</li>
+  <li>Step two</li>
+</ol>
+```
+
+### Slide images (Cloudinary)
+```html
+<img class="lesson-slide" src="https://res.cloudinary.com/dmrekfwpj/image/upload/f_auto,q_auto/tiktok-academy/shop/lesson-01/slides/slide-02.png" alt="" />
+```
+- Slides live **inline in the HTML** next to the paragraphs that explain them. They are not stored in a separate field.
+- One slide per section is the usual pattern: put the `<img>` directly after the `<h2>`, before the paragraphs.
+- Always include `class="lesson-slide"` and `alt=""` (or a short alt if the image carries information the body copy doesn't).
+- Use Cloudinary URLs with `f_auto,q_auto` transforms so the block can resize them responsively. Folder convention: `tiktok-academy/<category>/lesson-NN/slides/slide-XX.png`.
+- No `width`, `height`, `style`, `loading`, or any other attributes.
+
+### Callouts (optional)
+```html
+<div class="callout">
+  <p>This is a highlighted insight, definition, or warning. Use sparingly — once or twice per lesson at most.</p>
+</div>
+```
+- A `<div class="callout">` wraps one or more `<p>` blocks that should render as a pulled-out box.
+- No other classes. No nested callouts.
+
+### Quizzes (inline, optional)
+```html
+<div class="quiz" data-question="What percentage of TikTok Shop revenue comes from creators with under 50K followers?">
+  <div>20%</div>
+  <div>50%</div>
+  <div data-correct="true">80%</div>
+  <div>95%</div>
+</div>
+```
+- The question goes on the container via `data-question="…"`. Keep it to one sentence.
+- Each answer is a direct child `<div>` with the answer text as plain text.
+- Mark exactly one answer with `data-correct="true"`.
+- 3–5 answers. Keep them short.
+- There is no scoring and no storage — quizzes are just in-lesson self-checks. The block re-renders these divs as styled cards and reveals the correct answer on click.
+
+## Structural rules for a whole lesson body
+
+1. **Optional intro paragraph** at the very top, before any `<h2>`. Use this to tell the reader what they're about to watch/read and how to work through the lesson. Keep it short.
+2. **Sections** follow the intro. Each section is:
+   - `<h2 id="sec-N">Title</h2>`
+   - optional `<img class="lesson-slide" …>` immediately after the heading
+   - one or more `<p>` blocks explaining the slide / delivering the teaching
+   - optional `<ul>` / `<ol>` / `<div class="callout">` / `<div class="quiz">` mixed in where they belong
+3. Sections are numbered **sequentially** (`sec-1`, `sec-2`, `sec-3`, …). Do not skip numbers. Do not reuse numbers across lessons — each lesson starts at `sec-1` again.
+4. **No horizontal rules, no tables, no blockquotes, no code blocks.** If you need to emphasise something, use a callout.
+5. **No emoji used for UI purposes.** Emoji inside body copy is fine when it's part of the voice, but don't use ✓ ✗ ▶ ⭐ etc. as visual indicators — the block handles those with CSS.
+6. **Never paste Canva iframes.** The video embed comes from the `Explainer` URL field. If you find yourself copying `<iframe src="https://www.canva.com/…">`, that URL belongs in `Explainer`, not in the body.
+
+## Worked examples (from Lesson 1)
+
+### Example 1 — intro + first section with a slide, a paragraph with emphasis, and a quiz
+
+```html
+<p>Welcome to your first lesson. Before we get into <em>how</em> to create content that sells, you need to understand what TikTok Shop actually is, how creators earn from it, and why right now is the best time to start. Watch the video above first, then walk through the slides below.</p>
+
+<h2 id="sec-1">You don't need to be famous to start</h2>
+
+<img class="lesson-slide" src="https://res.cloudinary.com/dmrekfwpj/image/upload/f_auto,q_auto/tiktok-academy/shop/lesson-01/slides/slide-02.png" alt="" />
+
+<p>Here's the stat that changes everything: <strong>80% of TikTok Shop revenue comes from creators with fewer than 50,000 followers.</strong> Not the mega-influencers. Normal creators, with normal followings, earning real money every single day.</p>
+
+<div class="quiz" data-question="What percentage of TikTok Shop revenue comes from creators with under 50K followers?">
+  <div>20%</div>
+  <div>50%</div>
+  <div data-correct="true">80%</div>
+  <div>95%</div>
+</div>
+```
+
+### Example 2 — section with bold-led list items (no callout, no quiz)
+
+```html
+<h2 id="sec-2">The ecosystem: 4 ways to shop &amp; sell</h2>
+
+<img class="lesson-slide" src="https://res.cloudinary.com/dmrekfwpj/image/upload/f_auto,q_auto/tiktok-academy/shop/lesson-01/slides/slide-03.png" alt="" />
+
+<p>TikTok Shop has four touchpoints where shoppers find and buy products, and each one is a different doorway for you to earn:</p>
+
+<ul>
+  <li><strong>Shoppable Videos</strong> — normal TikToks with a product link attached.</li>
+  <li><strong>Shop Page</strong> — a dedicated shopping tab inside the app where people browse like they would on Amazon.</li>
+  <li><strong>Live Shopping</strong> — sell during a LIVE stream in real time.</li>
+  <li><strong>Shop Tab</strong> — your profile tab where followers can browse everything you've ever tagged.</li>
+</ul>
+
+<p>You don't have to pick one — most creators end up using all four as they grow.</p>
+```
+
+### Example 3 — section with a callout and a link out
+
+```html
+<h2 id="sec-7">The TAP advantage</h2>
+
+<img class="lesson-slide" src="https://res.cloudinary.com/dmrekfwpj/image/upload/f_auto,q_auto/tiktok-academy/shop/lesson-01/slides/slide-08.png" alt="" />
+
+<p>When you join the <strong>TikTok Affiliate Program</strong>, you unlock shoppable videos even before you hit 1,000 followers, and you get priority access to products and campaigns that independent creators don't see.</p>
+
+<div class="callout">
+  <p>The TAP advantage is why Creator Scans members close the gap between "just started" and "earning every week" faster than creators who go it alone.</p>
+</div>
+
+<p>Read more about how it works <a href="https://creatorscans.com/tiktok-affiliate-program">on our site</a> once you're done with the lesson.</p>
+```
+
+## Authoring workflow
+
+When asked to write a new lesson body from a Canva slide PDF or outline:
+
+1. **Know the category and lesson number** up front (SHOP / LIVE / ORGANIC / PLATFORM, Lesson N). These determine the Cloudinary folder path for slides (`tiktok-academy/<category>/lesson-NN/slides/…`).
+2. **Decide on the section breakdown first.** Read the outline, group the slides into topical sections, and draft the `<h2>` titles before writing any body copy. Aim for 8–15 sections per lesson.
+3. **Draft each section** as: heading → slide image → 1–3 paragraphs → optional list/callout/quiz.
+4. **Add quizzes sparingly.** Use them to check one concrete fact per section; not every section needs one. A 14-section lesson with 4–6 quizzes feels right.
+5. **Validate the output** before pasting into Softr:
+   - No `style="` attributes anywhere.
+   - No `<style>`, `<script>`, `<iframe>`, `<table>`, `<blockquote>`, `<details>`, `<summary>`, `<br>`, or `<h1>/<h3>/<h4>/<h5>/<h6>` tags.
+   - Every `<img>` has `class="lesson-slide"` and an `alt` attribute.
+   - Every `<div class="quiz">` has `data-question` and exactly one child marked `data-correct="true"`.
+   - Section IDs are `sec-1`, `sec-2`, … sequential, no gaps.
+6. **Paste into the `Lesson` field** of the target record in Softr. Nothing else changes.
+
+## What NOT to do — common mistakes
+
+- ❌ Copying a Canva block with the iframe wrapper. The iframe URL belongs in `Explainer`.
+- ❌ Adding inline colours (`style="color:#294ff6"`) to match the brand palette. Brand colours are applied by the block's CSS — raw HTML should be uncoloured.
+- ❌ Using `<div>` with custom classes to build layouts. The only allowed classes are `lesson-slide`, `callout`, `quiz`, and the `data-*` attributes on `.quiz` children.
+- ❌ Putting the TOC in the body. There is no TOC field and no TOC render in v3 — delete any `<nav>`, `<ul class="toc">`, etc.
+- ❌ Putting the podcast link in the body. The block renders the `Podcast` attachment as a dedicated player card above the lesson body.
+- ❌ Using `<details>` / `<summary>` for quizzes. The block re-renders `.quiz` divs as styled cards — using native `<details>` breaks this.
+- ❌ Uploading the same slide twice because you forgot to number the Cloudinary files. Slides are numbered `slide-02`, `slide-03`, … (slide-01 is usually the cover, which the block doesn't show).
+- ❌ Writing a lesson with no `<h2 id="sec-N">` sections at all. The block assumes sections exist for scroll tracking.
+
+## Reference implementation
+
+See `tiktok-academy/lessons/lesson-01-clean.html` for a complete, validated body. That file is the canonical example of the whitelist applied to a real lesson — use it as a template when authoring new lessons or rewriting legacy ones.
