@@ -27,7 +27,7 @@ import {
 
 const courseFields = q.select({
   name: "4e8yM",              // SINGLE_LINE_TEXT — course title
-  thumbnail: "hLsGv",         // URL — hero thumbnail
+  thumbnail: "KZbJf",         // ATTACHMENT/URL — Course Cover (9:16 vertical)
   about: "ck1JJ",             // LONG_TEXT — rich text
   whatYouLearn: "63H4g",      // LONG_TEXT — rich text (bulleted)
   overview: "f32JB",          // LONG_TEXT — short overview for hero sub
@@ -259,7 +259,7 @@ const S = {
     position: "relative",
     borderRadius: 20,
     overflow: "hidden",
-    aspectRatio: "4 / 3",
+    aspectRatio: "9 / 16",
     boxShadow: "0 20px 50px rgba(0, 0, 0, 0.35)",
     border: "1px solid rgba(122, 147, 255, 0.3)",
     background:
@@ -789,16 +789,43 @@ export default function Block() {
   const recordId = useCurrentRecordId();
   const { data, status } = useRecord({ recordId, select: courseFields });
 
-  // Linked lessons (returns { id, title } per item).
+  // useLinkedRecords returns ALL records in the linked Lessons table — it's
+  // designed for dropdowns, not for "lessons linked to THIS course". The set
+  // of 7 lesson IDs actually linked to this course lives in
+  // data.fields.lessons (LINKED_RECORD → array of record IDs). We fetch the
+  // full lesson pool here just to get titles, then intersect below.
   const { data: linkedLessonData } = useLinkedRecords({
     select: courseFields,
     field: "lessons",
     count: 100,
   });
-  const linkedLessons = useMemo(
+  const allLessonItems = useMemo(
     () => linkedLessonData?.pages.flatMap((p) => p.items) ?? [],
     [linkedLessonData],
   );
+
+  // The authoritative list of lesson IDs linked to THIS course.
+  const linkedLessonIds = useMemo(() => {
+    const raw = data?.fields?.lessons;
+    if (!raw) return [];
+    if (Array.isArray(raw)) {
+      return raw
+        .map((v) => (typeof v === "string" ? v : v?.id))
+        .filter(Boolean);
+    }
+    if (typeof raw === "string") return [raw];
+    if (raw?.id) return [raw.id];
+    return [];
+  }, [data?.fields?.lessons]);
+
+  // Join ordered IDs against the title pool so each card has a label.
+  const linkedLessons = useMemo(() => {
+    const byId = new Map(allLessonItems.map((l) => [l.id, l]));
+    return linkedLessonIds.map((id) => {
+      const hit = byId.get(id);
+      return hit || { id, title: "" };
+    });
+  }, [linkedLessonIds, allLessonItems]);
 
   const [isMobile, setIsMobile] = useState(false);
   const [completedIds, setCompletedIds] = useState(new Set());
@@ -857,7 +884,9 @@ export default function Block() {
   const learnItems = useMemo(() => parseLearnList(learnHtml), [learnHtml]);
 
   // Compute totals / progress / next-up lesson.
-  const totalLessons = linkedLessons.length || rollupCount || 0;
+  // Trust the rollup "Number of lessons" field (DiFh2) first — it's the
+  // authoritative count. Fall back to the linked ID array length.
+  const totalLessons = rollupCount || linkedLessonIds.length || linkedLessons.length || 0;
   const doneCount = linkedLessons.reduce(
     (n, l) => (completedIds.has(l.id) ? n + 1 : n),
     0,
