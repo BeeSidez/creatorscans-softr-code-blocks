@@ -1236,7 +1236,6 @@ export default function Block() {
           <div style={S.heroInner}>
             {lessonNumber && <span style={S.heroEyebrow}>{lessonNumber}</span>}
             <h1 style={S.heroTitle(isMobile)}>{lessonName}</h1>
-            {lessonDesc && <p style={S.heroSub}>{lessonDesc}</p>}
             <div style={S.chips}>
               {categoryLabel && (
                 <span style={S.chip}>
