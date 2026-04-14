@@ -85,6 +85,19 @@ function selectLabel(val) {
   return String(val);
 }
 
+// Strip HTML tags from a rich-text field and return clean text.
+// The Description field in Softr stores wrapped HTML like
+// <div class="lesson-description"><p>…</p></div> — we want just the text.
+function htmlToText(html) {
+  if (!html) return "";
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return (doc.body.textContent || "").trim();
+  } catch (e) {
+    return String(html).replace(/<[^>]*>/g, "").trim();
+  }
+}
+
 function normaliseCanvaUrl(url) {
   if (!url) return null;
   if (url.includes("/embed")) return url;
@@ -981,7 +994,7 @@ export default function Block() {
   const lessonBody = data?.fields?.body || "";
   const lessonName = data?.fields?.name || "";
   const lessonNumber = data?.fields?.lessonNumber || "";
-  const lessonDesc = data?.fields?.description || "";
+  const lessonDesc = htmlToText(data?.fields?.description);
   const lessonDuration = data?.fields?.duration || "";
   const categoryLabel = selectLabel(data?.fields?.category);
   const difficultyLabel = selectLabel(data?.fields?.difficulty);
