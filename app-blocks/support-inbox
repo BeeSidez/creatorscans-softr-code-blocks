@@ -1,0 +1,811 @@
+import { useState, useMemo, useRef } from "react";
+import { useRecords, useRecordCreate, useUpload, q } from "@/lib/datasource";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Inbox, Upload, X, ChevronLeft, Search } from "lucide-react";
+import { toast } from "sonner";
+
+// Brand palette (matches creator-dashboard and ai-ugc-image-prompter blocks)
+const CS = {
+  blue: "#294ff6",
+  blue2: "#4466f8",
+  navy: "#000f4d",
+  navy2: "#001364",
+  navy3: "#152237",
+  light1: "#f8fbff",
+  light2: "#eef4fd",
+  light3: "#fafbff",
+  lavender: "#d8d8ff",
+  border: "#e4ebf8",
+  muted: "#6b7a99",
+  red: "#fe2c55",
+};
+
+// Field IDs from Requests table (Softr: Content Tracking App > Requests)
+const select = q.select({
+  notes: "cy26q",
+  request: "zPHQj",
+  url: "F9w1N",
+  screenshot: "JawzO",
+  status: "QoxNq",
+  response: "JRkff",
+  autoResponse: "DMsWn",
+  responseWrittenAt: "IjEqh",
+  icon: "mg4lD",
+  priority: "t02Vn",
+  sentiment: "NVIXX",
+  createdAt: "qebKD",
+  lastUpdatedAt: "wI0oD",
+  fullName: "RglZy",
+  firstName: "ViX4Z",
+});
+
+// Request type option UUIDs (from the Request SELECT field)
+const REQUEST_TYPES = {
+  productSample: {
+    id: "2a592633-d568-437b-b709-fde9d6c1ce5e",
+    label: "Product sample request",
+    short: "Product sample",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/product_sample_c9xfzj.png",
+    blurb: "Request a free sample from a brand",
+    form: "url",
+    detailsLabel: "Details (optional)",
+    detailsPlaceholder: "Wireless headphones for tech review content, my audience loves audio gear",
+    urlLabel: "Product URL",
+    urlPlaceholder: "https://affiliate.tiktokshop.com/connection/product/...",
+    primary: true,
+  },
+  commissionRate: {
+    id: "524d2715-5117-499e-8e21-0cf611e9489e",
+    label: "Commission rate check",
+    short: "Commission rate",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/commission_check_gbxuon.png",
+    blurb: "Ask us to check for a higher rate",
+    form: "url",
+    detailsLabel: "Details (optional)",
+    detailsPlaceholder: "Promoting this product regularly, want to check if higher rate available",
+    urlLabel: "Product URL",
+    urlPlaceholder: "https://affiliate.tiktokshop.com/connection/product/...",
+    primary: true,
+  },
+  violation: {
+    id: "b2326429-2879-425c-bb35-5a8580e4c661",
+    label: "Violation/ban support",
+    short: "Violation or ban",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/violation_ban_y09aqw.png",
+    blurb: "Report a ban or violation, we'll escalate for you",
+    form: "report",
+    detailsLabel: "What happened",
+    detailsPlaceholder: "Banned on 15 Jan for 'dangerous content' after posting a skincare routine. Appeal rejected. Need help escalating.",
+    allowUpload: true,
+    primary: true,
+  },
+  billing: {
+    id: "312273f5-b900-4a5b-b71f-7b61b18fb56f",
+    label: "Payment/billing question",
+    short: "Billing question",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/billing_pastmw.png",
+    blurb: "Payment, invoice or billing question",
+    form: "report",
+    detailsLabel: "What's the question",
+    detailsPlaceholder: "Describe your billing issue",
+    primary: false,
+  },
+  technical: {
+    id: "f2fed91e-0f60-4edd-b756-a7b641f3e7e3",
+    label: "Platform technical issue",
+    short: "Technical issue",
+    icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/technical_issue_itdyyi.png",
+    blurb: "Bug or issue with the app",
+    form: "report",
+    detailsLabel: "What's happening",
+    detailsPlaceholder: "Describe the problem and what you were doing when it happened",
+    allowUpload: true,
+    primary: false,
+  },
+};
+
+const PRIMARY_TYPES = Object.values(REQUEST_TYPES).filter((t) => t.primary);
+const SECONDARY_TYPES = Object.values(REQUEST_TYPES).filter((t) => !t.primary);
+
+const STATUS_OPTIONS = {
+  new: { id: "7ba10cf6-68fd-4d0c-a8eb-5b08b1f99984", label: "New", bg: "#fde7ee", fg: "#c11a47" },
+  inProgress: { id: "9141fa68-4480-4322-a3e9-4571ffdc7f3e", label: "In progress", bg: "#dbe7ff", fg: "#1e40af" },
+  resolved: { id: "cac149d8-58b8-466f-b90d-d2e8931c0f4f", label: "Resolved", bg: "#dff4e7", fg: "#0f7a3a" },
+};
+
+// ---- helpers ----
+
+const readLabel = (val) => {
+  if (!val) return null;
+  if (typeof val === "string") return val;
+  if (Array.isArray(val)) return val[0]?.label || val[0]?.name || val[0] || null;
+  return val.label || val.name || null;
+};
+
+const readId = (val) => {
+  if (!val) return null;
+  if (typeof val === "string") return val;
+  if (Array.isArray(val)) return val[0]?.id || null;
+  return val.id || null;
+};
+
+const getStatusStyle = (statusVal) => {
+  const label = readLabel(statusVal);
+  if (label === "Resolved") return STATUS_OPTIONS.resolved;
+  if (label === "In progress") return STATUS_OPTIONS.inProgress;
+  return STATUS_OPTIONS.new;
+};
+
+const getRequestType = (requestVal) => {
+  const id = readId(requestVal);
+  const label = readLabel(requestVal);
+  return Object.values(REQUEST_TYPES).find((t) => t.id === id || t.label === label) || null;
+};
+
+const relativeTime = (iso) => {
+  if (!iso) return "";
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diff = Math.max(0, now - then);
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return mins + "m";
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + "h";
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "yesterday";
+  if (days < 7) return days + "d";
+  const d = new Date(iso);
+  const month = d.toLocaleString("en-GB", { month: "short" });
+  return d.getDate() + " " + month;
+};
+
+const fullTimestamp = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+};
+
+const truncate = (s, n) => {
+  if (!s) return "";
+  return s.length > n ? s.slice(0, n - 1) + "…" : s;
+};
+
+// ---- sub-components ----
+
+function StatusPill({ status }) {
+  const s = getStatusStyle(status);
+  return (
+    <span
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+      style={{ background: s.bg, color: s.fg }}
+    >
+      {s.label}
+    </span>
+  );
+}
+
+function RequestRow({ record, active, onClick }) {
+  const type = getRequestType(record.fields.request);
+  const iconUrl = record.fields.icon || type?.icon;
+  const title = type?.short || "Request";
+  const preview = truncate(record.fields.notes || "", 60);
+  const time = relativeTime(record.updatedAt || record.fields.lastUpdatedAt || record.fields.createdAt || record.createdAt);
+  const status = record.fields.status;
+  const hasReply = !!record.fields.response;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left border-b transition-colors"
+      style={{
+        background: active ? CS.light2 : "transparent",
+        borderColor: CS.border,
+      }}
+    >
+      <div className="flex gap-3 px-4 py-3">
+        {iconUrl ? (
+          <img src={iconUrl} alt="" className="w-9 h-9 flex-shrink-0 object-contain" />
+        ) : (
+          <div className="w-9 h-9 flex-shrink-0 rounded-full" style={{ background: CS.light2 }} />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="font-semibold text-sm truncate" style={{ color: CS.navy }}>
+              {title}
+            </div>
+            <div className="text-xs flex-shrink-0" style={{ color: CS.muted }}>
+              {time}
+            </div>
+          </div>
+          <div className="text-xs mt-0.5 truncate" style={{ color: CS.muted }}>
+            {preview || "No details"}
+          </div>
+          <div className="flex items-center gap-2 mt-1.5">
+            <StatusPill status={status} />
+            {hasReply && (
+              <span className="text-xs" style={{ color: CS.blue }}>
+                • replied
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function Bubble({ from, children, time, subtitle }) {
+  const isCreator = from === "creator";
+  return (
+    <div className={"flex " + (isCreator ? "justify-end" : "justify-start")}>
+      <div className="max-w-[80%]">
+        {subtitle && (
+          <div
+            className={"text-xs mb-1 " + (isCreator ? "text-right" : "text-left")}
+            style={{ color: CS.muted }}
+          >
+            {subtitle}
+          </div>
+        )}
+        <div
+          className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap"
+          style={{
+            background: isCreator ? CS.navy : CS.light2,
+            color: isCreator ? "#fff" : CS.navy,
+          }}
+        >
+          {children}
+        </div>
+        {time && (
+          <div
+            className={"text-xs mt-1 " + (isCreator ? "text-right" : "text-left")}
+            style={{ color: CS.muted }}
+          >
+            {time}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ThreadHeader({ record, onBack }) {
+  const type = getRequestType(record.fields.request);
+  return (
+    <div
+      className="flex items-center gap-3 px-5 py-4 border-b"
+      style={{ borderColor: CS.border, background: "#fff" }}
+    >
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="md:hidden -ml-1 p-1 rounded hover:bg-black/5"
+          aria-label="Back"
+        >
+          <ChevronLeft size={20} color={CS.navy} />
+        </button>
+      )}
+      {type?.icon && <img src={type.icon} alt="" className="w-8 h-8 object-contain" />}
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold text-sm truncate" style={{ color: CS.navy }}>
+          {type?.short || "Request"}
+        </div>
+        <div className="text-xs" style={{ color: CS.muted }}>
+          Opened {relativeTime(record.fields.createdAt || record.createdAt)}
+        </div>
+      </div>
+      <StatusPill status={record.fields.status} />
+    </div>
+  );
+}
+
+function Thread({ record, onBack }) {
+  const attachmentUrl = record.fields.screenshot?.url || (Array.isArray(record.fields.screenshot) && record.fields.screenshot[0]?.url);
+  const url = record.fields.url;
+  const notes = record.fields.notes;
+  const auto = record.fields.autoResponse;
+  const response = record.fields.response;
+  const responseAt = record.fields.responseWrittenAt;
+  const createdAt = record.fields.createdAt || record.createdAt;
+
+  return (
+    <div className="flex flex-col h-full" style={{ background: "#fff" }}>
+      <ThreadHeader record={record} onBack={onBack} />
+
+      <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
+        {/* creator's message */}
+        <Bubble from="creator" time={fullTimestamp(createdAt)} subtitle="You">
+          {url && (
+            <div className="mb-2">
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline break-all"
+                style={{ color: "#c7d3ff" }}
+              >
+                {truncate(url, 60)}
+              </a>
+            </div>
+          )}
+          {notes || <em style={{ opacity: 0.7 }}>No details</em>}
+          {attachmentUrl && (
+            <div className="mt-2">
+              <a
+                href={attachmentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+                style={{ color: "#c7d3ff" }}
+              >
+                View attachment
+              </a>
+            </div>
+          )}
+        </Bubble>
+
+        {/* auto response from Creator Scans */}
+        {auto && (
+          <Bubble from="agent" time={fullTimestamp(createdAt)} subtitle="Creator Scans">
+            {auto}
+          </Bubble>
+        )}
+
+        {/* written response from Bev */}
+        {response && (
+          <Bubble from="agent" time={fullTimestamp(responseAt)} subtitle="Creator Scans">
+            {response}
+          </Bubble>
+        )}
+
+        {!response && (
+          <div className="text-center text-xs pt-2" style={{ color: CS.muted }}>
+            We'll reply here as soon as we've looked into it.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EmptyThread() {
+  return (
+    <div
+      className="flex flex-col items-center justify-center h-full px-6 text-center"
+      style={{ background: "#fff", color: CS.muted }}
+    >
+      <Inbox size={40} color={CS.blue} strokeWidth={1.5} />
+      <div className="mt-3 text-sm font-medium" style={{ color: CS.navy }}>
+        Select a request
+      </div>
+      <div className="text-xs mt-1 max-w-xs">
+        Pick one on the left to see the conversation, or tap + New request to start one.
+      </div>
+    </div>
+  );
+}
+
+function EmptyInbox({ onNew }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full px-6 text-center py-16">
+      <Inbox size={40} color={CS.blue} strokeWidth={1.5} />
+      <div className="mt-3 text-sm font-medium" style={{ color: CS.navy }}>
+        No requests yet
+      </div>
+      <div className="text-xs mt-1 max-w-xs" style={{ color: CS.muted }}>
+        Need a product sample, a commission check, or help with a ban? Start a request.
+      </div>
+      <Button
+        onClick={onNew}
+        className="mt-4"
+        style={{ background: CS.navy, color: "#fff" }}
+      >
+        <Plus size={16} className="mr-1" /> New request
+      </Button>
+    </div>
+  );
+}
+
+// ---- new request flow ----
+
+function TypeTile({ type, onPick }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onPick(type)}
+      className="w-full flex items-center gap-3 p-3 rounded-xl border transition-colors hover:border-[color:var(--cs-blue)]"
+      style={{ borderColor: CS.border, background: "#fff" }}
+    >
+      <img src={type.icon} alt="" className="w-10 h-10 object-contain flex-shrink-0" />
+      <div className="text-left flex-1 min-w-0">
+        <div className="font-semibold text-sm" style={{ color: CS.navy }}>
+          {type.short}
+        </div>
+        <div className="text-xs" style={{ color: CS.muted }}>
+          {type.blurb}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function NewRequestPicker({ onPick }) {
+  const [showSecondary, setShowSecondary] = useState(false);
+  return (
+    <div className="space-y-2">
+      {!showSecondary && (
+        <>
+          {PRIMARY_TYPES.map((t) => (
+            <TypeTile key={t.id} type={t} onPick={onPick} />
+          ))}
+          <button
+            type="button"
+            onClick={() => setShowSecondary(true)}
+            className="w-full text-left text-xs pt-2 pb-1 px-1 underline"
+            style={{ color: CS.muted }}
+          >
+            Different issue? Report a billing or technical problem →
+          </button>
+        </>
+      )}
+      {showSecondary && (
+        <>
+          <button
+            type="button"
+            onClick={() => setShowSecondary(false)}
+            className="flex items-center gap-1 text-xs px-1 mb-1"
+            style={{ color: CS.muted }}
+          >
+            <ChevronLeft size={14} /> Back
+          </button>
+          {SECONDARY_TYPES.map((t) => (
+            <TypeTile key={t.id} type={t} onPick={onPick} />
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
+function RequestForm({ type, onCancel, onSubmitted }) {
+  const [url, setUrl] = useState("");
+  const [notes, setNotes] = useState("");
+  const [file, setFile] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const createRecord = useRecordCreate({ fields: select });
+  const upload = useUpload();
+
+  const isUrlForm = type.form === "url";
+  const urlInvalid = isUrlForm && !url.trim();
+  const notesInvalid = !isUrlForm && !notes.trim();
+  const disabled = submitting || !createRecord.enabled || urlInvalid || notesInvalid;
+
+  const handleSubmit = async () => {
+    if (disabled) return;
+    setSubmitting(true);
+    try {
+      const fields = {
+        request: type.id,
+        status: STATUS_OPTIONS.new.id,
+      };
+      if (isUrlForm) {
+        fields.url = url.trim();
+        if (notes.trim()) fields.notes = notes.trim();
+      } else {
+        fields.notes = notes.trim();
+      }
+      if (type.allowUpload && file) {
+        const uploaded = await upload.mutateAsync(file);
+        fields.screenshot = uploaded;
+      }
+      await createRecord.mutateAsync(fields);
+      toast.success("Request sent. We'll reply here shortly.");
+      onSubmitted();
+    } catch (e) {
+      toast.error("Could not send request", { description: e?.message || "Please try again." });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 pb-2">
+        <img src={type.icon} alt="" className="w-10 h-10 object-contain" />
+        <div>
+          <div className="font-semibold text-sm" style={{ color: CS.navy }}>
+            {type.label}
+          </div>
+          <div className="text-xs" style={{ color: CS.muted }}>
+            {type.blurb}
+          </div>
+        </div>
+      </div>
+
+      {isUrlForm && (
+        <div className="space-y-1.5">
+          <Label className="text-xs" style={{ color: CS.navy }}>
+            {type.urlLabel} <span style={{ color: CS.red }}>*</span>
+          </Label>
+          <Input
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder={type.urlPlaceholder}
+            disabled={submitting}
+          />
+        </div>
+      )}
+
+      <div className="space-y-1.5">
+        <Label className="text-xs" style={{ color: CS.navy }}>
+          {type.detailsLabel}
+          {!isUrlForm && <span style={{ color: CS.red }}> *</span>}
+        </Label>
+        <Textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder={type.detailsPlaceholder}
+          rows={4}
+          disabled={submitting}
+        />
+      </div>
+
+      {type.allowUpload && (
+        <div className="space-y-1.5">
+          <Label className="text-xs" style={{ color: CS.navy }}>
+            Evidence (optional)
+          </Label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg"
+            className="hidden"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+          />
+          {!file ? (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-6 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors"
+              style={{ borderColor: CS.border, color: CS.muted, background: CS.light3 }}
+              disabled={submitting}
+            >
+              <Upload size={18} />
+              <span className="text-xs">Upload screenshot (PNG or JPEG)</span>
+            </button>
+          ) : (
+            <div
+              className="flex items-center justify-between p-3 rounded-xl border"
+              style={{ borderColor: CS.border, background: CS.light3 }}
+            >
+              <span className="text-xs truncate" style={{ color: CS.navy }}>
+                {file.name}
+              </span>
+              <button
+                type="button"
+                onClick={() => setFile(null)}
+                className="p-1 rounded hover:bg-black/5"
+                disabled={submitting}
+                aria-label="Remove file"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      <DialogFooter className="gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={disabled}
+          style={{ background: CS.navy, color: "#fff" }}
+        >
+          {submitting ? "Sending..." : "Send request"}
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
+
+function NewRequestDialog({ open, onOpenChange, onSubmitted }) {
+  const [stage, setStage] = useState("pick");
+  const [picked, setPicked] = useState(null);
+
+  const handleOpenChange = (v) => {
+    if (!v) {
+      setStage("pick");
+      setPicked(null);
+    }
+    onOpenChange(v);
+  };
+
+  const handlePick = (type) => {
+    setPicked(type);
+    setStage("form");
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle style={{ color: CS.navy }}>
+            {stage === "pick" ? "What do you need?" : "New request"}
+          </DialogTitle>
+        </DialogHeader>
+        {stage === "pick" && <NewRequestPicker onPick={handlePick} />}
+        {stage === "form" && picked && (
+          <RequestForm
+            type={picked}
+            onCancel={() => {
+              setStage("pick");
+              setPicked(null);
+            }}
+            onSubmitted={() => {
+              handleOpenChange(false);
+              onSubmitted();
+            }}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ---- main block ----
+
+export default function Block() {
+  const { data, status, refetch } = useRecords({ select, count: 200 });
+  const [selectedId, setSelectedId] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const items = useMemo(() => {
+    const raw = data?.pages.flatMap((p) => p.items) || [];
+    return [...raw].sort((a, b) => {
+      const ta = new Date(a.updatedAt || a.fields.lastUpdatedAt || a.createdAt || 0).getTime();
+      const tb = new Date(b.updatedAt || b.fields.lastUpdatedAt || b.createdAt || 0).getTime();
+      return tb - ta;
+    });
+  }, [data]);
+
+  const filteredItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((r) => {
+      const type = getRequestType(r.fields.request);
+      const haystack = [r.fields.notes || "", r.fields.response || "", type?.label || ""]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [items, search]);
+
+  const selected = items.find((r) => r.id === selectedId);
+
+  const isLoading = status === "pending";
+  const hasAny = items.length > 0;
+
+  return (
+    <div className="container py-6" style={{ color: CS.navy }}>
+      <style>{`:root { --cs-blue: ${CS.blue}; }`}</style>
+      <div
+        className="overflow-hidden rounded-2xl border"
+        style={{ borderColor: CS.border, background: "#fff" }}
+      >
+        {/* header bar */}
+        <div
+          className="flex items-center justify-between px-5 py-3 border-b"
+          style={{ borderColor: CS.border, background: CS.light3 }}
+        >
+          <div className="flex items-center gap-2">
+            <Inbox size={18} color={CS.navy} />
+            <span className="font-semibold text-sm" style={{ color: CS.navy }}>
+              Support
+            </span>
+            {hasAny && (
+              <span className="text-xs" style={{ color: CS.muted }}>
+                {items.length} request{items.length === 1 ? "" : "s"}
+              </span>
+            )}
+          </div>
+          <Button
+            onClick={() => setDialogOpen(true)}
+            size="sm"
+            style={{ background: CS.navy, color: "#fff" }}
+          >
+            <Plus size={16} className="mr-1" /> New request
+          </Button>
+        </div>
+
+        {/* body */}
+        {isLoading ? (
+          <div className="p-10 text-center text-sm" style={{ color: CS.muted }}>
+            Loading your requests…
+          </div>
+        ) : !hasAny ? (
+          <EmptyInbox onNew={() => setDialogOpen(true)} />
+        ) : (
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: "minmax(0, 340px) minmax(0, 1fr)",
+              minHeight: "540px",
+            }}
+          >
+            {/* left rail */}
+            <div
+              className="border-r flex flex-col"
+              style={{ borderColor: CS.border, background: "#fff" }}
+            >
+              {items.length >= 5 && (
+                <div className="p-3 border-b" style={{ borderColor: CS.border }}>
+                  <div className="relative">
+                    <Search
+                      size={14}
+                      color={CS.muted}
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2"
+                    />
+                    <Input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search requests"
+                      className="pl-8 h-8 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="overflow-y-auto flex-1">
+                {filteredItems.length === 0 ? (
+                  <div className="p-6 text-center text-xs" style={{ color: CS.muted }}>
+                    No matches.
+                  </div>
+                ) : (
+                  filteredItems.map((r) => (
+                    <RequestRow
+                      key={r.id}
+                      record={r}
+                      active={r.id === selectedId}
+                      onClick={() => setSelectedId(r.id)}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* right panel */}
+            <div style={{ background: CS.light3 }}>
+              {selected ? (
+                <Thread record={selected} onBack={() => setSelectedId(null)} />
+              ) : (
+                <EmptyThread />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <NewRequestDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubmitted={() => refetch?.()}
+      />
+    </div>
+  );
+}
