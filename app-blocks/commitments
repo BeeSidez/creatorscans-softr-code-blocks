@@ -1,0 +1,187 @@
+import { useRecord, useCurrentRecordId, q } from "@/lib/datasource";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { useImageSetting, useTextSetting } from "@/lib/editable-settings";
+
+const select = q.select({
+  memberName: "OZt9d",
+  weeklyLiveTarget: "6Dax4",
+  weeklyShopTarget: "3vrSz",
+  weeklyOrganicTarget: "ciAoc",
+  postsTarget: "h9xV4",
+  postsThisWeek: "MeEqL",
+  liveCompletedThisWeek: "eeAd3",
+  shopCompletedThisWeek: "UARou",
+  organicCompletedThisWeek: "9RWQS",
+  postsThisYear: "WSW3t",
+  liveCompletedThisYear: "N9LSj",
+  consistencyScore: "X2btC",
+  daysToWeekEnd: "sz0al",
+});
+
+export default function Block() {
+  const recordId = useCurrentRecordId();
+  const { data, status } = useRecord({ recordId, select });
+
+
+
+  if (status === "pending") {
+    return (
+      <div className="container py-12">
+        <div className="content flex items-center justify-center min-h-[400px]">
+          <div className="text-muted-foreground">Loading your dashboard...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "error" || !data) {
+    return (
+      <div className="container py-12">
+        <div className="content flex items-center justify-center min-h-[400px]">
+          <div className="text-muted-foreground">Unable to load dashboard data</div>
+        </div>
+      </div>
+    );
+  }
+
+  const postsProgress = data.fields.postsTarget > 0 ? Math.round((data.fields.postsThisWeek / data.fields.postsTarget) * 100) : 0;
+  const liveProgress = data.fields.weeklyLiveTarget > 0 ? Math.round((data.fields.liveCompletedThisWeek / data.fields.weeklyLiveTarget) * 100) : 0;
+  const consistencyScore = data.fields.consistencyScore || 0;
+
+  return (
+    <div className="container py-12">
+        <div className="content space-y-8">
+          {/* Main Tanks */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Post Tank */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">📝 Post Tank</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-5xl font-bold">{data.fields.postsThisWeek}</span>
+                  <span className="text-muted-foreground">
+                    / {data.fields.postsTarget} committed posts
+                  </span>
+                </div>
+                <Progress value={postsProgress} className="h-4" />
+                <div className="text-right text-sm text-muted-foreground">
+                  {postsProgress}%
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Live Tank */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">🎥 Live Tank</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-5xl font-bold">{data.fields.liveCompletedThisWeek}</span>
+                  <span className="text-muted-foreground">
+                    / {data.fields.weeklyLiveTarget} committed lives
+                  </span>
+                </div>
+                <Progress value={liveProgress} className="h-4" />
+                <div className="text-right text-sm text-muted-foreground">
+                  {liveProgress}%
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Consistency Score */}
+          <Card className="bg-gradient-to-br from-primary/5 to-accent/5">
+            <CardContent className="pt-6 space-y-4">
+              <div className="flex items-center gap-4">
+                <span className="text-4xl">⚡</span>
+                <span className="text-5xl font-bold">{consistencyScore}</span>
+              </div>
+              <div className="text-sm text-muted-foreground mb-2">
+                Keep climbing higher!
+              </div>
+              <div className="w-full bg-muted rounded-full h-5 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-red-400 via-orange-400 via-yellow-400 to-teal-400 transition-all duration-500"
+                  style={{ width: `${Math.min(consistencyScore, 100)}%` }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Year Streaks */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl">🔥</span>
+                  <div>
+                    <div className="text-5xl font-bold">{data.fields.postsThisYear}</div>
+                    <div className="text-sm text-muted-foreground">posts this year</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl">🚀</span>
+                  <div>
+                    <div className="text-5xl font-bold">{data.fields.liveCompletedThisYear}</div>
+                    <div className="text-sm text-muted-foreground">lives this year</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Weekly Breakdown */}
+          <div>
+            <h2 className="font-heading text-2xl mb-4">This Week's Breakdown</h2>
+            <div className="grid md:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">🛍️ Shop Content</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold mb-1">
+                    {data.fields.shopCompletedThisWeek} / {data.fields.weeklyShopTarget}
+                  </div>
+                  <div className="text-sm text-muted-foreground">completed</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">🎬 Live Content</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold mb-1">
+                    {data.fields.liveCompletedThisWeek} / {data.fields.weeklyLiveTarget}
+                  </div>
+                  <div className="text-sm text-muted-foreground">completed</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">🌱 Organic Content</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold mb-1">
+                    {data.fields.organicCompletedThisWeek} / {data.fields.weeklyOrganicTarget}
+                  </div>
+                  <div className="text-sm text-muted-foreground">completed</div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+    </div>
+  );
+}
