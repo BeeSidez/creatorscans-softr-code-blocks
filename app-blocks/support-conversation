@@ -1,0 +1,460 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRecords, useRecordCreate, q } from "@/lib/datasource";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Inbox, Send } from "lucide-react";
+import { toast } from "sonner";
+
+// Brand palette
+const CS = {
+  blue: "#294ff6",
+  navy: "#000f4d",
+  light1: "#f8fbff",
+  light2: "#eef4fd",
+  light3: "#fafbff",
+  border: "#e4ebf8",
+  muted: "#6b7a99",
+  red: "#fe2c55",
+};
+
+// Field IDs for the Request Messages table
+const select = q.select({
+  body: "e8e9T",
+  author: "WmHqO",
+  attachment: "MVeft",
+  request: "BrPBI",
+  createdAt: "b3lWn",
+});
+
+// Author SELECT option UUIDs
+const AUTHOR = {
+  creator: "eee45780-c11b-4dd4-ba32-54bffd7e2210",
+  agent: "ec89acae-2208-4c16-a0ec-dc6ac74025ef",
+};
+
+// Status + Request type (used for the header + icon)
+const STATUS_STYLES = {
+  New: { bg: "#fde7ee", fg: "#c11a47" },
+  "In progress": { bg: "#dbe7ff", fg: "#1e40af" },
+  Resolved: { bg: "#dff4e7", fg: "#0f7a3a" },
+};
+
+const REQUEST_TYPE_LABELS = {
+  "2a592633-d568-437b-b709-fde9d6c1ce5e": { short: "Product sample", icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/product_sample_c9xfzj.png" },
+  "524d2715-5117-499e-8e21-0cf611e9489e": { short: "Commission rate", icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/commission_check_gbxuon.png" },
+  "b2326429-2879-425c-bb35-5a8580e4c661": { short: "Violation or ban", icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/violation_ban_y09aqw.png" },
+  "312273f5-b900-4a5b-b71f-7b61b18fb56f": { short: "Billing question", icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/billing_pastmw.png" },
+  "f2fed91e-0f60-4edd-b756-a7b641f3e7e3": { short: "Technical issue", icon: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/technical_issue_itdyyi.png" },
+};
+
+// ---- helpers ----
+
+const readLabel = (val) => {
+  if (!val) return null;
+  if (typeof val === "string") return val;
+  if (Array.isArray(val)) return val[0]?.label || val[0]?.name || val[0] || null;
+  return val.label || val.name || null;
+};
+
+const readId = (val) => {
+  if (!val) return null;
+  if (typeof val === "string") return val;
+  if (Array.isArray(val)) return val[0]?.id || null;
+  return val.id || null;
+};
+
+const fmt = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const today = new Date();
+  const isToday =
+    d.getDate() === today.getDate() &&
+    d.getMonth() === today.getMonth() &&
+    d.getFullYear() === today.getFullYear();
+  if (isToday) {
+    return d.toLocaleString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  }
+  return d.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+// ---- sub-components ----
+
+function StatusPill({ label }) {
+  const s = STATUS_STYLES[label] || STATUS_STYLES["New"];
+  return (
+    <span
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+      style={{ background: s.bg, color: s.fg }}
+    >
+      {label || "New"}
+    </span>
+  );
+}
+
+function Bubble({ from, children, time, subtitle }) {
+  const isCreator = from === "creator";
+  return (
+    <div className={"flex " + (isCreator ? "justify-end" : "justify-start")}>
+      <div className="max-w-[80%]">
+        {subtitle && (
+          <div
+            className={"text-xs mb-1 " + (isCreator ? "text-right" : "text-left")}
+            style={{ color: CS.muted }}
+          >
+            {subtitle}
+          </div>
+        )}
+        <div
+          className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap break-words"
+          style={{
+            background: isCreator ? CS.navy : CS.light2,
+            color: isCreator ? "#fff" : CS.navy,
+          }}
+        >
+          {children}
+        </div>
+        {time && (
+          <div
+            className={"text-xs mt-1 " + (isCreator ? "text-right" : "text-left")}
+            style={{ color: CS.muted }}
+          >
+            {time}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TypingIndicator() {
+  return (
+    <div className="flex justify-start">
+      <div>
+        <div className="text-xs mb-1" style={{ color: CS.muted }}>
+          Creator Scans
+        </div>
+        <div
+          className="rounded-2xl px-4 py-3 inline-flex items-center gap-1.5"
+          style={{ background: CS.light2 }}
+        >
+          <span
+            className="w-2 h-2 rounded-full animate-bounce"
+            style={{ background: CS.muted, animationDelay: "0ms" }}
+          />
+          <span
+            className="w-2 h-2 rounded-full animate-bounce"
+            style={{ background: CS.muted, animationDelay: "150ms" }}
+          />
+          <span
+            className="w-2 h-2 rounded-full animate-bounce"
+            style={{ background: CS.muted, animationDelay: "300ms" }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ThreadHeader({ selected }) {
+  const requestTypeId = readId(selected.fields.request);
+  const type = REQUEST_TYPE_LABELS[requestTypeId] || { short: "Request", icon: null };
+  const statusLabel = readLabel(selected.fields.status);
+  const openedAt = selected.createdAt || selected.fields.createdAt;
+  return (
+    <div
+      className="flex items-center gap-3 px-5 py-4 border-b"
+      style={{ borderColor: CS.border, background: "#fff" }}
+    >
+      {type.icon && <img src={type.icon} alt="" className="w-8 h-8 object-contain" />}
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold text-sm truncate" style={{ color: CS.navy }}>
+          {type.short}
+        </div>
+        <div className="text-xs" style={{ color: CS.muted }}>
+          Opened {fmt(openedAt)}
+        </div>
+      </div>
+      <StatusPill label={statusLabel} />
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div
+      className="rounded-2xl border flex flex-col items-center justify-center py-16 px-6 text-center"
+      style={{ borderColor: CS.border, background: "#fff", minHeight: 280 }}
+    >
+      <Inbox size={36} color={CS.blue} strokeWidth={1.5} />
+      <div className="mt-3 text-sm font-medium" style={{ color: CS.navy }}>
+        Pick a request above
+      </div>
+      <div className="text-xs mt-1 max-w-xs" style={{ color: CS.muted }}>
+        Your conversation will show here.
+      </div>
+    </div>
+  );
+}
+
+// ---- main block ----
+
+export default function Block() {
+  const [selected, setSelected] = useState(null);
+  const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
+  const [showTyping, setShowTyping] = useState(false);
+  const justCreatedRef = useRef(new Set());
+  const typingShownRef = useRef(new Set());
+  const scrollRef = useRef(null);
+
+  const { data, status, refetch } = useRecords({ select, count: 500 });
+  const createMessage = useRecordCreate({ fields: select });
+
+  // Listen for selection events from the inbox block above
+  useEffect(() => {
+    const handler = (e) => {
+      const detail = e?.detail;
+      if (!detail?.id) return;
+      if (detail.justCreated) justCreatedRef.current.add(detail.id);
+      setSelected(detail);
+      setReply("");
+    };
+    window.addEventListener("cs-request-selected", handler);
+    return () => window.removeEventListener("cs-request-selected", handler);
+  }, []);
+
+  // Show typing indicator once per newly-created request (3-second fake "Bev is typing")
+  useEffect(() => {
+    if (!selected) return;
+    const id = selected.id;
+    if (justCreatedRef.current.has(id) && !typingShownRef.current.has(id)) {
+      setShowTyping(true);
+      typingShownRef.current.add(id);
+      const t = setTimeout(() => {
+        setShowTyping(false);
+        justCreatedRef.current.delete(id);
+      }, 3000);
+      return () => clearTimeout(t);
+    }
+    setShowTyping(false);
+  }, [selected]);
+
+  // Filter messages for currently-selected request, sorted oldest-first
+  const messages = useMemo(() => {
+    if (!selected) return [];
+    const all = data?.pages.flatMap((p) => p.items) || [];
+    return all
+      .filter((m) => {
+        const reqField = m.fields.request;
+        const reqId = Array.isArray(reqField) ? reqField[0]?.id : reqField?.id;
+        return reqId === selected.id;
+      })
+      .sort((a, b) => {
+        const ta = new Date(a.fields.createdAt || a.createdAt || 0).getTime();
+        const tb = new Date(b.fields.createdAt || b.createdAt || 0).getTime();
+        return ta - tb;
+      });
+  }, [data, selected]);
+
+  // Auto-scroll to bottom on new bubble / request change
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages.length, showTyping, selected?.id]);
+
+  // Poll for Bev's replies every 30s while a request is open
+  useEffect(() => {
+    if (!selected) return;
+    const interval = setInterval(() => {
+      refetch?.();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [selected, refetch]);
+
+  // Also refetch when tab regains focus
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "visible") refetch?.();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [refetch]);
+
+  const handleSend = async () => {
+    if (!reply.trim() || !selected || sending) return;
+    if (!createMessage.enabled) {
+      toast.error("Cannot send right now.");
+      return;
+    }
+    setSending(true);
+    try {
+      await createMessage.mutateAsync({
+        body: reply.trim(),
+        author: AUTHOR.creator,
+        request: [{ id: selected.id }],
+      });
+      setReply("");
+      await refetch?.();
+    } catch (e) {
+      toast.error("Couldn't send message", {
+        description: e?.message || "Please try again.",
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (!selected) {
+    return (
+      <div className="container pb-6">
+        <EmptyState />
+      </div>
+    );
+  }
+
+  const f = selected.fields || {};
+  const notes = f.notes;
+  const auto = f.autoResponse;
+  const legacyResponse = f.response;
+  const legacyResponseAt = f.responseWrittenAt;
+  const requestCreatedAt = selected.createdAt || f.createdAt;
+  const url = f.url;
+  const screenshot = f.screenshot;
+  const attachmentUrl =
+    screenshot?.url || (Array.isArray(screenshot) && screenshot[0]?.url);
+
+  return (
+    <div className="container pb-6">
+      <div
+        className="rounded-2xl border overflow-hidden flex flex-col"
+        style={{ borderColor: CS.border, background: "#fff", minHeight: 520 }}
+      >
+        <ThreadHeader selected={selected} />
+
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto px-5 py-6 space-y-4"
+          style={{ background: CS.light3, maxHeight: 520 }}
+        >
+          {/* original creator message (from the Request's Notes) */}
+          <Bubble from="creator" subtitle="You" time={fmt(requestCreatedAt)}>
+            {url && (
+              <div className="mb-2">
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline break-all"
+                  style={{ color: "#c7d3ff" }}
+                >
+                  {url.length > 60 ? url.slice(0, 59) + "…" : url}
+                </a>
+              </div>
+            )}
+            {notes || <em style={{ opacity: 0.7 }}>No details</em>}
+            {attachmentUrl && (
+              <div className="mt-2">
+                <a
+                  href={attachmentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                  style={{ color: "#c7d3ff" }}
+                >
+                  View attachment
+                </a>
+              </div>
+            )}
+          </Bubble>
+
+          {/* Auto-response. Delayed with typing indicator for brand-new requests. */}
+          {showTyping ? (
+            <TypingIndicator />
+          ) : (
+            auto && (
+              <Bubble from="agent" subtitle="Creator Scans" time={fmt(requestCreatedAt)}>
+                {auto}
+              </Bubble>
+            )
+          )}
+
+          {/* Legacy Response field (from old schema, still shown for historical requests) */}
+          {!showTyping && legacyResponse && (
+            <Bubble from="agent" subtitle="Creator Scans" time={fmt(legacyResponseAt)}>
+              {legacyResponse}
+            </Bubble>
+          )}
+
+          {/* All follow-up messages */}
+          {!showTyping &&
+            messages.map((m) => {
+              const authorLabel = readLabel(m.fields.author);
+              const isAgent = authorLabel === "Agent";
+              const msgAttachment = m.fields.attachment;
+              const msgAttachmentUrl =
+                msgAttachment?.url ||
+                (Array.isArray(msgAttachment) && msgAttachment[0]?.url);
+              return (
+                <Bubble
+                  key={m.id}
+                  from={isAgent ? "agent" : "creator"}
+                  subtitle={isAgent ? "Creator Scans" : "You"}
+                  time={fmt(m.fields.createdAt || m.createdAt)}
+                >
+                  {m.fields.body}
+                  {msgAttachmentUrl && (
+                    <div className="mt-2">
+                      <a
+                        href={msgAttachmentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                        style={{ color: isAgent ? CS.blue : "#c7d3ff" }}
+                      >
+                        View attachment
+                      </a>
+                    </div>
+                  )}
+                </Bubble>
+              );
+            })}
+        </div>
+
+        {/* reply composer */}
+        <div
+          className="border-t px-4 py-3 flex gap-2 items-end"
+          style={{ borderColor: CS.border, background: "#fff" }}
+        >
+          <Textarea
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            placeholder="Type a reply…"
+            rows={2}
+            className="resize-none flex-1 text-sm"
+            disabled={sending}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+          />
+          <Button
+            onClick={handleSend}
+            disabled={sending || !reply.trim()}
+            style={{ background: CS.navy, color: "#fff" }}
+          >
+            <Send size={14} className="mr-1" />
+            {sending ? "Sending…" : "Send"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

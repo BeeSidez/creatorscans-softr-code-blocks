@@ -1,32 +1,27 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useRecords, useRecordCreate, useUpload, q } from "@/lib/datasource";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Inbox, Upload, X, ChevronLeft, Search } from "lucide-react";
+import { Plus, Inbox, Upload, X, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { toast } from "sonner";
 
-// Brand palette (matches creator-dashboard and ai-ugc-image-prompter blocks)
+// Brand palette
 const CS = {
   blue: "#294ff6",
-  blue2: "#4466f8",
   navy: "#000f4d",
   navy2: "#001364",
-  navy3: "#152237",
   light1: "#f8fbff",
   light2: "#eef4fd",
   light3: "#fafbff",
-  lavender: "#d8d8ff",
   border: "#e4ebf8",
   muted: "#6b7a99",
   red: "#fe2c55",
 };
 
-// Field IDs from Requests table (Softr: Content Tracking App > Requests)
+// Field IDs for the Requests table
 const select = q.select({
   notes: "cy26q",
   request: "zPHQj",
@@ -45,7 +40,6 @@ const select = q.select({
   firstName: "ViX4Z",
 });
 
-// Request type option UUIDs (from the Request SELECT field)
 const REQUEST_TYPES = {
   productSample: {
     id: "2a592633-d568-437b-b709-fde9d6c1ce5e",
@@ -166,16 +160,24 @@ const relativeTime = (iso) => {
   return d.getDate() + " " + month;
 };
 
-const fullTimestamp = (iso) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-};
-
 const truncate = (s, n) => {
   if (!s) return "";
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
 };
+
+// Share selection with the support-conversation block on the same page
+function dispatchSelection(record, justCreated = false) {
+  window.dispatchEvent(
+    new CustomEvent("cs-request-selected", {
+      detail: {
+        id: record.id,
+        justCreated,
+        fields: record.fields,
+        createdAt: record.fields.createdAt || record.createdAt,
+      },
+    })
+  );
+}
 
 // ---- sub-components ----
 
@@ -195,8 +197,10 @@ function RequestRow({ record, active, onClick }) {
   const type = getRequestType(record.fields.request);
   const iconUrl = record.fields.icon || type?.icon;
   const title = type?.short || "Request";
-  const preview = truncate(record.fields.notes || "", 60);
-  const time = relativeTime(record.updatedAt || record.fields.lastUpdatedAt || record.fields.createdAt || record.createdAt);
+  const preview = truncate(record.fields.notes || "", 80);
+  const time = relativeTime(
+    record.fields.lastUpdatedAt || record.fields.createdAt || record.createdAt
+  );
   const status = record.fields.status;
   const hasReply = !!record.fields.response;
 
@@ -204,199 +208,48 @@ function RequestRow({ record, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full text-left border-b transition-colors"
+      className="w-full text-left border-b transition-colors focus:outline-none"
       style={{
         background: active ? CS.light2 : "transparent",
         borderColor: CS.border,
       }}
     >
-      <div className="flex gap-3 px-4 py-3">
+      <div className="flex gap-3 px-4 py-3 items-center">
         {iconUrl ? (
           <img src={iconUrl} alt="" className="w-9 h-9 flex-shrink-0 object-contain" />
         ) : (
           <div className="w-9 h-9 flex-shrink-0 rounded-full" style={{ background: CS.light2 }} />
         )}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
             <div className="font-semibold text-sm truncate" style={{ color: CS.navy }}>
               {title}
             </div>
-            <div className="text-xs flex-shrink-0" style={{ color: CS.muted }}>
-              {time}
-            </div>
+            <StatusPill status={status} />
+            {hasReply && (
+              <span className="text-xs" style={{ color: CS.blue }}>
+                replied
+              </span>
+            )}
           </div>
           <div className="text-xs mt-0.5 truncate" style={{ color: CS.muted }}>
             {preview || "No details"}
           </div>
-          <div className="flex items-center gap-2 mt-1.5">
-            <StatusPill status={status} />
-            {hasReply && (
-              <span className="text-xs" style={{ color: CS.blue }}>
-                • replied
-              </span>
-            )}
-          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-xs" style={{ color: CS.muted }}>
+            {time}
+          </span>
+          <ChevronRight size={16} color={active ? CS.blue : CS.muted} />
         </div>
       </div>
     </button>
   );
 }
 
-function Bubble({ from, children, time, subtitle }) {
-  const isCreator = from === "creator";
-  return (
-    <div className={"flex " + (isCreator ? "justify-end" : "justify-start")}>
-      <div className="max-w-[80%]">
-        {subtitle && (
-          <div
-            className={"text-xs mb-1 " + (isCreator ? "text-right" : "text-left")}
-            style={{ color: CS.muted }}
-          >
-            {subtitle}
-          </div>
-        )}
-        <div
-          className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap"
-          style={{
-            background: isCreator ? CS.navy : CS.light2,
-            color: isCreator ? "#fff" : CS.navy,
-          }}
-        >
-          {children}
-        </div>
-        {time && (
-          <div
-            className={"text-xs mt-1 " + (isCreator ? "text-right" : "text-left")}
-            style={{ color: CS.muted }}
-          >
-            {time}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ThreadHeader({ record, onBack }) {
-  const type = getRequestType(record.fields.request);
-  return (
-    <div
-      className="flex items-center gap-3 px-5 py-4 border-b"
-      style={{ borderColor: CS.border, background: "#fff" }}
-    >
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          className="md:hidden -ml-1 p-1 rounded hover:bg-black/5"
-          aria-label="Back"
-        >
-          <ChevronLeft size={20} color={CS.navy} />
-        </button>
-      )}
-      {type?.icon && <img src={type.icon} alt="" className="w-8 h-8 object-contain" />}
-      <div className="flex-1 min-w-0">
-        <div className="font-semibold text-sm truncate" style={{ color: CS.navy }}>
-          {type?.short || "Request"}
-        </div>
-        <div className="text-xs" style={{ color: CS.muted }}>
-          Opened {relativeTime(record.fields.createdAt || record.createdAt)}
-        </div>
-      </div>
-      <StatusPill status={record.fields.status} />
-    </div>
-  );
-}
-
-function Thread({ record, onBack }) {
-  const attachmentUrl = record.fields.screenshot?.url || (Array.isArray(record.fields.screenshot) && record.fields.screenshot[0]?.url);
-  const url = record.fields.url;
-  const notes = record.fields.notes;
-  const auto = record.fields.autoResponse;
-  const response = record.fields.response;
-  const responseAt = record.fields.responseWrittenAt;
-  const createdAt = record.fields.createdAt || record.createdAt;
-
-  return (
-    <div className="flex flex-col h-full" style={{ background: "#fff" }}>
-      <ThreadHeader record={record} onBack={onBack} />
-
-      <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
-        {/* creator's message */}
-        <Bubble from="creator" time={fullTimestamp(createdAt)} subtitle="You">
-          {url && (
-            <div className="mb-2">
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline break-all"
-                style={{ color: "#c7d3ff" }}
-              >
-                {truncate(url, 60)}
-              </a>
-            </div>
-          )}
-          {notes || <em style={{ opacity: 0.7 }}>No details</em>}
-          {attachmentUrl && (
-            <div className="mt-2">
-              <a
-                href={attachmentUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline"
-                style={{ color: "#c7d3ff" }}
-              >
-                View attachment
-              </a>
-            </div>
-          )}
-        </Bubble>
-
-        {/* auto response from Creator Scans */}
-        {auto && (
-          <Bubble from="agent" time={fullTimestamp(createdAt)} subtitle="Creator Scans">
-            {auto}
-          </Bubble>
-        )}
-
-        {/* written response from Bev */}
-        {response && (
-          <Bubble from="agent" time={fullTimestamp(responseAt)} subtitle="Creator Scans">
-            {response}
-          </Bubble>
-        )}
-
-        {!response && (
-          <div className="text-center text-xs pt-2" style={{ color: CS.muted }}>
-            We'll reply here as soon as we've looked into it.
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function EmptyThread() {
-  return (
-    <div
-      className="flex flex-col items-center justify-center h-full px-6 text-center"
-      style={{ background: "#fff", color: CS.muted }}
-    >
-      <Inbox size={40} color={CS.blue} strokeWidth={1.5} />
-      <div className="mt-3 text-sm font-medium" style={{ color: CS.navy }}>
-        Select a request
-      </div>
-      <div className="text-xs mt-1 max-w-xs">
-        Pick one on the left to see the conversation, or tap + New request to start one.
-      </div>
-    </div>
-  );
-}
-
 function EmptyInbox({ onNew }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full px-6 text-center py-16">
+    <div className="flex flex-col items-center justify-center px-6 text-center py-14">
       <Inbox size={40} color={CS.blue} strokeWidth={1.5} />
       <div className="mt-3 text-sm font-medium" style={{ color: CS.navy }}>
         No requests yet
@@ -404,11 +257,7 @@ function EmptyInbox({ onNew }) {
       <div className="text-xs mt-1 max-w-xs" style={{ color: CS.muted }}>
         Need a product sample, a commission check, or help with a ban? Start a request.
       </div>
-      <Button
-        onClick={onNew}
-        className="mt-4"
-        style={{ background: CS.navy, color: "#fff" }}
-      >
+      <Button onClick={onNew} className="mt-4" style={{ background: CS.navy, color: "#fff" }}>
         <Plus size={16} className="mr-1" /> New request
       </Button>
     </div>
@@ -422,7 +271,7 @@ function TypeTile({ type, onPick }) {
     <button
       type="button"
       onClick={() => onPick(type)}
-      className="w-full flex items-center gap-3 p-3 rounded-xl border transition-colors hover:border-[color:var(--cs-blue)]"
+      className="w-full flex items-center gap-3 p-3 rounded-xl border transition-colors"
       style={{ borderColor: CS.border, background: "#fff" }}
     >
       <img src={type.icon} alt="" className="w-10 h-10 object-contain flex-shrink-0" />
@@ -509,11 +358,13 @@ function RequestForm({ type, onCancel, onSubmitted }) {
         const uploaded = await upload.mutateAsync(file);
         fields.screenshot = uploaded;
       }
-      await createRecord.mutateAsync(fields);
+      const created = await createRecord.mutateAsync(fields);
       toast.success("Request sent. We'll reply here shortly.");
-      onSubmitted();
+      onSubmitted(created);
     } catch (e) {
-      toast.error("Could not send request", { description: e?.message || "Please try again." });
+      toast.error("Could not send request", {
+        description: e?.message || "Please try again.",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -596,7 +447,7 @@ function RequestForm({ type, onCancel, onSubmitted }) {
               <button
                 type="button"
                 onClick={() => setFile(null)}
-                className="p-1 rounded hover:bg-black/5"
+                className="p-1 rounded"
                 disabled={submitting}
                 aria-label="Remove file"
               >
@@ -624,7 +475,7 @@ function RequestForm({ type, onCancel, onSubmitted }) {
   );
 }
 
-function NewRequestDialog({ open, onOpenChange, onSubmitted }) {
+function NewRequestDialog({ open, onOpenChange, onCreated }) {
   const [stage, setStage] = useState("pick");
   const [picked, setPicked] = useState(null);
 
@@ -657,9 +508,9 @@ function NewRequestDialog({ open, onOpenChange, onSubmitted }) {
               setStage("pick");
               setPicked(null);
             }}
-            onSubmitted={() => {
+            onSubmitted={(created) => {
               handleOpenChange(false);
-              onSubmitted();
+              onCreated(created);
             }}
           />
         )}
@@ -679,37 +530,64 @@ export default function Block() {
   const items = useMemo(() => {
     const raw = data?.pages.flatMap((p) => p.items) || [];
     return [...raw].sort((a, b) => {
-      const ta = new Date(a.updatedAt || a.fields.lastUpdatedAt || a.createdAt || 0).getTime();
-      const tb = new Date(b.updatedAt || b.fields.lastUpdatedAt || b.createdAt || 0).getTime();
+      const ta = new Date(a.fields.lastUpdatedAt || a.fields.createdAt || a.createdAt || 0).getTime();
+      const tb = new Date(b.fields.lastUpdatedAt || b.fields.createdAt || b.createdAt || 0).getTime();
       return tb - ta;
     });
   }, [data]);
 
   const filteredItems = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return items;
+    const query = search.trim().toLowerCase();
+    if (!query) return items;
     return items.filter((r) => {
       const type = getRequestType(r.fields.request);
       const haystack = [r.fields.notes || "", r.fields.response || "", type?.label || ""]
         .join(" ")
         .toLowerCase();
-      return haystack.includes(q);
+      return haystack.includes(query);
     });
   }, [items, search]);
 
-  const selected = items.find((r) => r.id === selectedId);
+  // refetch when tab regains focus (picks up new Bev replies, status changes)
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "visible") refetch?.();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [refetch]);
+
+  // if the currently-selected request changes in the background, re-dispatch so the
+  // conversation block picks up new status / lastUpdated
+  useEffect(() => {
+    if (!selectedId) return;
+    const match = items.find((r) => r.id === selectedId);
+    if (match) dispatchSelection(match);
+  }, [items, selectedId]);
+
+  const handleSelect = (record) => {
+    setSelectedId(record.id);
+    dispatchSelection(record);
+  };
+
+  const handleCreated = async (created) => {
+    await refetch?.();
+    if (created?.id) {
+      setSelectedId(created.id);
+      dispatchSelection(created, true);
+    }
+  };
 
   const isLoading = status === "pending";
   const hasAny = items.length > 0;
 
   return (
     <div className="container py-6" style={{ color: CS.navy }}>
-      <style>{`:root { --cs-blue: ${CS.blue}; }`}</style>
       <div
         className="overflow-hidden rounded-2xl border"
         style={{ borderColor: CS.border, background: "#fff" }}
       >
-        {/* header bar */}
+        {/* header */}
         <div
           className="flex items-center justify-between px-5 py-3 border-b"
           style={{ borderColor: CS.border, background: CS.light3 }}
@@ -734,7 +612,20 @@ export default function Block() {
           </Button>
         </div>
 
-        {/* body */}
+        {items.length >= 5 && (
+          <div className="px-4 py-2 border-b" style={{ borderColor: CS.border, background: "#fff" }}>
+            <div className="relative">
+              <Search size={14} color={CS.muted} className="absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search requests"
+                className="pl-8 h-8 text-sm"
+              />
+            </div>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="p-10 text-center text-sm" style={{ color: CS.muted }}>
             Loading your requests…
@@ -742,70 +633,26 @@ export default function Block() {
         ) : !hasAny ? (
           <EmptyInbox onNew={() => setDialogOpen(true)} />
         ) : (
-          <div
-            className="grid"
-            style={{
-              gridTemplateColumns: "minmax(0, 340px) minmax(0, 1fr)",
-              minHeight: "540px",
-            }}
-          >
-            {/* left rail */}
-            <div
-              className="border-r flex flex-col"
-              style={{ borderColor: CS.border, background: "#fff" }}
-            >
-              {items.length >= 5 && (
-                <div className="p-3 border-b" style={{ borderColor: CS.border }}>
-                  <div className="relative">
-                    <Search
-                      size={14}
-                      color={CS.muted}
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2"
-                    />
-                    <Input
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search requests"
-                      className="pl-8 h-8 text-sm"
-                    />
-                  </div>
-                </div>
-              )}
-              <div className="overflow-y-auto flex-1">
-                {filteredItems.length === 0 ? (
-                  <div className="p-6 text-center text-xs" style={{ color: CS.muted }}>
-                    No matches.
-                  </div>
-                ) : (
-                  filteredItems.map((r) => (
-                    <RequestRow
-                      key={r.id}
-                      record={r}
-                      active={r.id === selectedId}
-                      onClick={() => setSelectedId(r.id)}
-                    />
-                  ))
-                )}
+          <div style={{ maxHeight: 380 }} className="overflow-y-auto">
+            {filteredItems.length === 0 ? (
+              <div className="p-6 text-center text-xs" style={{ color: CS.muted }}>
+                No matches.
               </div>
-            </div>
-
-            {/* right panel */}
-            <div style={{ background: CS.light3 }}>
-              {selected ? (
-                <Thread record={selected} onBack={() => setSelectedId(null)} />
-              ) : (
-                <EmptyThread />
-              )}
-            </div>
+            ) : (
+              filteredItems.map((r) => (
+                <RequestRow
+                  key={r.id}
+                  record={r}
+                  active={r.id === selectedId}
+                  onClick={() => handleSelect(r)}
+                />
+              ))
+            )}
           </div>
         )}
       </div>
 
-      <NewRequestDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSubmitted={() => refetch?.()}
-      />
+      <NewRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} onCreated={handleCreated} />
     </div>
   );
 }
