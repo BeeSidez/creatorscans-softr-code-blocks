@@ -88,7 +88,7 @@ function StatusPill({ label }) {
   const s = STATUS_STYLES[label] || STATUS_STYLES["New"];
   return (
     <span
-      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium whitespace-nowrap leading-none"
       style={{ background: s.bg, color: s.fg }}
     >
       {label || "New"}
@@ -312,7 +312,7 @@ export default function Block() {
 
   if (!selected) {
     return (
-      <div className="container pb-6">
+      <div className="container py-6">
         <EmptyState />
       </div>
     );
@@ -330,7 +330,7 @@ export default function Block() {
     screenshot?.url || (Array.isArray(screenshot) && screenshot[0]?.url);
 
   return (
-    <div className="container pb-6">
+    <div className="container py-6">
       <div
         className="rounded-2xl border overflow-hidden flex flex-col"
         style={{ borderColor: CS.border, background: "#fff", minHeight: 520 }}
