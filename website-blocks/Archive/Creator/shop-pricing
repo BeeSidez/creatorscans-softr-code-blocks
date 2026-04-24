@@ -1,0 +1,266 @@
+import { useEffect, useRef, useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { CheckCircle2, Sparkles, TrendingUp, Gift } from "lucide-react";
+
+export default function Block() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.2) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={sectionRef}
+      className="w-full py-[100px] relative overflow-hidden"
+      style={{
+        background: "linear-gradient(180deg, #000B3A 0%, #001364 100%)",
+      }}
+    >
+      {/* Decorative gradient orbs */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#879CF7] rounded-full opacity-10 blur-[120px]"></div>
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#FE2C55] rounded-full opacity-10 blur-[120px]"></div>
+      
+      <div className="container max-w-[1100px] mx-auto px-4 relative z-10">
+        {/* Header */}
+        <div className="text-center mb-[50px]">
+          <h2
+            className={`text-[40px] font-bold text-white mb-5 transition-all duration-[600ms] ease-out ${
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8"
+            }`}
+            style={{
+              textShadow: "0 0 40px rgba(135, 156, 247, 0.4)",
+            }}
+          >
+            ARE YOU ELIGIBLE FOR <span className="text-[#879CF7]">CREATOR SCANS DEALS</span>?
+          </h2>
+          <div
+            className={`space-y-0 mb-3 transition-all duration-[600ms] ease-out delay-200 ${
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8"
+            }`}
+          >
+            <p className="text-[18px] text-white">
+              Creator Scans Deals is <span className="font-bold text-[#879CF7]">OPEN TO ALL</span> TikTok Shop creators
+            </p>
+            <p className="text-[18px] text-white">
+              Your access level is simply matched to your current commitment and sales performance.
+            </p>
+          </div>
+          <p
+            className={`text-[18px] text-white mb-6 transition-all duration-[600ms] ease-out delay-200 ${
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8"
+            }`}
+          >
+            Creators who drive more GMV unlock <span className="font-bold text-[#FE2C55]">higher-paying campaigns</span> and additional rewards.
+          </p>
+          <p
+            className={`text-[20px] font-bold text-white mt-6 transition-all duration-[600ms] ease-out delay-[400ms] ${
+              isVisible ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            Check out what your starting Level is ⬇️
+          </p>
+        </div>
+
+        {/* Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Level 1 Card */}
+          <Card
+            className={`border-2 rounded-[20px] p-[40px] md:p-[40px] sm:p-[30px] transition-all duration-300 ease-out hover:-translate-y-[5px] hover:shadow-2xl ${
+              isVisible
+                ? "opacity-100 translate-y-0 delay-[600ms]"
+                : "opacity-0 translate-y-8"
+            }`}
+            style={{
+              background: "rgba(255, 255, 255, 0.05)",
+              backdropFilter: "blur(10px)",
+              borderColor: "rgba(135, 156, 247, 0.3)",
+              boxShadow: "0 4px 24px rgba(0, 0, 0, 0.4)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "rgba(135, 156, 247, 0.6)";
+              e.currentTarget.style.boxShadow = "0 8px 32px rgba(135, 156, 247, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(135, 156, 247, 0.3)";
+              e.currentTarget.style.boxShadow = "0 4px 24px rgba(0, 0, 0, 0.4)";
+            }}
+          >
+            <CardHeader className="p-0 mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="inline-flex items-center gap-2 text-[16px] font-bold px-5 py-2 rounded-[20px] text-white"
+                  style={{
+                    background: "linear-gradient(135deg, #879CF7 0%, #6B7FE8 100%)",
+                  }}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  LEVEL 1
+                </div>
+              </div>
+              <h3 className="text-[32px] font-bold text-white flex items-center gap-3">
+                <TrendingUp className="w-8 h-8 text-[#879CF7]" />
+                Creators
+              </h3>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="mb-8">
+                <p className="text-[18px] text-white font-bold mb-4">
+                  Requirements:
+                </p>
+                <ul className="space-y-3">
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-[#879CF7] flex-shrink-0 mt-0.5" />
+                    <span>At least <span className="font-bold text-[#879CF7]">£2,501 GMV</span> in the last 28 days during signup</span>
+                  </li>
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-[#879CF7] flex-shrink-0 mt-0.5" />
+                    <span>Active TikTok Shop Creator Account</span>
+                  </li>
+                </ul>
+              </div>
+              <div
+                className="p-5 rounded-xl"
+                style={{
+                  background: "rgba(135, 156, 247, 0.1)",
+                  border: "1px solid rgba(135, 156, 247, 0.2)",
+                }}
+              >
+                <p className="text-[18px] text-white font-bold mb-4 flex items-center gap-2">
+                  <Gift className="w-5 h-5 text-[#879CF7]" />
+                  Creators have access to:
+                </p>
+                <ul className="space-y-3">
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <span className="text-[#FE2C55] text-xl flex-shrink-0">•</span>
+                    <span><span className="font-bold text-[#FE2C55]">PAID Jobs</span></span>
+                  </li>
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <span className="text-[#879CF7] text-xl flex-shrink-0">•</span>
+                    <span>Rates match your current GMV upon accepting a job</span>
+                  </li>
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <span className="text-[#879CF7] text-xl flex-shrink-0">•</span>
+                    <span>Free Samples</span>
+                  </li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Level 0 Card */}
+          <Card
+            className={`border-2 rounded-[20px] p-[40px] md:p-[40px] sm:p-[30px] transition-all duration-300 ease-out hover:-translate-y-[5px] hover:shadow-2xl ${
+              isVisible
+                ? "opacity-100 translate-y-0 delay-[800ms]"
+                : "opacity-0 translate-y-8"
+            }`}
+            style={{
+              background: "rgba(255, 255, 255, 0.05)",
+              backdropFilter: "blur(10px)",
+              borderColor: "rgba(254, 44, 85, 0.3)",
+              boxShadow: "0 4px 24px rgba(0, 0, 0, 0.4)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "rgba(254, 44, 85, 0.6)";
+              e.currentTarget.style.boxShadow = "0 8px 32px rgba(254, 44, 85, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(254, 44, 85, 0.3)";
+              e.currentTarget.style.boxShadow = "0 4px 24px rgba(0, 0, 0, 0.4)";
+            }}
+          >
+            <CardHeader className="p-0 mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="inline-flex items-center gap-2 text-[16px] font-bold px-5 py-2 rounded-[20px] text-white"
+                  style={{
+                    background: "linear-gradient(135deg, #FE2C55 0%, #E01A45 100%)",
+                  }}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  LEVEL 0
+                </div>
+              </div>
+              <h3 className="text-[32px] font-bold text-white flex items-center gap-3">
+                <Sparkles className="w-8 h-8 text-[#FE2C55]" />
+                Beginners
+              </h3>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="mb-8">
+                <p className="text-[18px] text-white font-bold mb-4">
+                  Requirements:
+                </p>
+                <ul className="space-y-3">
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-[#FE2C55] flex-shrink-0 mt-0.5" />
+                    <span><span className="font-bold text-[#FE2C55]">£0 – £2,500 GMV</span> in the last 28 days during signup</span>
+                  </li>
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-[#FE2C55] flex-shrink-0 mt-0.5" />
+                    <span>Advanced commitment level</span>
+                  </li>
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-[#FE2C55] flex-shrink-0 mt-0.5" />
+                    <span>Consistency score of 100</span>
+                  </li>
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-[#FE2C55] flex-shrink-0 mt-0.5" />
+                    <span>Active TikTok Shop Creator Account</span>
+                  </li>
+                </ul>
+              </div>
+              <div
+                className="p-5 rounded-xl"
+                style={{
+                  background: "rgba(254, 44, 85, 0.1)",
+                  border: "1px solid rgba(254, 44, 85, 0.2)",
+                }}
+              >
+                <p className="text-[18px] text-white font-bold mb-4 flex items-center gap-2">
+                  <Gift className="w-5 h-5 text-[#FE2C55]" />
+                  Beginners have access to:
+                </p>
+                <ul className="space-y-3">
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <span className="text-[#879CF7] text-xl flex-shrink-0">•</span>
+                    <span>Support</span>
+                  </li>
+                  <li className="text-[15px] text-white leading-[1.8] flex items-start gap-3">
+                    <span className="text-[#879CF7] text-xl flex-shrink-0">•</span>
+                    <span>Free Samples</span>
+                  </li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
