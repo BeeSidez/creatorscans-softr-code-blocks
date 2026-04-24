@@ -219,7 +219,7 @@ const PARTNER_BRANDS = [
 
 function BrandRow() {
   return (
-    <div className="flex items-center gap-6 flex-wrap" style={{ color: "rgba(255,255,255,0.45)" }}>
+    <div className="flex items-center justify-center gap-6 flex-wrap" style={{ color: "rgba(255,255,255,0.45)" }}>
       <div className="uppercase font-semibold opacity-80" style={{ fontSize: 11, letterSpacing: 2 }}>
         Trusted by shops from
       </div>
@@ -258,9 +258,9 @@ export default function Block() {
         @keyframes plusFlash { 0% { opacity: 0; transform: translateY(6px); } 30% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
       `}</style>
 
-      {/* ─── Desktop layout ─── */}
-      <div className="hidden md:block relative" style={{ height: 920 }}>
-        {/* Diagonal split bg */}
+      {/* ─── Desktop layout (1024px+) ─── */}
+      <div className="hidden lg:block relative" style={{ height: 920 }}>
+        {/* Diagonal split bg — FULL VIEWPORT WIDTH */}
         <div
           className="absolute inset-0"
           style={{
@@ -280,9 +280,12 @@ export default function Block() {
           }}
         />
 
-        {/* Side glows */}
+        {/* Side glows — FULL VIEWPORT WIDTH */}
         <div className="absolute pointer-events-none" style={{ left: "5%", top: "30%", width: "45%", height: "65%", background: "radial-gradient(circle, rgba(254,44,85,0.28), transparent 60%)", transition: "opacity .35s", opacity: creatorDim ? 0.3 : 1 }} />
         <div className="absolute pointer-events-none" style={{ right: "0%", bottom: "10%", width: "50%", height: "70%", background: "radial-gradient(circle, rgba(122,147,255,0.32), transparent 60%)", transition: "opacity .35s", opacity: brandDim ? 0.3 : 1 }} />
+
+        {/* ─── Content container — capped at 1140px, centered ─── */}
+        <div className="relative mx-auto h-full" style={{ maxWidth: 1140 }}>
 
         {/* Centered headline */}
         <div className="absolute left-0 right-0 flex flex-col items-center z-10" style={{ top: 56 }}>
@@ -302,16 +305,16 @@ export default function Block() {
             onMouseEnter={() => setHover("creator")}
             onMouseLeave={() => setHover(null)}
             className="relative flex flex-col justify-end cursor-pointer"
-            style={{ pointerEvents: "auto", padding: "0 40px 0 64px", transition: "opacity .35s", opacity: creatorDim ? 0.35 : 1 }}
+            style={{ pointerEvents: "auto", padding: "0 32px 0 48px", transition: "opacity .35s", opacity: creatorDim ? 0.35 : 1 }}
           >
             <div className="absolute inset-0 pointer-events-none">
-              <FloatingCard style={{ top: 0, right: 30 }} rotate={-4} delay={0}><CreatorVideoCard /></FloatingCard>
+              <FloatingCard style={{ top: -30, right: 30 }} rotate={-4} delay={0}><CreatorVideoCard /></FloatingCard>
               <FloatingCard style={{ top: 80, left: 40, padding: 16 }} rotate={3} delay={1.2}><CreatorEarningsCard /></FloatingCard>
-              <FloatingCard style={{ bottom: 160, right: 20, padding: 14 }} rotate={-2} delay={2.4}><CreatorFollowerCard /></FloatingCard>
+              <FloatingCard style={{ bottom: 240, right: 20, padding: 12 }} rotate={-2} delay={2.4}><CreatorFollowerCard /></FloatingCard>
             </div>
             <div className="relative z-10">
               <div className="italic" style={{ fontFamily: "serif", fontSize: 38, color: "#FF9FB1", transform: "rotate(-4deg)", marginLeft: 16, marginBottom: -8 }}>for</div>
-              <div className="text-white" style={{ fontSize: 88, fontWeight: 900, letterSpacing: -4, lineHeight: 0.9 }}>Creators</div>
+              <div className="text-white" style={{ fontSize: 80, fontWeight: 900, letterSpacing: -3.5, lineHeight: 0.9 }}>Creators</div>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", maxWidth: 340, margin: "12px 0 16px" }}>
                 Get matched with brands, learn LIVE selling, earn up to £10K+/mo through Shop affiliates.
               </p>
@@ -345,16 +348,16 @@ export default function Block() {
             onMouseEnter={() => setHover("brand")}
             onMouseLeave={() => setHover(null)}
             className="relative flex flex-col justify-end items-end text-right cursor-pointer"
-            style={{ pointerEvents: "auto", padding: "0 64px 0 40px", transition: "opacity .35s", opacity: brandDim ? 0.35 : 1 }}
+            style={{ pointerEvents: "auto", padding: "0 48px 0 32px", transition: "opacity .35s", opacity: brandDim ? 0.35 : 1 }}
           >
             <div className="absolute inset-0 pointer-events-none">
               <FloatingCard style={{ top: 0, left: 30 }} rotate={4} delay={0.4}><BrandLiveCard /></FloatingCard>
               <FloatingCard style={{ top: 100, right: 40, padding: 16 }} rotate={-3} delay={1.4}><BrandROICard /></FloatingCard>
-              <FloatingCard style={{ bottom: 170, left: 40, padding: 14 }} rotate={2} delay={2.2}><BrandOrderCard /></FloatingCard>
+              <FloatingCard style={{ bottom: 250, left: 30, padding: 14 }} rotate={2} delay={2.2}><BrandOrderCard /></FloatingCard>
             </div>
             <div className="relative z-10">
               <div className="italic" style={{ fontFamily: "serif", fontSize: 38, color: "#a8b9ff", transform: "rotate(3deg)", marginRight: 16, marginBottom: -8 }}>for</div>
-              <div className="text-white" style={{ fontSize: 88, fontWeight: 900, letterSpacing: -4, lineHeight: 0.9 }}>Brands</div>
+              <div className="text-white" style={{ fontSize: 80, fontWeight: 900, letterSpacing: -3.5, lineHeight: 0.9 }}>Brands</div>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", maxWidth: 340, margin: "12px 0 16px", marginLeft: "auto" }}>
                 Plug into 1,240+ vetted creators running LIVE streams and Shop content for your products.
               </p>
@@ -384,15 +387,19 @@ export default function Block() {
             </div>
           </div>
         </div>
+        </div>{/* /content max-width container */}
 
-        {/* Foot */}
+        {/* Foot — FULL VIEWPORT WIDTH */}
         <div className="absolute bottom-0 left-0 right-0 z-10 flex justify-center" style={{ padding: "22px 64px", borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.3)" }}>
-          <BrandRow />
+          <div className="mx-auto w-full" style={{ maxWidth: 1140 }}>
+            <BrandRow />
+          </div>
         </div>
       </div>
 
-      {/* ─── Mobile layout ─── */}
-      <div className="block md:hidden relative overflow-hidden" style={{ background: "#000624" }}>
+      {/* ─── Mobile + tablet layout (below 1024px) ─── */}
+      <div className="block lg:hidden relative overflow-hidden" style={{ background: "#000624" }}>
+        <div className="relative mx-auto" style={{ maxWidth: 640 }}>
         <div className="absolute top-0 left-0 right-0" style={{ bottom: "50%", background: "radial-gradient(ellipse at 60% 60%, #2a1a55, #0a0628)" }} />
         <div className="absolute left-0 right-0 bottom-0" style={{ top: "50%", background: "radial-gradient(ellipse at 40% 40%, #0a1652, #000624)" }} />
 
@@ -452,6 +459,7 @@ export default function Block() {
         <div className="relative flex justify-center" style={{ padding: "20px 20px 30px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
           <BrandRow />
         </div>
+        </div>{/* /mobile max-width container */}
       </div>
     </div>
   );
