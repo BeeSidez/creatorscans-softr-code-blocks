@@ -1,0 +1,495 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { ArrowRight, TrendingUp, CheckCircle2, Flame } from "lucide-react";
+
+// ─── App screens shown in the phone mockup, one per step ─────────
+const APP_SCREENS = [
+  {
+    step: "01",
+    title: "Join the agency",
+    body: "Apply with your TikTok, get approved, and unlock the app. You're now part of a TikTok Shop & LIVE creator agency with full tooling and 1:1 support.",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777055523/24_-_Creator_Dashboard_-_Profile_Stats_Naturally.Raine_piucef.png",
+    chipLabel: "Your dashboard",
+    statA: { label: "Approved", value: "✓" },
+    statB: { label: "Agency tier", value: "Shop + LIVE" },
+  },
+  {
+    step: "02",
+    title: "Set your commitments",
+    body: "Tell us how many shop posts and LIVEs you'll ship each week. Hit your tank, keep your streak, climb the yearly rank. Gamified consistency that pays.",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777053202/05_-_Dashboard_-_Consistency_Score_ze3c7y.png",
+    chipLabel: "Consistency",
+    statA: { label: "This week", value: "5/7 posts" },
+    statB: { label: "Streak", value: "18 weeks" },
+  },
+  {
+    step: "03",
+    title: "Spot winning products",
+    body: "Open the Product Library. See what's trending on TikTok Shop in your niche — units sold, average price, direct link. No more guessing what'll convert.",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777053202/03_-_Products_-_Top_Sellers_cbmeyr.png",
+    chipLabel: "Top sellers",
+    statA: { label: "Units sold", value: "24.8K" },
+    statB: { label: "Avg price", value: "£18.50" },
+  },
+  {
+    step: "04",
+    title: "Copy what works",
+    body: "Pull up any winning video's brief — AI-generated, frame-by-frame. Storyboard, script, key-frame screenshots. Recreate the exact formula that's already selling.",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777053202/09_-_Script_-_Shot_Breakdown_Cards_sw6ztp.png",
+    chipLabel: "AI brief",
+    statA: { label: "Shots", value: "8 frames" },
+    statB: { label: "Script", value: "Ready" },
+  },
+  {
+    step: "05",
+    title: "Remix with your spin",
+    body: "Tell us your angle — we AI-remix a trending video around your concept. Or request products and brands you want added to the library. Your voice, proven formula.",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777053202/11_-_Remix_Brief_-_TikTok_Video_Source_zdfx18.png",
+    chipLabel: "AI remix",
+    statA: { label: "Source", value: "1.8M views" },
+    statB: { label: "Your angle", value: "Added" },
+  },
+  {
+    step: "06",
+    title: "Get reviewed",
+    body: "Post it. We review up to 7 videos a week — hook value, technical quality, what to improve. Your rank goes up, your rates go up, the opportunities get bigger.",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777053202/20_-_Content_Analysis_-_Hook_Value_Scores_eav7f6.png",
+    chipLabel: "Video review",
+    statA: { label: "Hook score", value: "8.4/10" },
+    statB: { label: "Reviews left", value: "4 this wk" },
+  },
+];
+
+// ─── For Creators badge ───────────────────────────────────────────
+function ForCreatorsBadge() {
+  return (
+    <Badge
+      variant="secondary"
+      className="bg-white/5 border-white/20 backdrop-blur-sm px-4 py-2 text-xs font-bold inline-flex items-center gap-2 rounded-full uppercase tracking-[2px]"
+      style={{ color: "#FFB5C8" }}
+    >
+      <span className="rounded-full" style={{ width: 6, height: 6, background: "#FF9FB1" }} />
+      For Creators
+    </Badge>
+  );
+}
+
+// ─── Phone frame showing the rotating app screen ─────────────────
+function PhoneFrame({ screen, width = 300 }) {
+  const s = screen;
+  const h = width * (19 / 9);
+  return (
+    <div
+      style={{
+        width, height: h,
+        borderRadius: width * 0.14,
+        padding: 10,
+        background: "linear-gradient(145deg, #1a1a2e 0%, #0a0a1a 100%)",
+        boxShadow: "0 60px 100px -30px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,159,177,0.14)",
+        position: "relative",
+      }}
+    >
+      {/* Notch */}
+      <div style={{
+        position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)",
+        width: 70, height: 20, background: "#000", borderRadius: 999, zIndex: 3,
+      }} />
+      {/* Screen */}
+      <div style={{
+        width: "100%", height: "100%",
+        borderRadius: width * 0.11,
+        overflow: "hidden",
+        background: "#fff",
+        position: "relative",
+      }}>
+        <img
+          src={s.img}
+          alt={s.title}
+          style={{
+            width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center",
+            display: "block",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─── Floating UI card ────────────────────────────────────────────
+function FloatingCard({ children, style, rotate = 0, delay = 0 }) {
+  return (
+    <div
+      className="absolute"
+      style={{
+        background: "rgba(10, 22, 82, 0.72)",
+        border: "1px solid rgba(255, 159, 177, 0.28)",
+        borderRadius: 14,
+        backdropFilter: "blur(14px)",
+        boxShadow: "0 30px 60px -20px rgba(0,0,0,0.7)",
+        padding: 14,
+        transform: `rotate(${rotate}deg)`,
+        animation: `earnFloat 6s ease-in-out ${delay}s infinite alternate`,
+        ["--r"]: `${rotate}deg`,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── Main block ──────────────────────────────────────────────────
+export default function Block() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIdx((i) => (i + 1) % APP_SCREENS.length), 3800);
+    return () => clearInterval(id);
+  }, []);
+  const s = APP_SCREENS[idx];
+
+  const handleApplyClick = () => {
+    window.location.href = "/forms-creators";
+  };
+
+  return (
+    <div className="relative w-full overflow-hidden" style={{ background: "#000624", color: "#fff", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
+
+      <style>{`
+        @keyframes earnFloat { 0% { transform: translateY(0) rotate(var(--r,0deg)); } 100% { transform: translateY(-10px) rotate(var(--r,0deg)); } }
+        @keyframes earnPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes earnFadeV1 { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+      `}</style>
+
+      {/* Background gradients — pink tint to match creator lane */}
+      <div className="absolute inset-0" style={{
+        background: "radial-gradient(ellipse at 30% 40%, #3a0e2a 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, #5a1540 0%, transparent 50%)",
+      }} />
+
+      {/* ─── Desktop layout (1024px+) ─── */}
+      <div className="hidden lg:block relative" style={{ padding: "96px 64px" }}>
+        <div className="mx-auto" style={{ maxWidth: 1140 }}>
+
+          {/* Top copy */}
+          <div className="text-center" style={{ marginBottom: 72 }}>
+            <ForCreatorsBadge />
+            <h2 className="font-black" style={{
+              fontSize: 68, letterSpacing: -3, lineHeight: 0.95, margin: "20px 0 16px",
+            }}>
+              EARN{" "}
+              <span style={{
+                fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontWeight: 400,
+                color: "#FFB5C8", letterSpacing: -2,
+              }}>
+                more on TikTok
+              </span>
+            </h2>
+            <p className="mx-auto" style={{
+              fontSize: 18, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, maxWidth: 680, margin: "0 auto",
+            }}>
+              Join our TikTok Shop & LIVE creator agency and turn consistent posting into consistent income — with AI-powered briefs, video remixes, and 1:1 reviews.
+            </p>
+          </div>
+
+          {/* Phone + steps grid */}
+          <div className="grid grid-cols-2 items-center" style={{ gap: 64 }}>
+
+            {/* Steps (left column on creator block — mirrors Scale which has steps on right) */}
+            <div>
+              <div className="flex items-center" style={{
+                fontSize: 11, color: "#FFB5C8", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
+                marginBottom: 24, gap: 10,
+              }}>
+                <span style={{ width: 24, height: 1, background: "#FFB5C8" }} />
+                How it works
+              </div>
+
+              <div className="flex flex-col" style={{ gap: 10 }}>
+                {APP_SCREENS.map((step, i) => {
+                  const active = i === idx;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setIdx(i)}
+                      className="grid items-start text-left"
+                      style={{
+                        gridTemplateColumns: "52px 1fr", gap: 18,
+                        padding: 18,
+                        borderRadius: 14,
+                        background: active ? "rgba(255,159,177,0.12)" : "rgba(255,159,177,0.04)",
+                        border: active ? "1px solid rgba(255,159,177,0.45)" : "1px solid rgba(255,159,177,0.1)",
+                        cursor: "pointer",
+                        transition: "all 0.3s ease",
+                        appearance: "none",
+                        color: "inherit",
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      <div className="grid place-items-center" style={{
+                        width: 52, height: 52, borderRadius: 14,
+                        background: active
+                          ? "linear-gradient(135deg, rgba(255,159,177,0.45), rgba(254,44,85,0.55))"
+                          : "linear-gradient(135deg, rgba(255,159,177,0.15), rgba(254,44,85,0.22))",
+                        border: active ? "1px solid rgba(255,159,177,0.6)" : "1px solid rgba(255,159,177,0.22)",
+                        fontSize: 19, fontWeight: 900, letterSpacing: -0.5,
+                        color: active ? "#fff" : "#FFB5C8", fontVariantNumeric: "tabular-nums",
+                        transition: "all 0.3s ease",
+                      }}>
+                        {step.step}
+                      </div>
+                      <div>
+                        <div style={{
+                          fontSize: 17, fontWeight: 700, color: "#fff",
+                          letterSpacing: -0.3, marginBottom: active ? 6 : 2,
+                          transition: "margin 0.3s ease",
+                        }}>
+                          {step.title}
+                        </div>
+                        <div style={{
+                          fontSize: 13, color: "rgba(255,255,255,0.65)", lineHeight: 1.5,
+                          maxHeight: active ? 200 : 0,
+                          opacity: active ? 1 : 0,
+                          overflow: "hidden",
+                          transition: "all 0.3s ease",
+                        }}>
+                          {step.body}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center flex-wrap" style={{ marginTop: 32, gap: 20 }}>
+                <Button
+                  onClick={handleApplyClick}
+                  className="font-bold"
+                  style={{
+                    background: "linear-gradient(180deg, #FF9FB1 0%, #FE2C55 100%)",
+                    color: "#fff",
+                    padding: "18px 28px",
+                    height: "auto",
+                    borderRadius: 12,
+                    fontSize: 16,
+                    boxShadow: "0 10px 30px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
+                >
+                  Apply as a creator
+                  <ArrowRight className="ml-2" style={{ width: 16, height: 16 }} />
+                </Button>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.4 }}>
+                  Questions? <a href="#" style={{ color: "#FFB5C8", fontWeight: 600 }}>Read the FAQ →</a>
+                </div>
+              </div>
+            </div>
+
+            {/* Phone + floating cards (right column) */}
+            <div className="relative grid place-items-center" style={{ height: 680 }}>
+              <div key={idx} style={{ animation: "earnFadeV1 0.6s ease" }}>
+                <PhoneFrame screen={s} width={300} />
+              </div>
+
+              {/* Current step chip — top left */}
+              <FloatingCard style={{ top: 30, left: 0 }} rotate={-5} delay={0}>
+                <div className="flex items-center" style={{ gap: 10 }}>
+                  <div className="rounded-full grid place-items-center" style={{
+                    width: 36, height: 36, background: "#FE2C55", color: "#fff",
+                    fontSize: 13, fontWeight: 900, fontVariantNumeric: "tabular-nums",
+                  }}>
+                    {s.step}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 10, color: "#FFB5C8", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", lineHeight: 1 }}>
+                      Now viewing
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginTop: 3 }}>
+                      {s.chipLabel}
+                    </div>
+                  </div>
+                </div>
+              </FloatingCard>
+
+              {/* Primary stat — top right */}
+              <FloatingCard style={{ top: 120, right: 0 }} rotate={4} delay={1}>
+                <div style={{ fontSize: 10, color: "#FFB5C8", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
+                  {s.statA.label}
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: -1, marginTop: 2, lineHeight: 1 }}>
+                  {s.statA.value}
+                </div>
+                <div className="flex items-center" style={{ fontSize: 11, color: "#FF9FB1", fontWeight: 600, gap: 4, marginTop: 4 }}>
+                  <Flame style={{ width: 12, height: 12 }} />
+                  live in-app
+                </div>
+              </FloatingCard>
+
+              {/* Secondary stat — bottom right */}
+              <FloatingCard style={{ bottom: 180, right: 10, padding: 12 }} rotate={5} delay={0.5}>
+                <div style={{ fontSize: 10, color: "#FFB5C8", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", lineHeight: 1 }}>
+                  {s.statB.label}
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginTop: 4, letterSpacing: -0.3 }}>
+                  {s.statB.value}
+                </div>
+              </FloatingCard>
+
+              {/* Activity chip — bottom left */}
+              <FloatingCard style={{ bottom: 70, left: 10 }} rotate={-3} delay={2}>
+                <div className="flex items-center" style={{ gap: 10 }}>
+                  <span className="rounded-full" style={{
+                    width: 8, height: 8, background: "#7ED9A7",
+                    animation: "earnPulse 1.4s ease-in-out infinite",
+                  }} />
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>
+                      +£420 earned today
+                    </div>
+                    <div style={{ fontSize: 10, color: "#FFB5C8", marginTop: 1 }}>
+                      2 posts · 1 LIVE · commission + cash
+                    </div>
+                  </div>
+                </div>
+              </FloatingCard>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Mobile + tablet layout (below 1024px) ─── */}
+      <div className="block lg:hidden relative" style={{ padding: "56px 20px" }}>
+        <div className="mx-auto" style={{ maxWidth: 640 }}>
+
+          {/* Top copy */}
+          <div className="text-center" style={{ marginBottom: 32 }}>
+            <ForCreatorsBadge />
+            <h2 className="font-black" style={{
+              fontSize: 54, letterSpacing: -2.5, lineHeight: 0.95, margin: "14px 0 10px",
+            }}>
+              EARN{" "}
+              <span style={{
+                fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontWeight: 400,
+                color: "#FFB5C8", letterSpacing: -1.5,
+              }}>
+                more on TikTok
+              </span>
+            </h2>
+            <p style={{
+              fontSize: 15, color: "rgba(255,255,255,0.7)", lineHeight: 1.45, margin: 0,
+            }}>
+              Join our TikTok Shop & LIVE creator agency. AI briefs, video remixes, 1:1 reviews.
+            </p>
+          </div>
+
+          {/* Phone + cards — scaled for mobile */}
+          <div className="relative grid place-items-center" style={{ height: 560, marginBottom: 32 }}>
+            <div key={idx} style={{ animation: "earnFadeV1 0.6s ease" }}>
+              <PhoneFrame screen={s} width={240} />
+            </div>
+
+            <FloatingCard style={{ top: 10, left: 0, padding: 10 }} rotate={-5} delay={0}>
+              <div className="flex items-center" style={{ gap: 8 }}>
+                <div className="rounded-full grid place-items-center" style={{
+                  width: 30, height: 30, background: "#FE2C55", color: "#fff",
+                  fontSize: 11, fontWeight: 900,
+                }}>
+                  {s.step}
+                </div>
+                <div>
+                  <div style={{ fontSize: 9, color: "#FFB5C8", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", lineHeight: 1 }}>
+                    Step
+                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#fff", marginTop: 2 }}>{s.chipLabel}</div>
+                </div>
+              </div>
+            </FloatingCard>
+
+            <FloatingCard style={{ top: 90, right: 0, padding: 10 }} rotate={4} delay={1}>
+              <div style={{ fontSize: 9, color: "#FFB5C8", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
+                {s.statA.label}
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: -0.5, marginTop: 1 }}>
+                {s.statA.value}
+              </div>
+            </FloatingCard>
+
+            <FloatingCard style={{ bottom: 40, left: 0, padding: 10 }} rotate={-3} delay={2}>
+              <div className="flex items-center" style={{ gap: 8 }}>
+                <span className="rounded-full" style={{
+                  width: 6, height: 6, background: "#7ED9A7",
+                  animation: "earnPulse 1.4s ease-in-out infinite",
+                }} />
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>+£420 today</div>
+                  <div style={{ fontSize: 9, color: "#FFB5C8", marginTop: 1 }}>posts + LIVE</div>
+                </div>
+              </div>
+            </FloatingCard>
+          </div>
+
+          {/* Steps section label */}
+          <div className="flex items-center" style={{
+            fontSize: 11, color: "#FFB5C8", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
+            marginBottom: 16, gap: 10,
+          }}>
+            <span style={{ width: 24, height: 1, background: "#FFB5C8" }} />
+            How it works
+          </div>
+
+          {/* Steps — all expanded on mobile (no accordion to keep scroll predictable) */}
+          <div className="flex flex-col" style={{ gap: 10 }}>
+            {APP_SCREENS.map((step, i) => (
+              <div key={i} className="grid items-start" style={{
+                gridTemplateColumns: "44px 1fr", gap: 14,
+                padding: 16,
+                borderRadius: 12,
+                background: "rgba(255,159,177,0.06)",
+                border: "1px solid rgba(255,159,177,0.14)",
+              }}>
+                <div className="grid place-items-center" style={{
+                  width: 44, height: 44, borderRadius: 12,
+                  background: "linear-gradient(135deg, rgba(255,159,177,0.25), rgba(254,44,85,0.35))",
+                  border: "1px solid rgba(255,159,177,0.3)",
+                  fontSize: 16, fontWeight: 900,
+                  color: "#FFB5C8", fontVariantNumeric: "tabular-nums",
+                }}>
+                  {step.step}
+                </div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", letterSpacing: -0.3, marginBottom: 3 }}>
+                    {step.title}
+                  </div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", lineHeight: 1.45 }}>
+                    {step.body}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div style={{ marginTop: 28 }}>
+            <Button
+              onClick={handleApplyClick}
+              className="w-full font-bold"
+              style={{
+                background: "linear-gradient(180deg, #FF9FB1 0%, #FE2C55 100%)",
+                color: "#fff",
+                padding: "16px 24px",
+                height: "auto",
+                borderRadius: 12,
+                fontSize: 15,
+                boxShadow: "0 10px 30px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+              }}
+            >
+              Apply as a creator
+              <ArrowRight className="ml-2" style={{ width: 16, height: 16 }} />
+            </Button>
+            <div className="text-center" style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.55)" }}>
+              Questions? <a href="#" style={{ color: "#FFB5C8", fontWeight: 600 }}>Read the FAQ →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
