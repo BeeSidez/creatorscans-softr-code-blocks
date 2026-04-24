@@ -1,0 +1,568 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { ArrowRight, Check } from "lucide-react";
+
+// ─── Icon asset URLs ─────────────────────────────────────────────
+const ICON = {
+  money: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045486/money_vewclt.png",
+  community: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045485/community_caug7o.png",
+  creative_feedback: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045485/creative_feedback_zb1so7.png",
+  commission: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045485/commission_ly9eje.png",
+  recreate: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776198110/Recreate_jz9b7s.png",
+  strategy: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045488/strategy_mwnadb.png",
+  communication: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045485/communication_wjncjm.png",
+  rocket: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045487/rocket_fdv1na.png",
+  opportunities: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045486/oppourtunities_swbrli.png",
+  tiktok_academy: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045488/tiktok_accademy_e2jnyk.png",
+};
+
+// ─── Features ────────────────────────────────────────────────────
+const SHOP_FEATURES = [
+  {
+    icon: ICON.money,
+    tag: "End-to-end",
+    title: "Affiliate & Influencer Management",
+    description: "We grow TikTok Shop sales by managing affiliate communities and influencer campaigns end to end.",
+    bullets: ["Affiliate community growth", "Full-funnel campaign management", "Sales-driven creator activations"],
+    stat: { value: "2,400+", label: "creators activated" },
+    visual: "affiliate",
+  },
+  {
+    icon: ICON.community,
+    tag: "Fully Managed",
+    title: "Managed Creator Matching",
+    description: "You don't hire creators one by one. Tell us who you want and what you want them to say. We match, brief, and manage them for you.",
+    bullets: ["Brand + brief intake", "Vetted creator matching", "End-to-end management"],
+    stat: { value: "98%", label: "brief adherence" },
+    visual: "matching",
+  },
+  {
+    icon: ICON.creative_feedback,
+    tag: "AI Quality Control",
+    title: "AI-Tracked Content Quality",
+    description: "Every video our creators post is scored by AI against your brief. We catch hook weakness, off-brand messaging, and missing product mentions before the video goes live.",
+    bullets: ["Brief-adherence scoring", "Hook + messaging checks", "Flagged before publish"],
+    stat: { value: "AI", label: "scored pre-publish" },
+    visual: "ai",
+  },
+  {
+    icon: ICON.commission,
+    tag: "Only Reliable Creators",
+    title: "Consistency-Scored Creators",
+    description: "Every creator on our roster has a live consistency score based on how reliably they deliver. We only match you with creators above the threshold for your campaign.",
+    bullets: ["Live delivery tracking", "Threshold-based matching", "Proven reliability only"],
+    stat: { value: "92%", label: "avg reliability" },
+    visual: "score",
+  },
+  {
+    icon: ICON.recreate,
+    tag: "Zero Wasted Budget",
+    title: "Replacement Guarantee",
+    description: "If a creator doesn't deliver what they agreed to, we replace them at no extra cost. You don't lose budget because someone ghosted.",
+    bullets: ["Free replacements", "Ghost protection", "Budget safety net"],
+    stat: { value: "0", label: "lost budget" },
+    visual: "guarantee",
+  },
+  {
+    icon: ICON.strategy,
+    tag: "One Dashboard",
+    title: "Performance Reporting",
+    description: "See content volume, views, engagement, and Shop sales across every creator in one dashboard. Filter by creator, by week, by content type.",
+    bullets: ["Volume + engagement metrics", "Shop sales attribution", "Filterable campaign views"],
+    stat: { value: "£2.4M", label: "GMV tracked Q3" },
+    visual: "dashboard",
+  },
+];
+
+const LIVE_FEATURES = [
+  {
+    icon: ICON.communication,
+    tag: "Managed & Hosted",
+    title: "Daily Lives & Showcase Lives",
+    description: "We plan, manage, and host TikTok daily lives and showcase lives using strong talent matched to your brand.",
+    bullets: ["Talent matched to brand", "Full production management", "Daily + showcase formats"],
+    stat: { value: "34", label: "lives / week" },
+    visual: "dailylive",
+  },
+  {
+    icon: ICON.money,
+    tag: "Targeted Placement",
+    title: "Sponsored LIVE Campaigns",
+    description: "We match your products to LIVE creators in your niche and brief them to feature you during their streams.",
+    bullets: ["Niche-matched streamers", "Briefed product features", "Guaranteed airtime"],
+    stat: { value: "3.2x", label: "avg ROAS" },
+    visual: "sponsor",
+  },
+  {
+    icon: ICON.rocket,
+    tag: "Network-Only Access",
+    title: "LIVE Boost Allocation",
+    description: "As an official Creator Network agency, we can boost creator lives using our allocation from TikTok — driving more viewers to the streams selling your product.",
+    bullets: ["TikTok boost allocation", "Higher viewer reach", "Agency-only advantage"],
+    stat: { value: "+412%", label: "boost lift avg" },
+    visual: "boost",
+  },
+  {
+    icon: ICON.creative_feedback,
+    tag: "Briefed & Structured",
+    title: "Scripted LIVE Sessions",
+    description: "Every sponsored LIVE is briefed with talking points, product placement moments, and monetisation prompts so your product gets the airtime it's paid for.",
+    bullets: ["Talking point scripts", "Placement timing cues", "Monetisation prompts"],
+    stat: { value: "100%", label: "briefed coverage" },
+    visual: "script",
+  },
+  {
+    icon: ICON.opportunities,
+    tag: "Real-Time Data",
+    title: "Real-Time LIVE Reporting",
+    description: "Track viewer count, product mentions, and Shop sales across every sponsored LIVE in one place. See which creators drive the most purchase during stream.",
+    bullets: ["Live viewer tracking", "Product mention counts", "In-stream sales data"],
+    stat: { value: "LIVE", label: "dashboard streams" },
+    visual: "report",
+  },
+  {
+    icon: ICON.tiktok_academy,
+    tag: "Official Partner",
+    title: "Creator Network Infrastructure",
+    description: "We hold two official TikTok credentials: Shop Partner and Creator Network. That gives us access, support, and tools standard agencies don't have.",
+    bullets: ["Shop Partner credential", "Creator Network credential", "Priority platform access"],
+    stat: { value: "2", label: "TikTok credentials" },
+    visual: "partner",
+  },
+];
+
+// ─── Features badge ──────────────────────────────────────────────
+function FeaturesBadge() {
+  return (
+    <Badge
+      variant="secondary"
+      className="bg-white/5 border-white/20 backdrop-blur-sm px-4 py-2 text-xs font-bold inline-flex items-center gap-2 rounded-full uppercase tracking-[2px]"
+      style={{ color: "#a8b9ff" }}
+    >
+      <span className="rounded-full" style={{ width: 6, height: 6, background: "#7a93ff" }} />
+      Brand Features
+    </Badge>
+  );
+}
+
+// ─── Tab pill ────────────────────────────────────────────────────
+function TabPill({ active, onClick, label, accent, dot }) {
+  return (
+    <button
+      onClick={onClick}
+      className="relative transition-all duration-300 rounded-full font-bold uppercase tracking-[2px]"
+      style={{
+        padding: "14px 28px",
+        fontSize: 12,
+        border: active ? `1px solid ${accent}` : "1px solid rgba(255,255,255,0.12)",
+        background: active ? `${accent}22` : "rgba(255,255,255,0.03)",
+        color: active ? accent : "rgba(255,255,255,0.55)",
+      }}
+    >
+      <span className="inline-flex items-center gap-2">
+        <span className="rounded-full" style={{ width: 6, height: 6, background: active ? accent : "rgba(255,255,255,0.3)", boxShadow: active ? `0 0 10px ${accent}` : "none" }} />
+        {label}
+      </span>
+    </button>
+  );
+}
+
+// ─── Accordion row ───────────────────────────────────────────────
+function FeatureRow({ feature, index, isActive, onActivate, accent }) {
+  return (
+    <button
+      onClick={onActivate}
+      className="feat-row w-full text-left relative transition-all duration-500"
+      style={{
+        padding: "24px 28px",
+        borderRadius: 14,
+        background: isActive ? `linear-gradient(135deg, ${accent}14, rgba(255,255,255,0.02))` : "transparent",
+        border: isActive ? `1px solid ${accent}55` : "1px solid rgba(255,255,255,0.06)",
+        marginBottom: 8,
+      }}
+    >
+      {isActive && (
+        <span
+          className="absolute left-0 top-1/2 -translate-y-1/2"
+          style={{
+            width: 3,
+            height: "60%",
+            background: `linear-gradient(180deg, ${accent}, #7a93ff)`,
+            borderRadius: 2,
+            boxShadow: `0 0 12px ${accent}`,
+          }}
+        />
+      )}
+      <div className="flex items-center gap-4">
+        <div
+          className="flex items-center justify-center shrink-0 transition-transform duration-500"
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 11,
+            background: isActive ? `${accent}22` : "rgba(255,255,255,0.04)",
+            border: isActive ? `1px solid ${accent}44` : "1px solid rgba(255,255,255,0.08)",
+            transform: isActive ? "rotate(-4deg) scale(1.08)" : "none",
+          }}
+        >
+          <img src={feature.icon} alt="" style={{ width: 24, height: 24 }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", fontFamily: "ui-monospace, Menlo, monospace", letterSpacing: 1.5 }}>
+              0{index + 1}
+            </span>
+            <span
+              className="rounded-full uppercase"
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 1.2,
+                padding: "3px 8px",
+                background: isActive ? `${accent}1a` : "rgba(255,255,255,0.05)",
+                color: isActive ? accent : "rgba(255,255,255,0.45)",
+                border: isActive ? `1px solid ${accent}44` : "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              {feature.tag}
+            </span>
+          </div>
+          <div className="font-bold leading-tight" style={{ fontSize: 17, color: isActive ? "#fff" : "rgba(255,255,255,0.75)" }}>
+            {feature.title}
+          </div>
+        </div>
+        <ArrowRight size={18} style={{ color: isActive ? accent : "rgba(255,255,255,0.25)", transform: isActive ? "translateX(4px)" : "none", transition: "all .4s ease" }} />
+      </div>
+    </button>
+  );
+}
+
+// ─── Preview panel (the big visual on the right) ─────────────────
+function PreviewPanel({ feature, accent }) {
+  return (
+    <div
+      key={feature.title}
+      className="relative overflow-hidden feat-preview-enter"
+      style={{
+        borderRadius: 24,
+        background: "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015))",
+        border: "1px solid rgba(255,255,255,0.08)",
+        padding: 40,
+        minHeight: 560,
+      }}
+    >
+      {/* Ambient glow */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: -120,
+          right: -120,
+          width: 360,
+          height: 360,
+          background: `radial-gradient(circle, ${accent}33, transparent 65%)`,
+          filter: "blur(20px)",
+        }}
+      />
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          bottom: -100,
+          left: -100,
+          width: 300,
+          height: 300,
+          background: "radial-gradient(circle, rgba(122,147,255,0.18), transparent 65%)",
+          filter: "blur(30px)",
+        }}
+      />
+
+      <div className="relative flex flex-col h-full" style={{ minHeight: 480 }}>
+        {/* Tag + icon */}
+        <div className="flex items-center justify-between mb-8">
+          <span
+            className="rounded-full uppercase inline-flex items-center gap-2"
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 1.8,
+              padding: "6px 12px",
+              background: `${accent}1a`,
+              color: accent,
+              border: `1px solid ${accent}44`,
+            }}
+          >
+            <span className="rounded-full" style={{ width: 5, height: 5, background: accent, boxShadow: `0 0 8px ${accent}` }} />
+            {feature.tag}
+          </span>
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 18,
+              background: `linear-gradient(135deg, ${accent}22, rgba(122,147,255,0.12))`,
+              border: `1px solid ${accent}55`,
+            }}
+          >
+            <img src={feature.icon} alt="" style={{ width: 40, height: 40 }} />
+          </div>
+        </div>
+
+        {/* Title */}
+        <h3 className="font-black text-white mb-4" style={{ fontSize: 36, lineHeight: 1.1, letterSpacing: -0.5 }}>
+          {feature.title}
+        </h3>
+
+        {/* Description */}
+        <p className="text-white/70 mb-8" style={{ fontSize: 16, lineHeight: 1.55, maxWidth: 440 }}>
+          {feature.description}
+        </p>
+
+        {/* Bullets */}
+        <div className="space-y-3 mb-auto">
+          {feature.bullets.map((b, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div
+                className="flex items-center justify-center shrink-0 mt-0.5"
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 6,
+                  background: `${accent}22`,
+                  border: `1px solid ${accent}55`,
+                }}
+              >
+                <Check size={12} style={{ color: accent, strokeWidth: 3 }} />
+              </div>
+              <span className="text-white/85" style={{ fontSize: 14, lineHeight: 1.5 }}>
+                {b}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Big stat card at bottom */}
+        <div
+          className="mt-8 flex items-end justify-between"
+          style={{
+            padding: 20,
+            borderRadius: 14,
+            background: "rgba(0,0,0,0.35)",
+            border: `1px solid ${accent}33`,
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <div>
+            <div className="font-black" style={{ fontSize: 48, lineHeight: 1, color: accent, letterSpacing: -1.5 }}>
+              {feature.stat.value}
+            </div>
+            <div className="text-white/60 uppercase mt-2" style={{ fontSize: 10, letterSpacing: 2, fontWeight: 700 }}>
+              {feature.stat.label}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 text-white/50" style={{ fontSize: 11, fontWeight: 600 }}>
+            <span className="rounded-full animate-pulse" style={{ width: 6, height: 6, background: "#22c55e" }} />
+            Live metric
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN BLOCK ──────────────────────────────────────────────────
+export default function Block() {
+  const [tab, setTab] = useState("shop");
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const isShop = tab === "shop";
+  const features = isShop ? SHOP_FEATURES : LIVE_FEATURES;
+  const accent = isShop ? "#7a93ff" : "#fe2c55";
+  const active = features[activeIdx] || features[0];
+
+  const switchTab = (t) => {
+    setTab(t);
+    setActiveIdx(0);
+  };
+
+  return (
+    <section
+      className="relative overflow-hidden w-full"
+      style={{
+        background: "#000624",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        color: "white",
+      }}
+    >
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+      <style>{`
+        @keyframes featV2Enter {
+          0% { opacity: 0; transform: translateY(12px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .feat-preview-enter { animation: featV2Enter .45s ease; }
+        .feat-row:hover { background: rgba(255,255,255,0.04); }
+      `}</style>
+
+      {/* Ambient background */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: "radial-gradient(ellipse at 20% 10%, rgba(122,147,255,0.14), transparent 55%), radial-gradient(ellipse at 90% 90%, rgba(254,44,85,0.1), transparent 55%)",
+      }} />
+
+      {/* ─── Desktop (1024+) ─── */}
+      <div className="hidden lg:block relative" style={{ padding: "96px 64px" }}>
+        <div className="mx-auto" style={{ maxWidth: 1280 }}>
+          {/* Header */}
+          <div className="flex flex-col items-center text-center mb-14">
+            <FeaturesBadge />
+            <h2 className="font-black text-white mt-6 mb-4" style={{ fontSize: 68, lineHeight: 0.98, letterSpacing: -2, maxWidth: 900 }}>
+              Everything we do,{" "}
+              <span style={{
+                fontFamily: "'Instrument Serif', serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+                color: "#a8b9ff",
+                letterSpacing: -1.5,
+              }}>
+                in one system
+              </span>
+            </h2>
+            <p className="text-white/65 mb-10" style={{ fontSize: 19, lineHeight: 1.5, maxWidth: 620 }}>
+              Click any capability to see how it works. Switch between Shop and LIVE to explore both sides of our stack.
+            </p>
+
+            {/* Tabs */}
+            <div className="inline-flex items-center gap-2 p-1.5 rounded-full" style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}>
+              <TabPill label="Shop" active={isShop} onClick={() => switchTab("shop")} accent="#7a93ff" />
+              <TabPill label="LIVE" active={!isShop} onClick={() => switchTab("live")} accent="#fe2c55" />
+            </div>
+          </div>
+
+          {/* Split layout: accordion left, preview right */}
+          <div className="grid" style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.05fr)", gap: 48 }}>
+            {/* Left: accordion */}
+            <div>
+              {features.map((f, i) => (
+                <FeatureRow
+                  key={`${tab}-${i}`}
+                  feature={f}
+                  index={i}
+                  isActive={activeIdx === i}
+                  onActivate={() => setActiveIdx(i)}
+                  accent={accent}
+                />
+              ))}
+            </div>
+
+            {/* Right: preview */}
+            <div style={{ position: "sticky", top: 32, alignSelf: "start" }}>
+              <PreviewPanel feature={active} accent={accent} />
+            </div>
+          </div>
+
+          {/* Footer CTA */}
+          <div className="mt-16 flex items-center justify-center">
+            <Button
+              asChild
+              className="rounded-full font-bold transition-all hover:scale-105 group"
+              style={{
+                background: accent,
+                color: "white",
+                padding: "18px 32px",
+                fontSize: 15,
+                height: "auto",
+                boxShadow: `0 10px 30px -8px ${accent}88`,
+              }}
+            >
+              <a href="/brands" className="inline-flex items-center gap-2">
+                Start a {isShop ? "Shop" : "LIVE"} campaign
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Mobile (<1024) ─── */}
+      <div className="block lg:hidden relative" style={{ padding: "72px 20px" }}>
+        <div className="mx-auto" style={{ maxWidth: 640 }}>
+          {/* Header */}
+          <div className="flex flex-col items-center text-center mb-10">
+            <FeaturesBadge />
+            <h2 className="font-black text-white mt-5 mb-3" style={{ fontSize: 40, lineHeight: 1, letterSpacing: -1.2 }}>
+              Everything we do,{" "}
+              <span style={{
+                fontFamily: "'Instrument Serif', serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+                color: "#a8b9ff",
+                letterSpacing: -1,
+              }}>
+                in one system
+              </span>
+            </h2>
+            <p className="text-white/65 mb-7" style={{ fontSize: 15, lineHeight: 1.55 }}>
+              Tap any capability to see how it works.
+            </p>
+
+            <div className="inline-flex items-center gap-2 p-1.5 rounded-full" style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}>
+              <TabPill label="Shop" active={isShop} onClick={() => switchTab("shop")} accent="#7a93ff" />
+              <TabPill label="LIVE" active={!isShop} onClick={() => switchTab("live")} accent="#fe2c55" />
+            </div>
+          </div>
+
+          {/* Stacked list: row -> expanded preview below */}
+          <div>
+            {features.map((f, i) => {
+              const active = activeIdx === i;
+              return (
+                <div key={`${tab}-m-${i}`} className="mb-3">
+                  <FeatureRow
+                    feature={f}
+                    index={i}
+                    isActive={active}
+                    onActivate={() => setActiveIdx(active ? -1 : i)}
+                    accent={accent}
+                  />
+                  {active && (
+                    <div className="mt-2" style={{ animation: "featV2Enter .4s ease" }}>
+                      <PreviewPanel feature={f} accent={accent} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Footer CTA */}
+          <div className="mt-10 flex items-center justify-center">
+            <Button
+              asChild
+              className="rounded-full font-bold w-full max-w-xs"
+              style={{
+                background: accent,
+                color: "white",
+                padding: "16px 28px",
+                fontSize: 14,
+                height: "auto",
+                boxShadow: `0 10px 30px -8px ${accent}88`,
+              }}
+            >
+              <a href="/brands" className="inline-flex items-center justify-center gap-2">
+                Start a {isShop ? "Shop" : "LIVE"} campaign
+                <ArrowRight size={16} />
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
