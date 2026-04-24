@@ -1,0 +1,138 @@
+import { useEffect, useRef, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function Block() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+
+  const cards = [
+    {
+      icon: "💰",
+      title: "Get Paid Per Post",
+      description: "Earn custom upfront rates + affiliate commissions on retainer deals",
+      delay: "0.4s"
+    },
+    {
+      icon: "🗣",
+      title: "No Pitching Required",
+      description: "Skip DMs, emails, and negotiations. Jobs are already pre-approved for you. All that's left is to post a video!",
+      delay: "0.6s"
+    },
+    {
+      icon: "🚀",
+      title: "Boost Your Earnings",
+      description: "Post consistently, earn predictably, and stack brand rewards as your content performs.",
+      delay: "0.8s"
+    }
+  ];
+
+  return (
+    <section
+      ref={sectionRef}
+      className="w-full py-[100px]"
+      style={{
+        background: "#000B3A"
+      }}
+    >
+      <div className="max-w-[1200px] mx-auto px-6">
+        {/* Header */}
+        <div className="text-center mb-[60px]">
+          <h2
+            className="text-[42px] font-bold text-white mb-4 transition-all duration-[600ms] ease-out"
+            style={{
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "translateY(0)" : "translateY(20px)"
+            }}
+          >
+            How It Works
+          </h2>
+          <p
+            className="text-[18px] text-white max-w-[600px] mx-auto transition-all duration-[600ms] ease-out"
+            style={{
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "translateY(0)" : "translateY(20px)",
+              transitionDelay: "0.2s"
+            }}
+          >
+            Three simple steps to start earning with Creator Scans
+          </p>
+        </div>
+
+        {/* Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {cards.map((card, index) => (
+            <Card
+              key={index}
+              className="group border border-[rgba(122,147,255,0.2)] rounded-2xl p-10 text-center transition-all duration-300 ease-out hover:-translate-y-2"
+              style={{
+                background: "rgba(255, 255, 255, 0.03)",
+                backdropFilter: "blur(10px)",
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? "translateY(0)" : "translateY(20px)",
+                transitionDelay: card.delay,
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = "0 12px 40px rgba(122, 147, 255, 0.25)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+              }}
+            >
+              <CardContent className="p-0">
+                <div 
+                  className="text-[56px] mb-6 block transition-all duration-500 ease-out group-hover:scale-125 group-hover:rotate-12"
+                  style={{
+                    display: "inline-block",
+                    animation: isVisible ? "float 3s ease-in-out infinite" : "none",
+                    animationDelay: card.delay
+                  }}
+                >
+                  {card.icon}
+                </div>
+                <h3 className="text-[22px] font-bold text-white mb-4">
+                  {card.title}
+                </h3>
+                <p className="text-[16px] text-white leading-[1.6]">
+                  {card.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+      `}</style>
+    </section>
+  );
+}
