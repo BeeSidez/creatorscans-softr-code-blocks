@@ -1,0 +1,458 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, Eye, Play } from "lucide-react";
+
+// ─── Cloudinary assets ─────────────────────────────────────────────
+const TIKTOK_LOGO = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/TIKTOK_jetgnf.png";
+const CREATOR_WHISPERING = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774571119/action-whispering_ir88az.png";
+const BRAND_LIVE_FLASH = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776197175/tiktok-academy/live/shared/ui/ui-shop-live-flash-sale-bossup.jpg";
+const ICON_TARGET = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104228/sticker-icon_target-bullseye-arrow-red-pink-hit_shnqos.png";
+const ICON_FIRE = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104222/sticker-icon_fire-flame-red-yellow-hot-trending_ljaztb.png";
+const PRODUCT_SAMPLE = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776803887/product_sample_c9xfzj.png";
+
+const cld = (url, xform) => url.replace("/image/upload/", `/image/upload/${xform}/`);
+
+// ─── Shared bits ───────────────────────────────────────────────────
+function PartnerBadge() {
+  return (
+    <Badge
+      variant="secondary"
+      className="bg-white/10 border-white/20 backdrop-blur-sm px-4 py-2 text-sm font-semibold flex items-center gap-2 rounded-full"
+      style={{ color: "#a8b9ff" }}
+    >
+      <img src={TIKTOK_LOGO} alt="TikTok" className="h-4 w-4 rounded-sm" style={{ transform: "rotate(-5deg)" }} />
+      Official TikTok Partner Agency
+    </Badge>
+  );
+}
+
+function FloatingCard({ children, className = "", style, rotate = 0, delay = 0 }) {
+  return (
+    <div
+      className={`absolute rounded-2xl backdrop-blur-md ${className}`}
+      style={{
+        background: "rgba(10, 22, 82, 0.55)",
+        border: "1px solid rgba(168, 185, 255, 0.18)",
+        boxShadow: "0 30px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset",
+        padding: 14,
+        transform: `rotate(${rotate}deg)`,
+        animation: `floatY 6s ease-in-out ${delay}s infinite alternate`,
+        ["--r"]: `${rotate}deg`,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── Creator-side cards ────────────────────────────────────────────
+function CreatorVideoCard({ scale = 1 }) {
+  const w = 170 * scale, h = 215 * scale;
+  const src = cld(CREATOR_WHISPERING, `c_fill,g_auto,w_${Math.round(w * 2)},h_${Math.round(h * 2)},q_auto,f_auto`);
+  return (
+    <div
+      className="rounded-xl overflow-hidden relative"
+      style={{ width: w, height: h, backgroundImage: `url(${src})`, backgroundSize: "cover", backgroundPosition: "center" }}
+    >
+      <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 55%, rgba(0,0,0,0.75) 100%)" }} />
+      <div className="absolute top-2 left-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-white font-semibold" style={{ background: "rgba(0,0,0,0.55)", fontSize: 10 * scale }}>
+        <Play className="fill-current" style={{ width: 10, height: 10 }} />
+        1.2M
+      </div>
+      <div className="absolute bottom-2 left-2 right-2 flex items-center gap-1.5 rounded-lg px-2 py-1" style={{ background: "rgba(255,255,255,0.95)", color: "#000B3A" }}>
+        <div className="rounded overflow-hidden" style={{ width: 22, height: 22, background: "#f4efe6" }}>
+          <img src={PRODUCT_SAMPLE} alt="" className="w-full h-full object-cover block" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-bold" style={{ fontSize: 9 * scale }}>Glow Serum</div>
+          <div style={{ fontSize: 8 * scale, color: "#6b728a" }}>£18.50</div>
+        </div>
+        <div className="font-bold" style={{ fontSize: 8 * scale, color: "#FE2C55" }}>SHOP</div>
+      </div>
+      <div className="absolute left-2 font-semibold text-white" style={{ bottom: 52, fontSize: 10 * scale, textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}>@jade.reacts</div>
+    </div>
+  );
+}
+
+function CreatorEarningsCard() {
+  return (
+    <div className="text-white" style={{ width: 200 }}>
+      <div className="font-bold uppercase" style={{ fontSize: 10, color: "#FF9FB1", letterSpacing: 1 }}>
+        your 30-day payout
+      </div>
+      <div className="font-extrabold mt-1" style={{ fontSize: 30, letterSpacing: -1, fontVariantNumeric: "tabular-nums" }}>
+        £12,847<span className="opacity-50" style={{ fontSize: 16 }}>.22</span>
+      </div>
+      <div className="font-semibold mt-0.5" style={{ fontSize: 10, color: "#7ED9A7" }}>↑ 38% vs last month</div>
+      <svg viewBox="0 0 200 50" width="100%" height={42} style={{ marginTop: 6 }}>
+        <defs>
+          <linearGradient id="cgrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stopColor="#FF9FB1" stopOpacity="0.6" />
+            <stop offset="1" stopColor="#FF9FB1" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d="M0,40 L20,38 L40,35 L60,36 L80,28 L100,26 L120,20 L140,18 L160,12 L180,10 L200,5 L200,50 L0,50 Z" fill="url(#cgrad)" />
+        <path d="M0,40 L20,38 L40,35 L60,36 L80,28 L100,26 L120,20 L140,18 L160,12 L180,10 L200,5" fill="none" stroke="#FF9FB1" strokeWidth="1.5" />
+      </svg>
+    </div>
+  );
+}
+
+function CreatorFollowerCard() {
+  return (
+    <div className="text-white flex items-center gap-2.5" style={{ width: 210 }}>
+      <div className="rounded-lg grid place-items-center overflow-hidden" style={{ width: 40, height: 40, background: "rgba(255,159,177,0.12)", border: "1px solid rgba(255,159,177,0.25)" }}>
+        <img src={ICON_FIRE} alt="" className="block object-contain" style={{ width: "82%", height: "82%" }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-bold" style={{ fontSize: 12 }}>+2,340 followers</div>
+        <div className="mt-0.5" style={{ fontSize: 10, color: "#FF9FB1" }}>this week · from 3 LIVEs</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Brand-side cards ──────────────────────────────────────────────
+function BrandLiveCard({ scale = 1 }) {
+  const w = 220 * scale, h = 280 * scale;
+  const src = cld(BRAND_LIVE_FLASH, `c_fill,g_auto,w_${Math.round(w * 2)},h_${Math.round(h * 2)},q_auto,f_auto`);
+  const [viewers, setViewers] = useState(8234);
+  useEffect(() => {
+    const t = setInterval(() => setViewers((v) => v + Math.floor(Math.random() * 7) - 2), 1600);
+    return () => clearInterval(t);
+  }, []);
+  const fmt = (n) => (n >= 1000 ? `${(n / 1000).toFixed(1)}K` : String(n));
+  return (
+    <div className="rounded-2xl overflow-hidden relative" style={{ width: w, background: "#1a1033" }}>
+      <div className="relative" style={{ height: h, backgroundImage: `url(${src})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 20%, transparent 75%, rgba(0,0,0,0.7) 100%)" }} />
+        <div className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-white font-extrabold" style={{ background: "#FE2C55", fontSize: 10 * scale, letterSpacing: 0.8 }}>
+          <span className="rounded-full" style={{ width: 5, height: 5, background: "#fff", animation: "pulseDot 1.4s ease-in-out infinite" }} />
+          LIVE
+        </div>
+        <div className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-white font-semibold" style={{ background: "rgba(0,0,0,0.5)", fontSize: 10 * scale, fontVariantNumeric: "tabular-nums" }}>
+          <Eye style={{ width: 11, height: 11 }} />
+          {fmt(viewers)}
+        </div>
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 text-white">
+          <div className="opacity-80" style={{ fontSize: 10 * scale, marginBottom: 2 }}>Brand partner · BossUp</div>
+          <div className="font-bold" style={{ fontSize: 12 * scale }}>Flash sale · 40% off</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BrandOrderCard() {
+  const [orders, setOrders] = useState(324);
+  const [pulse, setPulse] = useState(false);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setOrders((o) => o + Math.floor(Math.random() * 3) + 1);
+      setPulse(true);
+      setTimeout(() => setPulse(false), 450);
+    }, 2600);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="text-white flex items-center gap-2.5" style={{ width: 220 }}>
+      <div className="rounded-lg grid place-items-center overflow-hidden" style={{ width: 42, height: 42, background: "rgba(168,185,255,0.12)", border: "1px solid rgba(168,185,255,0.25)" }}>
+        <img src={ICON_TARGET} alt="" className="block object-contain" style={{ width: "84%", height: "84%" }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-bold relative inline-block" style={{ fontSize: 12, fontVariantNumeric: "tabular-nums" }}>
+          {orders} orders · today
+          {pulse && (
+            <span className="absolute font-bold" style={{ top: -4, right: -28, fontSize: 10, color: "#7ED9A7", animation: "plusFlash 450ms ease-out" }}>+1</span>
+          )}
+        </div>
+        <div className="mt-0.5" style={{ fontSize: 10, color: "#a8b9ff" }}>£4,820 GMV from 6 creators</div>
+      </div>
+      <div className="inline-flex items-center gap-1 font-bold" style={{ fontSize: 10, color: "#7ED9A7" }}>
+        <span className="rounded-full" style={{ width: 5, height: 5, background: "#7ED9A7", animation: "pulseDot 1.4s ease-in-out infinite" }} />
+        LIVE
+      </div>
+    </div>
+  );
+}
+
+function BrandROICard() {
+  const [drawn, setDrawn] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setDrawn(true), 300);
+    return () => clearTimeout(t);
+  }, []);
+  const bars = [0.3, 0.45, 0.4, 0.55, 0.62, 0.7, 0.68, 0.82, 0.9, 1];
+  return (
+    <div className="text-white" style={{ width: 200 }}>
+      <div className="font-bold uppercase" style={{ fontSize: 10, color: "#a8b9ff", letterSpacing: 1 }}>Campaign ROAS</div>
+      <div className="font-extrabold mt-1" style={{ fontSize: 30, letterSpacing: -1 }}>6.4x</div>
+      <div className="font-semibold mt-0.5" style={{ fontSize: 10, color: "#7ED9A7" }}>vs paid average of 1.8x</div>
+      <div className="flex gap-0.5 mt-2 items-end" style={{ height: 30 }}>
+        {bars.map((v, i) => (
+          <div
+            key={i}
+            className="flex-1 rounded-sm"
+            style={{
+              height: drawn ? `${v * 100}%` : "0%",
+              background: i === bars.length - 1 ? "#a8b9ff" : "rgba(168,185,255,0.3)",
+              transition: `height 700ms cubic-bezier(.22,1,.36,1) ${i * 70}ms`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Brand row (partner logos) ─────────────────────────────────────
+const PARTNER_BRANDS = [
+  { name: "LUMORA", style: { fontWeight: 900, letterSpacing: 2 } },
+  { name: "Nëue", style: { fontFamily: "serif", fontStyle: "italic", fontSize: 24 } },
+  { name: "glow/co", style: { fontWeight: 500, letterSpacing: -0.5 } },
+  { name: "PALMÉ", style: { fontWeight: 700, letterSpacing: 4 } },
+  { name: "basecase", style: { fontWeight: 600, letterSpacing: -0.5, fontFamily: "monospace" } },
+  { name: "HYDRO.9", style: { fontWeight: 800, letterSpacing: -1 } },
+];
+
+function BrandRow() {
+  return (
+    <div className="flex items-center gap-6 flex-wrap" style={{ color: "rgba(255,255,255,0.45)" }}>
+      <div className="uppercase font-semibold opacity-80" style={{ fontSize: 11, letterSpacing: 2 }}>
+        Trusted by shops from
+      </div>
+      <div className="flex items-center gap-6 flex-wrap">
+        {PARTNER_BRANDS.map((b, i) => (
+          <span key={i} style={{ fontSize: 16, ...b.style }}>{b.name}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Block ────────────────────────────────────────────────────
+export default function Block() {
+  const [hover, setHover] = useState(null);
+  const creatorDim = hover === "brand";
+  const brandDim = hover === "creator";
+  const splitPct = hover === "creator" ? 72 : hover === "brand" ? 28 : 62;
+  const rightStart = splitPct - 24;
+
+  // Open Softr modal for /creators; fallback to normal nav
+  const handleCreatorsClick = (e) => {
+    e.preventDefault();
+    if (typeof window !== "undefined" && window.Softr?.modal?.open) {
+      window.Softr.modal.open("/creators");
+      return;
+    }
+    window.location.href = "/creators";
+  };
+
+  return (
+    <div className="relative w-full overflow-hidden" style={{ background: "#000624", color: "#fff", minHeight: "100vh" }}>
+      <style>{`
+        @keyframes floatY { 0% { transform: translateY(0) rotate(var(--r,0deg)); } 100% { transform: translateY(-14px) rotate(var(--r,0deg)); } }
+        @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+        @keyframes plusFlash { 0% { opacity: 0; transform: translateY(6px); } 30% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
+      `}</style>
+
+      {/* ─── Desktop layout ─── */}
+      <div className="hidden md:block relative" style={{ height: 920 }}>
+        {/* Diagonal split bg */}
+        <div
+          className="absolute inset-0"
+          style={{
+            clipPath: `polygon(0 0, ${splitPct}% 0, ${rightStart}% 100%, 0 100%)`,
+            background: "radial-gradient(ellipse at 30% 30%, #2a1a55 0%, #0a0628 70%)",
+            transition: "filter .35s ease, clip-path .5s cubic-bezier(.22,1,.36,1)",
+            filter: creatorDim ? "brightness(0.4)" : "brightness(1)",
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            clipPath: `polygon(${splitPct}% 0, 100% 0, 100% 100%, ${rightStart}% 100%)`,
+            background: "radial-gradient(ellipse at 70% 70%, #0a1652 0%, #000624 70%)",
+            transition: "filter .35s ease, clip-path .5s cubic-bezier(.22,1,.36,1)",
+            filter: brandDim ? "brightness(0.4)" : "brightness(1)",
+          }}
+        />
+
+        {/* Side glows */}
+        <div className="absolute pointer-events-none" style={{ left: "5%", top: "30%", width: "45%", height: "65%", background: "radial-gradient(circle, rgba(254,44,85,0.28), transparent 60%)", transition: "opacity .35s", opacity: creatorDim ? 0.3 : 1 }} />
+        <div className="absolute pointer-events-none" style={{ right: "0%", bottom: "10%", width: "50%", height: "70%", background: "radial-gradient(circle, rgba(122,147,255,0.32), transparent 60%)", transition: "opacity .35s", opacity: brandDim ? 0.3 : 1 }} />
+
+        {/* Centered headline */}
+        <div className="absolute left-0 right-0 flex flex-col items-center z-10" style={{ top: 56 }}>
+          <PartnerBadge />
+          <h1 className="font-extrabold text-center whitespace-nowrap" style={{ fontSize: 68, lineHeight: 1, letterSpacing: -2.5, margin: "18px 0 14px" }}>
+            TikTok Shop <span style={{ fontFamily: "serif", fontStyle: "italic", fontWeight: 400, color: "#a8b9ff", letterSpacing: -2 }}>&amp;</span> LIVE Agency
+          </h1>
+          <p className="text-center" style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", maxWidth: 560, margin: 0 }}>
+            The #1 platform for brands and creators to make real money on TikTok.
+          </p>
+        </div>
+
+        {/* Two halves */}
+        <div className="absolute left-0 right-0 grid grid-cols-2" style={{ top: 290, bottom: 130, zIndex: 5, pointerEvents: "none" }}>
+          {/* Creator lane */}
+          <div
+            onMouseEnter={() => setHover("creator")}
+            onMouseLeave={() => setHover(null)}
+            className="relative flex flex-col justify-end cursor-pointer"
+            style={{ pointerEvents: "auto", padding: "0 40px 0 64px", transition: "opacity .35s", opacity: creatorDim ? 0.35 : 1 }}
+          >
+            <div className="absolute inset-0 pointer-events-none">
+              <FloatingCard style={{ top: 0, right: 30 }} rotate={-4} delay={0}><CreatorVideoCard /></FloatingCard>
+              <FloatingCard style={{ top: 80, left: 40, padding: 16 }} rotate={3} delay={1.2}><CreatorEarningsCard /></FloatingCard>
+              <FloatingCard style={{ bottom: 160, right: 20, padding: 14 }} rotate={-2} delay={2.4}><CreatorFollowerCard /></FloatingCard>
+            </div>
+            <div className="relative z-10">
+              <div className="italic" style={{ fontFamily: "serif", fontSize: 38, color: "#FF9FB1", transform: "rotate(-4deg)", marginLeft: 16, marginBottom: -8 }}>for</div>
+              <div className="text-white" style={{ fontSize: 88, fontWeight: 900, letterSpacing: -4, lineHeight: 0.9 }}>Creators</div>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", maxWidth: 340, margin: "12px 0 16px" }}>
+                Get matched with brands, learn LIVE selling, earn up to £10K+/mo through Shop affiliates.
+              </p>
+              <div>
+                <Button
+                  onClick={handleCreatorsClick}
+                  className="font-bold group"
+                  style={{
+                    background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+                    color: "#fff",
+                    height: "auto",
+                    padding: "18px 28px",
+                    borderRadius: 12,
+                    fontSize: 16,
+                    boxShadow: "0 10px 30px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
+                >
+                  Join as a Creator
+                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" style={{ width: 16, height: 16 }} />
+                </Button>
+              </div>
+              <div className="inline-flex items-center gap-1.5 mt-3" style={{ fontSize: 13, color: "#FF9FB1" }}>
+                <span className="rounded-full" style={{ width: 6, height: 6, background: "#FF9FB1", animation: "pulseDot 1.4s ease-in-out infinite" }} />
+                6 brands hiring this week →
+              </div>
+            </div>
+          </div>
+
+          {/* Brand lane */}
+          <div
+            onMouseEnter={() => setHover("brand")}
+            onMouseLeave={() => setHover(null)}
+            className="relative flex flex-col justify-end items-end text-right cursor-pointer"
+            style={{ pointerEvents: "auto", padding: "0 64px 0 40px", transition: "opacity .35s", opacity: brandDim ? 0.35 : 1 }}
+          >
+            <div className="absolute inset-0 pointer-events-none">
+              <FloatingCard style={{ top: 0, left: 30 }} rotate={4} delay={0.4}><BrandLiveCard /></FloatingCard>
+              <FloatingCard style={{ top: 100, right: 40, padding: 16 }} rotate={-3} delay={1.4}><BrandROICard /></FloatingCard>
+              <FloatingCard style={{ bottom: 170, left: 40, padding: 14 }} rotate={2} delay={2.2}><BrandOrderCard /></FloatingCard>
+            </div>
+            <div className="relative z-10">
+              <div className="italic" style={{ fontFamily: "serif", fontSize: 38, color: "#a8b9ff", transform: "rotate(3deg)", marginRight: 16, marginBottom: -8 }}>for</div>
+              <div className="text-white" style={{ fontSize: 88, fontWeight: 900, letterSpacing: -4, lineHeight: 0.9 }}>Brands</div>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", maxWidth: 340, margin: "12px 0 16px", marginLeft: "auto" }}>
+                Plug into 1,240+ vetted creators running LIVE streams and Shop content for your products.
+              </p>
+              <div>
+                <a href="/brands">
+                  <Button
+                    className="font-bold group"
+                    style={{
+                      background: "linear-gradient(180deg, #8CA3FF 0%, #5A73FF 100%)",
+                      color: "#fff",
+                      height: "auto",
+                      padding: "18px 28px",
+                      borderRadius: 12,
+                      fontSize: 16,
+                      boxShadow: "0 10px 30px -8px rgba(90,115,255,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                    }}
+                  >
+                    Partner with us
+                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" style={{ width: 16, height: 16 }} />
+                  </Button>
+                </a>
+              </div>
+              <div className="inline-flex items-center gap-1.5 mt-3 justify-end" style={{ fontSize: 13, color: "#a8b9ff" }}>
+                <span className="rounded-full" style={{ width: 6, height: 6, background: "#a8b9ff", animation: "pulseDot 1.4s ease-in-out infinite" }} />
+                12 new creators this week →
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Foot */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex justify-center" style={{ padding: "22px 64px", borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.3)" }}>
+          <BrandRow />
+        </div>
+      </div>
+
+      {/* ─── Mobile layout ─── */}
+      <div className="block md:hidden relative overflow-hidden" style={{ background: "#000624" }}>
+        <div className="absolute top-0 left-0 right-0" style={{ bottom: "50%", background: "radial-gradient(ellipse at 60% 60%, #2a1a55, #0a0628)" }} />
+        <div className="absolute left-0 right-0 bottom-0" style={{ top: "50%", background: "radial-gradient(ellipse at 40% 40%, #0a1652, #000624)" }} />
+
+        <div className="relative text-center" style={{ padding: "28px 20px 20px" }}>
+          <PartnerBadge />
+          <h1 className="font-extrabold" style={{ fontSize: 42, lineHeight: 0.98, letterSpacing: -1.5, margin: "14px 0 8px" }}>
+            TikTok Shop <span style={{ fontFamily: "serif", fontStyle: "italic", fontWeight: 400, color: "#a8b9ff" }}>&amp;</span> LIVE Agency
+          </h1>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", margin: 0 }}>
+            The #1 platform for brands and creators to make real money on TikTok.
+          </p>
+        </div>
+
+        <div className="relative flex flex-col gap-3.5" style={{ padding: "12px 20px" }}>
+          {/* Creator lane */}
+          <div className="relative overflow-hidden rounded-2xl" style={{ padding: 18, border: "1px solid rgba(255,159,177,0.25)", background: "rgba(254,44,85,0.08)" }}>
+            <div className="absolute" style={{ top: -8, right: -10, transform: "rotate(6deg)" }}>
+              <CreatorVideoCard scale={0.62} />
+            </div>
+            <div style={{ maxWidth: "60%" }}>
+              <div className="italic" style={{ fontFamily: "serif", color: "#FF9FB1", fontSize: 22 }}>for</div>
+              <div style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1 }}>Creators</div>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", margin: "8px 0 12px" }}>Earn £10K+/mo with LIVE selling &amp; Shop affiliates.</p>
+              <Button
+                onClick={handleCreatorsClick}
+                className="w-full font-bold"
+                style={{ background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)", color: "#fff", padding: "14px 20px", borderRadius: 12, fontSize: 14, boxShadow: "0 10px 30px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)" }}
+              >
+                Join as a Creator
+                <ArrowRight className="ml-2" style={{ width: 14, height: 14 }} />
+              </Button>
+            </div>
+          </div>
+
+          {/* Brand lane */}
+          <div className="relative overflow-hidden rounded-2xl" style={{ padding: 18, border: "1px solid rgba(168,185,255,0.25)", background: "rgba(122,147,255,0.08)" }}>
+            <div className="absolute" style={{ top: -8, right: -12, transform: "rotate(-5deg)" }}>
+              <BrandLiveCard scale={0.52} />
+            </div>
+            <div style={{ maxWidth: "60%" }}>
+              <div className="italic" style={{ fontFamily: "serif", color: "#a8b9ff", fontSize: 22 }}>for</div>
+              <div style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1 }}>Brands</div>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", margin: "8px 0 12px" }}>Plug into 1,240+ vetted creators for your products.</p>
+              <a href="/brands" className="block">
+                <Button
+                  className="w-full font-bold"
+                  style={{ background: "linear-gradient(180deg, #8CA3FF 0%, #5A73FF 100%)", color: "#fff", padding: "14px 20px", borderRadius: 12, fontSize: 14, boxShadow: "0 10px 30px -8px rgba(90,115,255,0.55), inset 0 1px 0 rgba(255,255,255,0.25)" }}
+                >
+                  Partner with us
+                  <ArrowRight className="ml-2" style={{ width: 14, height: 14 }} />
+                </Button>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative flex justify-center" style={{ padding: "20px 20px 30px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+          <BrandRow />
+        </div>
+      </div>
+    </div>
+  );
+}
