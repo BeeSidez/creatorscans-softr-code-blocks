@@ -1,0 +1,355 @@
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+
+// ────────────────────────────────────────────────────────────
+// RECEIPTS — 19 real TikTok Shop GMV screenshots
+// ────────────────────────────────────────────────────────────
+const RECEIPTS = [
+  { id: "Np6jWbPZHCTLSP", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239841/social-proof/tiktok-shop-gmv/Np6jWbPZHCTLSP.jpg", gmv: 155900, items: 8800, commission: 19000, impressions: 10100000, period: "Jan 2026" },
+  { id: "Blj9czwilmrPSE", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239847/social-proof/tiktok-shop-gmv/Blj9czwilmrPSE.jpg", gmv: 134600, items: 9100, commission: 16700, impressions: 8500000 },
+  { id: "suhXPF6yiqjPub", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239847/social-proof/tiktok-shop-gmv/suhXPF6yiqjPub.jpg", gmv: 125600, items: 8600, commission: 15400, impressions: 7900000 },
+  { id: "j7DqvcdjN2rVst", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239851/social-proof/tiktok-shop-gmv/j7DqvcdjN2rVst.jpg", gmv: 118900, items: 6100, commission: 12400, impressions: 5000000 },
+  { id: "jWSlWdIC0RjUmZ", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239862/social-proof/tiktok-shop-gmv/jWSlWdIC0RjUmZ.jpg", gmv: 114300, items: 6500, commission: 13200, impressions: 7700000, period: "Jan 2026" },
+  { id: "sBOAbYwr99djPE", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239840/social-proof/tiktok-shop-gmv/sBOAbYwr99djPE.jpg", gmv: 104200, items: 7300, commission: 12600, impressions: 6100000 },
+  { id: "dYK908O5fZdb6o", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239857/social-proof/tiktok-shop-gmv/dYK908O5fZdb6o.jpg", gmv: 99800, items: 5100, commission: 10000, impressions: 4000000 },
+  { id: "leM20Q6NfJVC67", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239843/social-proof/tiktok-shop-gmv/leM20Q6NfJVC67.jpg", gmv: 65200, items: 2900, commission: 10200, impressions: 3100000, period: "Dec 2025" },
+  { id: "KyXmWtXugCjSC6", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239845/social-proof/tiktok-shop-gmv/KyXmWtXugCjSC6.jpg", gmv: 50200, items: 3500, commission: 4800, impressions: 3600000 },
+  { id: "pNSJADNDmrFOWk", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239848/social-proof/tiktok-shop-gmv/pNSJADNDmrFOWk.jpg", gmv: 47000, items: 2200, commission: 7200, impressions: 7000000 },
+  { id: "L09kmaLFKSbsBd", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239842/social-proof/tiktok-shop-gmv/L09kmaLFKSbsBd.jpg", gmv: 34500, items: 1600, commission: 5200, impressions: 4800000 },
+  { id: "9eIey3F5zoUbBL", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239863/social-proof/tiktok-shop-gmv/9eIey3F5zoUbBL.jpg", gmv: 18000, items: 833, commission: 2600, impressions: 1300000, period: "Jan 25" },
+  { id: "8GZeWOw1VOWEDM", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239859/social-proof/tiktok-shop-gmv/8GZeWOw1VOWEDM.jpg", gmv: 16200, items: 704, commission: 1600, impressions: 1100000, period: "Jan 19-25" },
+  { id: "If2Ts79WIcUoML", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239850/social-proof/tiktok-shop-gmv/If2Ts79WIcUoML.jpg", gmv: 13300, items: 173, commission: 1400, impressions: 333000 },
+  { id: "rZfMR8j83thSyb", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239850/social-proof/tiktok-shop-gmv/rZfMR8j83thSyb.jpg", gmv: 9600, items: 425, commission: 1000, impressions: 1500000, period: "Jan 1-4" },
+  { id: "743j2D3gTQZCca", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239846/social-proof/tiktok-shop-gmv/743j2D3gTQZCca.jpg", gmv: 9100, items: 557, commission: 1200, impressions: 816200 },
+  { id: "zakiMyl93g3Reh", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239861/social-proof/tiktok-shop-gmv/zakiMyl93g3Reh.jpg", gmv: 8500, items: 334, commission: 1200, impressions: 731600, period: "Jan 5-11" },
+  { id: "7fmUVLyww4JNvK", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239852/social-proof/tiktok-shop-gmv/7fmUVLyww4JNvK.jpg", gmv: 3000, items: 116, commission: 251, impressions: 315800, period: "Dec 14" },
+  { id: "L1gKNVmaa27BJn", img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776239844/social-proof/tiktok-shop-gmv/L1gKNVmaa27BJn.jpg", gmv: 2900, items: 101, commission: 457, impressions: 143700 },
+];
+
+function fmtGMV(v) {
+  if (v >= 1000) return "£" + (v / 1000).toFixed(v >= 10000 ? 0 : 1) + "K";
+  return "£" + Math.round(v);
+}
+function fmtImpressions(v) {
+  if (v >= 1000000) return (v / 1000000).toFixed(1) + "M";
+  if (v >= 1000) return Math.round(v / 1000) + "K";
+  return String(v);
+}
+
+// ────────────────────────────────────────────────────────────
+// COUNT-UP — triggers on scroll into view
+// ────────────────────────────────────────────────────────────
+function CountUp({ to, prefix = "", suffix = "", duration = 1600 }) {
+  const [val, setVal] = useState(0);
+  const ref = useRef(null);
+  const fired = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting || fired.current) return;
+          fired.current = true;
+          const start = performance.now();
+          const tick = (t) => {
+            const p = Math.min(1, (t - start) / duration);
+            const eased = 1 - Math.pow(1 - p, 3);
+            setVal(Math.round(to * eased));
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      },
+      { threshold: 0.3 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [to, duration]);
+
+  return (
+    <span ref={ref} style={{ fontVariantNumeric: "tabular-nums" }}>
+      {prefix}
+      {val.toLocaleString()}
+      {suffix}
+    </span>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// RECEIPT CARD
+// ────────────────────────────────────────────────────────────
+function ReceiptCard({ r }) {
+  const sub = r.period
+    ? `${r.period} · ${fmtImpressions(r.impressions)} views`
+    : r.items > 0
+    ? `${r.items.toLocaleString()} items · ${fmtImpressions(r.impressions)} views`
+    : `${fmtImpressions(r.impressions)} impressions`;
+
+  return (
+    <div style={{
+      display: "block",
+      borderRadius: 14,
+      overflow: "hidden",
+      background: "#fff",
+      boxShadow: "0 20px 40px -16px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)",
+      position: "relative",
+      marginBottom: 18,
+    }}>
+      <img src={r.img} alt="TikTok Shop GMV screenshot" loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
+      <div style={{
+        position: "absolute",
+        bottom: 10, left: 10, right: 10,
+        background: "rgba(0,11,58,0.92)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        border: "1px solid rgba(168,185,255,0.25)",
+        borderRadius: 10,
+        padding: "10px 12px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        color: "#fff",
+      }}>
+        <span style={{
+          width: 6, height: 6, borderRadius: 999,
+          background: "#7ED9A7",
+          animation: "gmvPulseDot 1.4s ease-in-out infinite",
+          flexShrink: 0,
+        }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 14, fontWeight: 900, letterSpacing: -0.3,
+            fontVariantNumeric: "tabular-nums", lineHeight: 1,
+          }}>
+            {fmtGMV(r.gmv)} GMV
+          </div>
+          <div style={{
+            fontSize: 10, color: "#FFB5C8", fontWeight: 600,
+            textTransform: "uppercase", letterSpacing: 1,
+            marginTop: 3, lineHeight: 1,
+          }}>
+            {sub}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// SCROLLING COLUMN
+// ────────────────────────────────────────────────────────────
+function ScrollColumn({ items, direction = "up", hide = false }) {
+  const isDown = direction === "down";
+  return (
+    <div
+      style={{
+        position: "relative",
+        display: hide ? "none" : "block",
+      }}
+      className={hide ? "gmv-col-third" : ""}
+    >
+      <div
+        style={{
+          animation: `${isDown ? "gmvScrollDown" : "gmvScrollUp"} 55s linear infinite`,
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.animationPlayState = "paused")}
+        onMouseLeave={(e) => (e.currentTarget.style.animationPlayState = "running")}
+      >
+        {items.map((r, i) => <ReceiptCard key={`a-${r.id}-${i}`} r={r} />)}
+        {items.map((r, i) => <ReceiptCard key={`b-${r.id}-${i}`} r={r} />)}
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// STAT CARD
+// ────────────────────────────────────────────────────────────
+function StatCard({ label, labelColor, value, sub }) {
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.03)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      borderRadius: 14,
+      padding: "22px 20px",
+    }}>
+      <div style={{
+        fontSize: 10, color: labelColor, fontWeight: 700,
+        letterSpacing: 2, textTransform: "uppercase",
+      }}>
+        {label}
+      </div>
+      <div style={{
+        fontSize: 42, fontWeight: 900, letterSpacing: -2,
+        lineHeight: 1, marginTop: 8, color: "#fff",
+      }}>
+        {value}
+      </div>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>
+        {sub}
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// BLOCK
+// ────────────────────────────────────────────────────────────
+export default function Block() {
+  // Split into 3 columns, biggest first, alternating
+  const sorted = [...RECEIPTS].sort((a, b) => b.gmv - a.gmv);
+  const cols = [[], [], []];
+  sorted.forEach((r, i) => cols[i % 3].push(r));
+
+  return (
+    <section style={{ position: "relative", overflow: "hidden", background: "#000624", width: "100%" }}>
+      {/* Full-bleed background */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background:
+          "radial-gradient(ellipse at 20% 30%, #1a0a30 0%, transparent 55%), radial-gradient(ellipse at 80% 70%, #0a1652 0%, transparent 55%)",
+      }} />
+
+      {/* Keyframes */}
+      <style>{`
+        @keyframes gmvScrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+        @keyframes gmvScrollDown { 0% { transform: translateY(-50%); } 100% { transform: translateY(0); } }
+        @keyframes gmvPulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+      `}</style>
+
+      {/* Content */}
+      <div style={{ position: "relative", padding: "96px 24px 72px" }}>
+        <div className="mx-auto" style={{ maxWidth: 1140 }}>
+
+          {/* Top copy */}
+          <div style={{ textAlign: "center", maxWidth: 920, margin: "0 auto 56px" }}>
+            <Badge
+              className="inline-flex items-center gap-2"
+              style={{
+                padding: "7px 14px",
+                borderRadius: 999,
+                background: "rgba(126,217,167,0.1)",
+                border: "1px solid rgba(126,217,167,0.28)",
+                color: "#7ED9A7",
+                fontSize: 12, fontWeight: 700,
+                letterSpacing: 2, textTransform: "uppercase",
+                marginBottom: 22,
+              }}
+            >
+              <span style={{
+                width: 6, height: 6, borderRadius: 999,
+                background: "#7ED9A7",
+                animation: "gmvPulseDot 1.4s ease-in-out infinite",
+              }} />
+              Live receipts
+            </Badge>
+
+            <h2 className="font-black" style={{
+              fontSize: 68, letterSpacing: -3, lineHeight: 0.98,
+              margin: "0 0 20px", color: "#fff",
+            }}>
+              Real screenshots.<br />
+              <span style={{
+                fontFamily: "'Instrument Serif', serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+                color: "#FFB5C8",
+                letterSpacing: -2,
+              }}>
+                Real GMV.
+              </span>
+            </h2>
+
+            <p style={{
+              fontSize: 18, color: "rgba(255,255,255,0.7)",
+              lineHeight: 1.5, maxWidth: 620,
+              margin: "0 auto 40px",
+            }}>
+              Every number here is pulled from a real TikTok Shop Creator Centre dashboard — from real creators we manage, on real campaigns.
+            </p>
+
+            {/* Desktop stat bar */}
+            <div className="hidden md:grid" style={{
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: 20, maxWidth: 900, margin: "0 auto",
+              textAlign: "left",
+            }}>
+              <StatCard label="GMV driven" labelColor="#a8b9ff" value={<CountUp to={1144369} prefix="£" />} sub="across 22 campaigns" />
+              <StatCard label="Items sold" labelColor="#FFB5C8" value={<CountUp to={64943} />} sub="from Shop & LIVE" />
+              <StatCard label="Paid to creators" labelColor="#7ED9A7" value={<CountUp to={137587} prefix="£" />} sub="in commissions" />
+              <StatCard label="Impressions" labelColor="#FFD07A" value={<CountUp to={74} suffix="M" />} sub="across all videos" />
+            </div>
+            {/* Mobile stat bar */}
+            <div className="grid md:hidden" style={{
+              gridTemplateColumns: "1fr 1fr",
+              gap: 12, maxWidth: 520, margin: "0 auto",
+              textAlign: "left",
+            }}>
+              <StatCard label="GMV driven" labelColor="#a8b9ff" value={<CountUp to={1144369} prefix="£" />} sub="22 campaigns" />
+              <StatCard label="Items sold" labelColor="#FFB5C8" value={<CountUp to={64943} />} sub="Shop & LIVE" />
+              <StatCard label="Paid to creators" labelColor="#7ED9A7" value={<CountUp to={137587} prefix="£" />} sub="in commissions" />
+              <StatCard label="Impressions" labelColor="#FFD07A" value={<CountUp to={74} suffix="M" />} sub="all videos" />
+            </div>
+          </div>
+
+          {/* Scrolling receipt wall — Desktop (3 cols) */}
+          <div className="hidden lg:grid" style={{
+            gridTemplateColumns: "1fr 1fr 1fr",
+            gap: 20,
+            height: 760,
+            overflow: "hidden",
+            maskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+          }}>
+            <ScrollColumn items={cols[0]} direction="up" />
+            <ScrollColumn items={cols[1]} direction="down" />
+            <ScrollColumn items={cols[2]} direction="up" />
+          </div>
+
+          {/* Tablet (2 cols) */}
+          <div className="hidden md:grid lg:hidden" style={{
+            gridTemplateColumns: "1fr 1fr",
+            gap: 14,
+            height: 680,
+            overflow: "hidden",
+            maskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+          }}>
+            <ScrollColumn items={[...cols[0], ...cols[2].slice(0, 3)]} direction="up" />
+            <ScrollColumn items={cols[1]} direction="down" />
+          </div>
+
+          {/* Mobile (2 cols tighter) */}
+          <div className="grid md:hidden" style={{
+            gridTemplateColumns: "1fr 1fr",
+            gap: 10,
+            height: 560,
+            overflow: "hidden",
+            maskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+          }}>
+            <ScrollColumn items={[...cols[0], ...cols[2].slice(0, 3)]} direction="up" />
+            <ScrollColumn items={cols[1]} direction="down" />
+          </div>
+
+          {/* Disclaimer */}
+          <div style={{
+            textAlign: "center",
+            marginTop: 48,
+            fontSize: 12,
+            color: "rgba(255,255,255,0.4)",
+            fontWeight: 500,
+          }}>
+            Screenshots pulled from TikTok Shop Creator Centre. Hover any receipt to pause.
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
