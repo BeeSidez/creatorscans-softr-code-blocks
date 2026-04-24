@@ -1,0 +1,543 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { ArrowRight, Eye } from "lucide-react";
+
+// ─── Real brand campaigns we've run ──────────────────────────────
+const BRAND_CAMPAIGNS = [
+  {
+    brand: "L'Oréal",
+    handle: "@jade.reacts",
+    product: "Ever Pure Hair Cream",
+    niche: "Beauty",
+    price: "£22.99",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774570967/social-text-overlay-shot-D_mkohsz.png",
+    orders: 847,
+    gmv: "£14,820",
+    views: "1.8M",
+    roas: "6.4x",
+    accent: "#FF9FB1",
+  },
+  {
+    brand: "Dyson",
+    handle: "@homewithellie",
+    product: "V15 Cordless Vacuum",
+    niche: "Home",
+    price: "£399",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774571175/action-walking_eki6it.png",
+    orders: 412,
+    gmv: "£82,400",
+    views: "960K",
+    roas: "5.1x",
+    accent: "#C9A86B",
+  },
+  {
+    brand: "Shark",
+    handle: "@cleanwithkat",
+    product: "FlexStyle Air Styler",
+    niche: "Home",
+    price: "£269",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774570990/camera_technique-low-angle-C_ejft4g.png",
+    orders: 1204,
+    gmv: "£38,400",
+    views: "2.4M",
+    roas: "7.2x",
+    accent: "#7A93FF",
+  },
+  {
+    brand: "Medicube",
+    handle: "@skinbydana",
+    product: "Age-R Booster Pro",
+    niche: "Skincare",
+    price: "£89",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774566281/format-feature-point-out-_moabgg.jpg",
+    orders: 2180,
+    gmv: "£94,600",
+    views: "3.1M",
+    roas: "8.8x",
+    accent: "#FFB37A",
+  },
+  {
+    brand: "Goli",
+    handle: "@wellnesswithmia",
+    product: "Ashwagandha Complex",
+    niche: "Wellness",
+    price: "£18.99",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774549553/b-roll-product-close-ups-b-ashwagandha-complex_lehaoo.png",
+    orders: 1640,
+    gmv: "£21,300",
+    views: "1.2M",
+    roas: "4.9x",
+    accent: "#FFD07A",
+  },
+  {
+    brand: "Glow For It",
+    handle: "@chattywithchloe",
+    product: "Overnight Glow Mask",
+    niche: "Beauty",
+    price: "£24",
+    img: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774566278/format-comment-response_mmcpep.jpg",
+    orders: 968,
+    gmv: "£19,200",
+    views: "880K",
+    roas: "6.0x",
+    accent: "#A8B9FF",
+  },
+];
+
+const SCALE_STEPS = [
+  { n: "01", title: "Tell us who you want", body: "Share your brand, product, and ideal creator profile. Niche, audience, vibe — the more you tell us, the sharper the match." },
+  { n: "02", title: "See estimated ROIs", body: "Get projected reach, conversion, and GMV before you commit. Data-driven forecasts from our 1,240+ creator network, not guesswork." },
+  { n: "03", title: "We match creators from our network", body: "Hand-picked from vetted creators who already sell in your category. Whitelist, invite, or let us choose — your call." },
+  { n: "04", title: "We brief them and track delivery", body: "Full briefs, content calendars, timelines, revisions. You see progress live in your dashboard. No chasing, no DMs." },
+  { n: "05", title: "You get the content, we handle the rest", body: "Approved content delivered on time. We manage payments, rights, and reporting. You just watch the GMV come in." },
+];
+
+// ─── For Brands badge ─────────────────────────────────────────────
+function ForBrandsBadge() {
+  return (
+    <Badge
+      variant="secondary"
+      className="bg-white/5 border-white/20 backdrop-blur-sm px-4 py-2 text-xs font-bold inline-flex items-center gap-2 rounded-full uppercase tracking-[2px]"
+      style={{ color: "#a8b9ff" }}
+    >
+      <span className="rounded-full" style={{ width: 6, height: 6, background: "#7a93ff" }} />
+      For Brands
+    </Badge>
+  );
+}
+
+// ─── Phone frame showing the rotating brand UGC ──────────────────
+function PhoneFrame({ campaign, width = 300 }) {
+  const c = campaign;
+  const h = width * (19 / 9);
+  return (
+    <div
+      style={{
+        width, height: h,
+        borderRadius: width * 0.14,
+        padding: 10,
+        background: "linear-gradient(145deg, #1a1a2e 0%, #0a0a1a 100%)",
+        boxShadow: "0 60px 100px -30px rgba(0,0,0,0.7), 0 0 0 1px rgba(168,185,255,0.12)",
+        position: "relative",
+      }}
+    >
+      {/* Notch */}
+      <div style={{
+        position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)",
+        width: 70, height: 20, background: "#000", borderRadius: 999, zIndex: 3,
+      }} />
+      <div style={{
+        width: "100%", height: "100%",
+        borderRadius: width * 0.11,
+        overflow: "hidden",
+        backgroundImage: `url(${c.img})`,
+        backgroundSize: "cover", backgroundPosition: "center",
+        position: "relative",
+      }}>
+        {/* TikTok right rail */}
+        <div style={{
+          position: "absolute", right: 10, bottom: 80,
+          display: "flex", flexDirection: "column", gap: 16, alignItems: "center",
+        }}>
+          {[
+            { icon: "♥", label: c.views },
+            { icon: "💬", label: Math.round(c.orders / 4).toLocaleString() },
+            { icon: "↗", label: "Share" },
+          ].map((r, i) => (
+            <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: 999,
+                background: "rgba(0,0,0,0.3)",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                display: "grid", placeItems: "center",
+                color: "#fff", fontSize: 18,
+              }}>{r.icon}</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}>{r.label}</div>
+            </div>
+          ))}
+        </div>
+        {/* Shop chip */}
+        <div style={{
+          position: "absolute", bottom: 14, left: 10, right: 60,
+          background: "rgba(255,255,255,0.95)",
+          borderRadius: 10,
+          padding: "8px 10px",
+          display: "flex", alignItems: "center", gap: 8,
+          color: "#000B3A",
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 6, background: "#f4efe6",
+            display: "grid", placeItems: "center", fontSize: 14,
+          }}>🛍</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, lineHeight: 1.1 }}>{c.product}</div>
+            <div style={{ fontSize: 10, color: "#6b728a", marginTop: 1 }}>{c.price} · {c.orders.toLocaleString()} sold</div>
+          </div>
+          <div style={{
+            fontSize: 10, fontWeight: 800, color: "#fff",
+            background: "#FE2C55", padding: "5px 10px", borderRadius: 999,
+          }}>SHOP</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Floating UI card ────────────────────────────────────────────
+function FloatingCard({ children, style, rotate = 0, delay = 0 }) {
+  return (
+    <div
+      className="absolute"
+      style={{
+        background: "rgba(10, 22, 82, 0.65)",
+        border: "1px solid rgba(168, 185, 255, 0.25)",
+        borderRadius: 14,
+        backdropFilter: "blur(14px)",
+        boxShadow: "0 30px 60px -20px rgba(0,0,0,0.7)",
+        padding: 14,
+        transform: `rotate(${rotate}deg)`,
+        animation: `scaleFloat 6s ease-in-out ${delay}s infinite alternate`,
+        ["--r"]: `${rotate}deg`,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── Main block ──────────────────────────────────────────────────
+export default function Block() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIdx((i) => (i + 1) % BRAND_CAMPAIGNS.length), 3800);
+    return () => clearInterval(id);
+  }, []);
+  const c = BRAND_CAMPAIGNS[idx];
+
+  const handlePartnerClick = () => {
+    window.location.href = "/brands";
+  };
+
+  return (
+    <div className="relative w-full overflow-hidden" style={{ background: "#000624", color: "#fff", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
+
+      <style>{`
+        @keyframes scaleFloat { 0% { transform: translateY(0) rotate(var(--r,0deg)); } 100% { transform: translateY(-10px) rotate(var(--r,0deg)); } }
+        @keyframes scalePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes scaleFadeV3 { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+      `}</style>
+
+      {/* Background gradients */}
+      <div className="absolute inset-0" style={{
+        background: "radial-gradient(ellipse at 30% 40%, #0a1652 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, #162573 0%, transparent 50%)",
+      }} />
+
+      {/* ─── Desktop layout (1024px+) ─── */}
+      <div className="hidden lg:block relative" style={{ padding: "96px 64px" }}>
+        <div className="mx-auto" style={{ maxWidth: 1140 }}>
+
+          {/* Top copy */}
+          <div className="text-center" style={{ marginBottom: 72 }}>
+            <ForBrandsBadge />
+            <h2 className="font-black" style={{
+              fontSize: 68, letterSpacing: -3, lineHeight: 0.95, margin: "20px 0 16px",
+            }}>
+              SCALE{" "}
+              <span style={{
+                fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontWeight: 400,
+                color: "#a8b9ff", letterSpacing: -2,
+              }}>
+                with creators
+              </span>
+            </h2>
+            <p className="mx-auto" style={{
+              fontSize: 18, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, maxWidth: 620, margin: "0 auto",
+            }}>
+              Build your dream creator team with data-driven decisions and fully managed execution.
+            </p>
+          </div>
+
+          {/* Phone + steps grid */}
+          <div className="grid grid-cols-2 items-center" style={{ gap: 64 }}>
+
+            {/* Phone + floating cards */}
+            <div className="relative grid place-items-center" style={{ height: 640 }}>
+              <div key={idx} style={{ animation: "scaleFadeV3 0.6s ease" }}>
+                <PhoneFrame campaign={c} width={300} />
+              </div>
+
+              {/* Views */}
+              <FloatingCard style={{ top: 40, left: 0 }} rotate={-5} delay={0}>
+                <div className="flex items-center" style={{ gap: 10 }}>
+                  <div className="rounded-full grid place-items-center" style={{
+                    width: 36, height: 36, background: "#FE2C55", color: "#fff",
+                  }}>
+                    <Eye style={{ width: 16, height: 16 }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", lineHeight: 1 }}>
+                      {c.views}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#a8b9ff", marginTop: 2 }}>views · {c.brand}</div>
+                  </div>
+                </div>
+              </FloatingCard>
+
+              {/* ROAS */}
+              <FloatingCard style={{ top: 120, right: 0 }} rotate={4} delay={1}>
+                <div style={{ fontSize: 10, color: "#a8b9ff", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
+                  Campaign ROAS
+                </div>
+                <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: -1, marginTop: 2 }}>
+                  {c.roas}
+                </div>
+                <div style={{ fontSize: 11, color: "#7ED9A7", fontWeight: 600 }}>
+                  ↑ above paid avg
+                </div>
+              </FloatingCard>
+
+              {/* Orders */}
+              <FloatingCard style={{ bottom: 60, left: 20 }} rotate={-3} delay={2}>
+                <div className="flex items-center" style={{ gap: 10 }}>
+                  <span className="rounded-full" style={{
+                    width: 8, height: 8, background: "#7ED9A7",
+                    animation: "scalePulse 1.4s ease-in-out infinite",
+                  }} />
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", fontVariantNumeric: "tabular-nums" }}>
+                      {c.orders.toLocaleString()} orders · today
+                    </div>
+                    <div style={{ fontSize: 11, color: "#a8b9ff", marginTop: 1 }}>
+                      {c.gmv} GMV from 1 video
+                    </div>
+                  </div>
+                </div>
+              </FloatingCard>
+
+              {/* Creator chip */}
+              <FloatingCard style={{ bottom: 180, right: 10, padding: 12 }} rotate={5} delay={0.5}>
+                <div className="flex items-center" style={{ gap: 10 }}>
+                  <div className="rounded-full grid place-items-center" style={{
+                    width: 34, height: 34,
+                    background: `linear-gradient(135deg, ${c.accent}, #FE2C55)`,
+                    color: "#fff", fontSize: 13, fontWeight: 800,
+                    border: "2px solid #000B3A",
+                  }}>
+                    {c.handle.replace("@", "").slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{c.handle}</div>
+                    <div style={{ fontSize: 10, color: "#a8b9ff" }}>{c.niche} · for {c.brand}</div>
+                  </div>
+                </div>
+              </FloatingCard>
+            </div>
+
+            {/* Steps */}
+            <div>
+              <div className="flex items-center" style={{
+                fontSize: 11, color: "#a8b9ff", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
+                marginBottom: 24, gap: 10,
+              }}>
+                <span style={{ width: 24, height: 1, background: "#a8b9ff" }} />
+                How it works
+              </div>
+
+              <div className="flex flex-col" style={{ gap: 12 }}>
+                {SCALE_STEPS.map((step, i) => (
+                  <div key={i} className="grid items-start" style={{
+                    gridTemplateColumns: "52px 1fr", gap: 20,
+                    padding: 20,
+                    borderRadius: 14,
+                    background: "rgba(168,185,255,0.06)",
+                    border: "1px solid rgba(168,185,255,0.12)",
+                  }}>
+                    <div className="grid place-items-center" style={{
+                      width: 52, height: 52, borderRadius: 14,
+                      background: "linear-gradient(135deg, rgba(168,185,255,0.25), rgba(90,115,255,0.35))",
+                      border: "1px solid rgba(168,185,255,0.3)",
+                      fontSize: 20, fontWeight: 900, letterSpacing: -0.5,
+                      color: "#a8b9ff", fontVariantNumeric: "tabular-nums",
+                    }}>
+                      {step.n}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", letterSpacing: -0.3, marginBottom: 4 }}>
+                        {step.title}
+                      </div>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
+                        {step.body}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center flex-wrap" style={{ marginTop: 32, gap: 20 }}>
+                <Button
+                  onClick={handlePartnerClick}
+                  className="font-bold"
+                  style={{
+                    background: "linear-gradient(180deg, #8CA3FF 0%, #5A73FF 100%)",
+                    color: "#fff",
+                    padding: "18px 28px",
+                    height: "auto",
+                    borderRadius: 12,
+                    fontSize: 16,
+                    boxShadow: "0 10px 30px -8px rgba(90,115,255,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
+                >
+                  Partner with us
+                  <ArrowRight className="ml-2" style={{ width: 16, height: 16 }} />
+                </Button>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.4 }}>
+                  Or <a href="/contact" style={{ color: "#a8b9ff", fontWeight: 600 }}>book a free strategy call →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Mobile + tablet layout (below 1024px) ─── */}
+      <div className="block lg:hidden relative" style={{ padding: "56px 20px" }}>
+        <div className="mx-auto" style={{ maxWidth: 640 }}>
+
+        {/* Top copy */}
+        <div className="text-center" style={{ marginBottom: 32 }}>
+          <ForBrandsBadge />
+          <h2 className="font-black" style={{
+            fontSize: 54, letterSpacing: -2.5, lineHeight: 0.95, margin: "14px 0 10px",
+          }}>
+            SCALE{" "}
+            <span style={{
+              fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontWeight: 400,
+              color: "#a8b9ff", letterSpacing: -1.5,
+            }}>
+              with creators
+            </span>
+          </h2>
+          <p style={{
+            fontSize: 15, color: "rgba(255,255,255,0.7)", lineHeight: 1.45, margin: 0,
+          }}>
+            Build your dream creator team with data-driven decisions and fully managed execution.
+          </p>
+        </div>
+
+        {/* Phone + cards — scaled for mobile */}
+        <div className="relative grid place-items-center" style={{ height: 520, marginBottom: 32 }}>
+          <div key={idx} style={{ animation: "scaleFadeV3 0.6s ease" }}>
+            <PhoneFrame campaign={c} width={240} />
+          </div>
+
+          <FloatingCard style={{ top: 10, left: 0, padding: 10 }} rotate={-5} delay={0}>
+            <div className="flex items-center" style={{ gap: 8 }}>
+              <div className="rounded-full grid place-items-center" style={{
+                width: 28, height: 28, background: "#FE2C55", color: "#fff",
+              }}>
+                <Eye style={{ width: 12, height: 12 }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 800, color: "#fff", lineHeight: 1 }}>
+                  {c.views}
+                </div>
+                <div style={{ fontSize: 9, color: "#a8b9ff", marginTop: 2 }}>views</div>
+              </div>
+            </div>
+          </FloatingCard>
+
+          <FloatingCard style={{ top: 80, right: 0, padding: 10 }} rotate={4} delay={1}>
+            <div style={{ fontSize: 9, color: "#a8b9ff", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
+              ROAS
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.5, marginTop: 1 }}>
+              {c.roas}
+            </div>
+          </FloatingCard>
+
+          <FloatingCard style={{ bottom: 40, left: 0, padding: 10 }} rotate={-3} delay={2}>
+            <div className="flex items-center" style={{ gap: 8 }}>
+              <span className="rounded-full" style={{
+                width: 6, height: 6, background: "#7ED9A7",
+                animation: "scalePulse 1.4s ease-in-out infinite",
+              }} />
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#fff", fontVariantNumeric: "tabular-nums" }}>
+                  {c.orders.toLocaleString()} orders
+                </div>
+                <div style={{ fontSize: 9, color: "#a8b9ff", marginTop: 1 }}>{c.gmv}</div>
+              </div>
+            </div>
+          </FloatingCard>
+        </div>
+
+        {/* Steps section label */}
+        <div className="flex items-center" style={{
+          fontSize: 11, color: "#a8b9ff", fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
+          marginBottom: 16, gap: 10,
+        }}>
+          <span style={{ width: 24, height: 1, background: "#a8b9ff" }} />
+          How it works
+        </div>
+
+        {/* Steps */}
+        <div className="flex flex-col" style={{ gap: 10 }}>
+          {SCALE_STEPS.map((step, i) => (
+            <div key={i} className="grid items-start" style={{
+              gridTemplateColumns: "44px 1fr", gap: 14,
+              padding: 16,
+              borderRadius: 12,
+              background: "rgba(168,185,255,0.06)",
+              border: "1px solid rgba(168,185,255,0.12)",
+            }}>
+              <div className="grid place-items-center" style={{
+                width: 44, height: 44, borderRadius: 12,
+                background: "linear-gradient(135deg, rgba(168,185,255,0.25), rgba(90,115,255,0.35))",
+                border: "1px solid rgba(168,185,255,0.3)",
+                fontSize: 16, fontWeight: 900,
+                color: "#a8b9ff", fontVariantNumeric: "tabular-nums",
+              }}>
+                {step.n}
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", letterSpacing: -0.3, marginBottom: 3 }}>
+                  {step.title}
+                </div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.45 }}>
+                  {step.body}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div style={{ marginTop: 28 }}>
+          <Button
+            onClick={handlePartnerClick}
+            className="w-full font-bold"
+            style={{
+              background: "linear-gradient(180deg, #8CA3FF 0%, #5A73FF 100%)",
+              color: "#fff",
+              padding: "16px 24px",
+              height: "auto",
+              borderRadius: 12,
+              fontSize: 15,
+              boxShadow: "0 10px 30px -8px rgba(90,115,255,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+            }}
+          >
+            Partner with us
+            <ArrowRight className="ml-2" style={{ width: 16, height: 16 }} />
+          </Button>
+          <div className="text-center" style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.55)" }}>
+            Or <a href="/contact" style={{ color: "#a8b9ff", fontWeight: 600 }}>book a free strategy call →</a>
+          </div>
+        </div>
+        </div>{/* /mobile max-width container */}
+      </div>
+    </div>
+  );
+}
