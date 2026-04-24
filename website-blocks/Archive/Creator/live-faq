@@ -1,0 +1,87 @@
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Mail } from "lucide-react";
+
+export default function Block() {
+  const faqs = [
+    {
+      question: "Is there a fee to join?",
+      answer: "No. If you're already earning diamonds on TikTok LIVE, membership is free."
+    },
+    {
+      question: "What are the requirements?",
+      answer: "You need at least 2,000 diamonds earned in the last 28 days and an active streaming schedule. Once approved, stay active in the community and keep streaming."
+    },
+    {
+      question: "How do I get sponsored LIVE deals?",
+      answer: "We connect you with brands who pay you to feature their products during your streams. These are pre-approved deals with upfront payments plus your regular diamond earnings."
+    },
+    {
+      question: "How do brand deals work?",
+      answer: "We match you with brands looking for LIVE streamers. Accept the deal, go LIVE with their product, earn your payment plus diamonds from viewers."
+    },
+    {
+      question: "How do I get support?",
+      answer: "Join our WhatsApp community for 24/7 support, or contact us directly at support@creatorscans.com."
+    }
+  ];
+
+  return (
+    <div className="py-12" style={{ background: 'linear-gradient(180deg, #001364 0%, #000B3A 100%)' }}>
+      <div className="container">
+        <div className="content max-w-3xl mx-auto">
+          <Card className="border-none shadow-lg" style={{ backgroundColor: '#879CF7' }}>
+            <CardHeader className="text-center space-y-2 pb-8">
+              <CardTitle className="text-3xl font-bold text-white">
+                FAQ - For LIVE Creators (Established)
+              </CardTitle>
+              <p className="text-white/90">
+                Everything you need to know about joining and growing with us
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="w-full space-y-2">
+                {faqs.map((faq, index) => (
+                  <AccordionItem
+                    key={index}
+                    value={`item-${index}`}
+                    className="border-white/20 rounded-lg px-4"
+                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                  >
+                    <AccordionTrigger className="text-left font-semibold text-white hover:no-underline">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-white/90 leading-relaxed pt-2">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+
+              <div className="mt-8 p-4 rounded-lg flex items-start gap-3" style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}>
+                <Mail className="w-5 h-5 flex-shrink-0 text-white" />
+                <div className="text-sm">
+                  <p className="font-semibold text-white mb-1">Need more help?</p>
+                  <p className="text-white/90">
+                    Contact us at{" "}
+                    <a
+                      href="mailto:support@creatorscans.com"
+                      className="hover:underline font-medium text-white"
+                    >
+                      support@creatorscans.com
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
