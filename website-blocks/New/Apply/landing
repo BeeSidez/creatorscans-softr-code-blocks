@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 const TIKTOK_LOGO =
@@ -189,7 +190,6 @@ export default function Block() {
           0%, 100% { transform: translateY(0); }
           50%      { transform: translateY(3px); }
         }
-        .scroll-cue:hover { color: #FF9FB1 !important; }
       `}</style>
 
       {/* Pink ambient glow */}
@@ -260,9 +260,44 @@ export default function Block() {
             One quick question to route you to the right signup. Onboarding
             takes 2 minutes after that.
           </p>
+          <div>
+            <a href="#qualifier" className="inline-block">
+              <Button
+                className="font-bold group"
+                style={{
+                  background:
+                    "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+                  color: "#fff",
+                  height: "auto",
+                  padding: "16px 28px",
+                  borderRadius: 12,
+                  fontSize: 15,
+                  border: "none",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  boxShadow:
+                    "0 12px 32px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                }}
+              >
+                Get started
+                <ArrowRight
+                  style={{
+                    width: 16,
+                    height: 16,
+                    marginLeft: 8,
+                    transform: "rotate(90deg)",
+                    animation: "applyBounceY 1.6s ease-in-out infinite",
+                  }}
+                />
+              </Button>
+            </a>
+          </div>
+
           <div
             className="inline-flex items-center"
             style={{
+              marginTop: 22,
               gap: 6,
               fontSize: 13,
               color: "#FF9FB1",
@@ -279,30 +314,6 @@ export default function Block() {
             />
             127 creators joined this month
           </div>
-
-          <a
-            href="#qualifier"
-            className="inline-flex items-center scroll-cue"
-            style={{
-              marginTop: 36,
-              gap: 8,
-              fontSize: 14,
-              fontWeight: 500,
-              color: "rgba(255,255,255,0.55)",
-              textDecoration: "none",
-              transition: "color .25s ease",
-            }}
-          >
-            Scroll to answer
-            <ArrowRight
-              style={{
-                width: 14,
-                height: 14,
-                transform: "rotate(90deg)",
-                animation: "applyBounceY 1.6s ease-in-out infinite",
-              }}
-            />
-          </a>
         </div>
       </div>
 
