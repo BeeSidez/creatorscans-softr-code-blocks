@@ -1,0 +1,438 @@
+import { useState, useMemo } from "react";
+import { useRecords, q } from "@/lib/datasource";
+import { ArrowRight } from "lucide-react";
+
+// ─── Field IDs (Course table FhDJfPPcLJEKHT) ──────────────────────
+const select = q.select({
+  name:             "4e8yM",
+  thumbnail:        "hLsGv",
+  overview:         "f32JB",
+  aboutThisCourse:  "ck1JJ",
+  category:         "jXSnc",
+  difficulty:       "5khor",
+  duration:         "VB4oU",
+  numberOfLessons:  "DiFh2",
+  firstLessonUrl:   "sqSYJ",
+  hostName:         "DqLWF",
+});
+
+// ─── Category options ─────────────────────────────────────────────
+const CATEGORIES = [
+  {
+    key: "shop",
+    id: "8248a326-916a-4da9-88c0-f34bf93d4dc2",
+    label: "Shop",
+    accent: "#FE2C55",
+  },
+  {
+    key: "live",
+    id: "8a552a88-ccd7-4edb-b83e-77d9de9b056f",
+    label: "LIVE",
+    accent: "#7a93ff",
+  },
+  {
+    key: "organic",
+    id: "52fe73f9-d4d3-42e7-bdc9-de2801734609",
+    label: "Organic",
+    accent: "#7ED9A7",
+  },
+];
+
+// ─── Difficulty mapping (Beginner -> Foundations, Advanced -> Advanced) ──
+const DIFFICULTY_LABEL = {
+  "36dc2141-63b8-4fdc-8e3b-629f753406ba": "Foundations",  // Beginner
+  "ac599540-013c-40f8-a611-3c3d47f9862a": "Foundations",  // Intermediate
+  "9a1d5f02-317f-4c5c-bfdf-a86a13f77a12": "Advanced",
+  "d204f4f6-cabb-418b-9ab7-e9a16522734e": "Advanced",     // Expert
+};
+
+const DIFFICULTY_RANK = {
+  "36dc2141-63b8-4fdc-8e3b-629f753406ba": 0,
+  "ac599540-013c-40f8-a611-3c3d47f9862a": 1,
+  "9a1d5f02-317f-4c5c-bfdf-a86a13f77a12": 2,
+  "d204f4f6-cabb-418b-9ab7-e9a16522734e": 3,
+};
+
+// ─── Sub-components ───────────────────────────────────────────────
+
+function TabPill({ active, onClick, label, accent }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative transition-all duration-300"
+      style={{
+        padding: "13px 26px",
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: 2,
+        textTransform: "uppercase",
+        borderRadius: 9999,
+        border: active ? `1px solid ${accent}` : "1px solid rgba(255,255,255,0.12)",
+        background: active ? `${accent}22` : "rgba(255,255,255,0.03)",
+        color: active ? accent : "rgba(255,255,255,0.55)",
+        cursor: "pointer",
+      }}
+    >
+      <span className="inline-flex items-center gap-2">
+        <span
+          className="rounded-full"
+          style={{
+            width: 6,
+            height: 6,
+            background: active ? accent : "rgba(255,255,255,0.3)",
+            boxShadow: active ? `0 0 10px ${accent}` : "none",
+          }}
+        />
+        {label}
+      </span>
+    </button>
+  );
+}
+
+function CourseCard({ course, accent }) {
+  const f = course.fields;
+  const difficultyLabel = DIFFICULTY_LABEL[f.difficulty] || "Course";
+  const url = f.firstLessonUrl;
+
+  const meta = [
+    f.numberOfLessons ? `${f.numberOfLessons} lessons` : null,
+    f.duration || null,
+    f.hostName || null,
+  ].filter(Boolean);
+
+  const inner = (
+    <>
+      {/* Thumbnail */}
+      <div
+        className="relative course-thumb"
+        style={{
+          aspectRatio: "16 / 10",
+          borderRadius: 18,
+          overflow: "hidden",
+          backgroundImage: f.thumbnail ? `url(${f.thumbnail})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          background: f.thumbnail
+            ? undefined
+            : "linear-gradient(135deg, #1a0a35, #14062c)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          boxShadow: "0 30px 60px -25px rgba(0,0,0,0.6)",
+        }}
+      >
+        {/* Difficulty chip — top-left overlay */}
+        <div
+          className="absolute"
+          style={{
+            top: 14,
+            left: 14,
+            background: "rgba(0,6,36,0.72)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            padding: "6px 12px",
+            borderRadius: 9999,
+            fontSize: 10.5,
+            fontWeight: 700,
+            color: accent,
+            letterSpacing: 1.6,
+            textTransform: "uppercase",
+            border: `1px solid ${accent}55`,
+          }}
+        >
+          {difficultyLabel}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ marginTop: 20 }}>
+        <h3
+          className="course-title"
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            color: "#fff",
+            letterSpacing: -0.4,
+            lineHeight: 1.2,
+            margin: 0,
+            transition: "color .25s ease",
+          }}
+        >
+          {f.name}
+        </h3>
+        {f.overview && (
+          <p
+            style={{
+              fontSize: 14.5,
+              lineHeight: 1.55,
+              color: "rgba(255,255,255,0.65)",
+              marginTop: 10,
+              margin: "10px 0 0",
+            }}
+          >
+            {f.overview}
+          </p>
+        )}
+        {meta.length > 0 && (
+          <div
+            className="flex items-center flex-wrap"
+            style={{
+              marginTop: 18,
+              gap: 14,
+              fontSize: 12.5,
+              color: "rgba(255,255,255,0.5)",
+            }}
+          >
+            {meta.map((m, i) => (
+              <span key={i} className="inline-flex items-center" style={{ gap: 14 }}>
+                {i > 0 && <span style={{ opacity: 0.4 }}>·</span>}
+                {m}
+              </span>
+            ))}
+          </div>
+        )}
+        {url && (
+          <div
+            className="inline-flex items-center"
+            style={{
+              marginTop: 20,
+              color: accent,
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            View course
+            <ArrowRight
+              className="course-arrow"
+              style={{ width: 14, height: 14, marginLeft: 6 }}
+            />
+          </div>
+        )}
+      </div>
+    </>
+  );
+
+  if (url) {
+    return (
+      <a
+        href={url}
+        className="course-card block group"
+        style={{ textDecoration: "none", color: "inherit" }}
+      >
+        {inner}
+      </a>
+    );
+  }
+  return <div className="course-card block">{inner}</div>;
+}
+
+// ─── Main Block ───────────────────────────────────────────────────
+
+export default function Block() {
+  const { data, status } = useRecords({ select, count: 200 });
+  const [activeKey, setActiveKey] = useState("shop");
+
+  const allCourses = useMemo(
+    () => data?.pages.flatMap((p) => p.items) || [],
+    [data],
+  );
+
+  const activeCategory = CATEGORIES.find((c) => c.key === activeKey);
+  const activeCategoryId = activeCategory?.id;
+  const activeAccent = activeCategory?.accent || "#FE2C55";
+
+  const courses = useMemo(() => {
+    return allCourses
+      .filter((c) => c.fields.category === activeCategoryId)
+      .sort(
+        (a, b) =>
+          (DIFFICULTY_RANK[a.fields.difficulty] ?? 99) -
+          (DIFFICULTY_RANK[b.fields.difficulty] ?? 99),
+      );
+  }, [allCourses, activeCategoryId]);
+
+  const isLoading = status === "pending" || status === "loading";
+
+  return (
+    <section
+      className="relative overflow-hidden w-full"
+      style={{
+        background: "#000624",
+        color: "#fff",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      }}
+    >
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet"
+      />
+      <style>{`
+        .course-card { transition: transform .35s ease; }
+        .course-card:hover { transform: translateY(-6px); }
+        .course-card:hover .course-title { color: #FF6B8A; }
+        .course-card:hover .course-arrow { transform: translateX(4px); transition: transform .25s ease; }
+        .course-card:hover .course-thumb {
+          box-shadow: 0 40px 70px -25px rgba(0,0,0,0.7);
+          border-color: rgba(255,255,255,0.14);
+        }
+      `}</style>
+
+      {/* Pink ambient glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 45% at 50% 20%, rgba(254,44,85,0.10) 0%, transparent 60%)",
+        }}
+      />
+      {/* Subtle dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          opacity: 0.03,
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      <div
+        className="mx-auto relative"
+        style={{
+          maxWidth: 1200,
+          padding: "clamp(72px, 8vw, 104px) clamp(20px, 4vw, 64px)",
+        }}
+      >
+        {/* Header */}
+        <div className="text-center" style={{ marginBottom: 48 }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "8px 16px",
+              borderRadius: 9999,
+              background: "rgba(255,184,200,0.08)",
+              border: "1px solid rgba(255,184,200,0.25)",
+              color: "#FFB8C8",
+              fontSize: 11.5,
+              fontWeight: 700,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              marginBottom: 22,
+            }}
+          >
+            <span
+              className="rounded-full"
+              style={{ width: 6, height: 6, background: "#FE2C55" }}
+            />
+            Browse the Academy
+          </span>
+          <h2
+            className="font-extrabold mx-auto"
+            style={{
+              fontSize: "clamp(34px, 5vw, 56px)",
+              lineHeight: 1.05,
+              letterSpacing: -1.6,
+              maxWidth: 780,
+              margin: "0 auto 14px",
+            }}
+          >
+            Pick your{" "}
+            <span
+              style={{
+                fontFamily: "'Instrument Serif', serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+                color: "#FF6B8A",
+                letterSpacing: -1.4,
+              }}
+            >
+              track.
+            </span>
+          </h2>
+          <p
+            className="mx-auto"
+            style={{
+              fontSize: 17,
+              lineHeight: 1.55,
+              color: "rgba(255,255,255,0.7)",
+              maxWidth: 560,
+              margin: 0,
+            }}
+          >
+            Choose Shop, LIVE, or Organic. Each track ships two mastery
+            courses. One Foundations, one Advanced.
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex justify-center" style={{ marginBottom: 48 }}>
+          <div
+            className="inline-flex items-center gap-2 p-1.5"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 9999,
+              flexWrap: "wrap",
+              justifyContent: "center",
+            }}
+          >
+            {CATEGORIES.map((cat) => (
+              <TabPill
+                key={cat.key}
+                active={activeKey === cat.key}
+                onClick={() => setActiveKey(cat.key)}
+                label={cat.label}
+                accent={cat.accent}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Course cards */}
+        {isLoading ? (
+          <div
+            style={{
+              textAlign: "center",
+              color: "rgba(255,255,255,0.5)",
+              fontSize: 14,
+              padding: "60px 0",
+            }}
+          >
+            Loading courses...
+          </div>
+        ) : courses.length === 0 ? (
+          <div
+            className="mx-auto"
+            style={{
+              textAlign: "center",
+              color: "rgba(255,255,255,0.5)",
+              fontSize: 14,
+              padding: "60px 24px",
+              border: "1px dashed rgba(255,255,255,0.12)",
+              borderRadius: 18,
+              maxWidth: 540,
+              margin: "0 auto",
+            }}
+          >
+            No courses live for this track yet. Check back soon.
+          </div>
+        ) : (
+          <div
+            className="grid grid-cols-1 md:grid-cols-2"
+            style={{ gap: 32 }}
+          >
+            {courses.map((course) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                accent={activeAccent}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
