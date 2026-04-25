@@ -1,0 +1,324 @@
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+
+const HERO_IMG =
+  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776105836/hero-image-34_potkxf.png";
+
+const cld = (url, xform) =>
+  url.replace("/image/upload/", `/image/upload/${xform}/`);
+
+// ─── Sub-components ───────────────────────────────────────────────
+
+function EyebrowBadge({ small = false }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: small ? "6px 14px" : "8px 16px",
+        borderRadius: 9999,
+        background: "rgba(255,184,200,0.08)",
+        border: "1px solid rgba(255,184,200,0.25)",
+        color: "#FFB8C8",
+        fontSize: small ? 10 : 11.5,
+        fontWeight: 700,
+        letterSpacing: small ? 1.5 : 2,
+        textTransform: "uppercase",
+      }}
+    >
+      <span
+        className="rounded-full"
+        style={{
+          width: small ? 5 : 6,
+          height: small ? 5 : 6,
+          background: "#FE2C55",
+        }}
+      />
+      Free taster course
+    </span>
+  );
+}
+
+function HeroImage({ width, height, rotate = -3 }) {
+  const src = cld(
+    HERO_IMG,
+    `c_fill,g_auto,w_${Math.round(width * 2)},h_${Math.round(height * 2)},q_auto,f_auto`,
+  );
+  return (
+    <div
+      style={{
+        animation: "aiTwinFloatY 7s ease-in-out 0s infinite alternate",
+      }}
+    >
+      <div
+        className="relative"
+        style={{
+          width,
+          height,
+          transform: `rotate(${rotate}deg)`,
+        }}
+      >
+        <div
+          className="rounded-3xl overflow-hidden"
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundImage: `url(${src})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            border: "4px solid rgba(255,255,255,0.92)",
+            boxShadow:
+              "0 40px 80px -20px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06) inset",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Block ───────────────────────────────────────────────────
+
+export default function Block() {
+  return (
+    <section
+      className="relative w-full overflow-hidden"
+      style={{
+        background: "#000624",
+        color: "#fff",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      }}
+    >
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet"
+      />
+      <style>{`
+        @keyframes aiTwinFloatY {
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(-14px); }
+        }
+      `}</style>
+
+      {/* Pink ambient glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 50% 45% at 25% 30%, rgba(254,44,85,0.14) 0%, transparent 60%), radial-gradient(ellipse 40% 50% at 80% 75%, rgba(254,44,85,0.08) 0%, transparent 60%)",
+        }}
+      />
+      {/* Dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          opacity: 0.03,
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      {/* ─── DESKTOP (1024px+) — image left, text right ─── */}
+      <div className="hidden lg:block relative">
+        <div
+          className="mx-auto"
+          style={{ maxWidth: 1200, padding: "96px 64px" }}
+        >
+          <div
+            className="grid grid-cols-2 items-center"
+            style={{ gap: 72 }}
+          >
+            {/* Image (left) */}
+            <div className="flex justify-center items-center">
+              <HeroImage width={400} height={533} />
+            </div>
+
+            {/* Text (right) */}
+            <div>
+              <EyebrowBadge />
+              <h2
+                className="font-extrabold"
+                style={{
+                  fontSize: 50,
+                  lineHeight: 1.1,
+                  letterSpacing: -1.5,
+                  margin: "20px 0 18px",
+                  maxWidth: 540,
+                }}
+              >
+                Try the Academy for free. Learn how to build your{" "}
+                <span
+                  style={{
+                    fontFamily: "'Instrument Serif', serif",
+                    fontStyle: "italic",
+                    fontWeight: 400,
+                    color: "#FF6B8A",
+                    letterSpacing: -1.2,
+                  }}
+                >
+                  AI twin.
+                </span>
+              </h2>
+              <p
+                style={{
+                  fontSize: 17,
+                  lineHeight: 1.55,
+                  color: "rgba(255,255,255,0.78)",
+                  maxWidth: 520,
+                  margin: "0 0 16px",
+                }}
+              >
+                The AI Twin course is our free way in. Same format as every
+                Academy course: video lessons, lesson plans, downloadable
+                PDFs, quizzes, and a certificate at the end. No card needed.
+              </p>
+              <p
+                style={{
+                  fontSize: 15,
+                  lineHeight: 1.6,
+                  color: "rgba(255,255,255,0.62)",
+                  maxWidth: 520,
+                  margin: 0,
+                }}
+              >
+                Learn how to create a realistic AI version of yourself for
+                TikTok Shop content. Get the prompts, the tools, and the
+                step-by-step process top creators are using to film without
+                ever picking up a camera. Finish the course and you'll walk
+                away with a working AI twin and a certificate to show for it.
+              </p>
+              <div style={{ marginTop: 32 }}>
+                <a href="/tiktok-shop-ugc-ai-twin">
+                  <Button
+                    className="font-bold group"
+                    style={{
+                      background:
+                        "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+                      color: "#fff",
+                      height: "auto",
+                      padding: "18px 28px",
+                      borderRadius: 12,
+                      fontSize: 15,
+                      border: "none",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      boxShadow:
+                        "0 12px 32px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                    }}
+                  >
+                    Start the free AI Twin course
+                    <ArrowRight
+                      className="ml-2 group-hover:translate-x-1 transition-transform"
+                      style={{ width: 16, height: 16 }}
+                    />
+                  </Button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── MOBILE / TABLET (below 1024px) ─── */}
+      <div className="block lg:hidden relative">
+        <div
+          className="mx-auto"
+          style={{ maxWidth: 640, padding: "56px 20px 72px" }}
+        >
+          <div className="text-center">
+            <EyebrowBadge small />
+            <h2
+              className="font-extrabold"
+              style={{
+                fontSize: 32,
+                lineHeight: 1.12,
+                letterSpacing: -1,
+                margin: "16px 0 14px",
+              }}
+            >
+              Try the Academy for free. Learn how to build your{" "}
+              <span
+                style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#FF6B8A",
+                }}
+              >
+                AI twin.
+              </span>
+            </h2>
+            <p
+              style={{
+                fontSize: 14.5,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.78)",
+                margin: "0 auto 14px",
+                maxWidth: 480,
+              }}
+            >
+              The AI Twin course is our free way in. Same format as every
+              Academy course: video lessons, lesson plans, downloadable PDFs,
+              quizzes, and a certificate at the end. No card needed.
+            </p>
+            <p
+              style={{
+                fontSize: 13.5,
+                lineHeight: 1.6,
+                color: "rgba(255,255,255,0.62)",
+                margin: "0 auto",
+                maxWidth: 480,
+              }}
+            >
+              Learn how to create a realistic AI version of yourself for
+              TikTok Shop content. Get the prompts, the tools, and the
+              step-by-step process top creators are using to film without
+              ever picking up a camera. Finish the course and you'll walk
+              away with a working AI twin and a certificate to show for it.
+            </p>
+
+            <div
+              className="mx-auto"
+              style={{ marginTop: 26, maxWidth: 320 }}
+            >
+              <a href="/tiktok-shop-ugc-ai-twin" className="block">
+                <Button
+                  className="w-full font-bold"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+                    color: "#fff",
+                    padding: "15px 22px",
+                    borderRadius: 12,
+                    fontSize: 15,
+                    border: "none",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow:
+                      "0 10px 30px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
+                >
+                  Start the free AI Twin course
+                  <ArrowRight
+                    className="ml-2"
+                    style={{ width: 14, height: 14 }}
+                  />
+                </Button>
+              </a>
+            </div>
+          </div>
+
+          {/* Image below */}
+          <div className="flex justify-center" style={{ marginTop: 44 }}>
+            <HeroImage width={280} height={373} />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
