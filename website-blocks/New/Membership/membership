@@ -62,7 +62,7 @@ const TIERS = [
       "Premium brand campaigns",
       "Event invites and VIP support",
     ],
-    cta: { label: "Book a call", href: "/forms-creators" },
+    cta: { label: "Book a call", href: "/creator-call" },
   },
 ];
 
