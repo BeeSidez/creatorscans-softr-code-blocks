@@ -1,0 +1,607 @@
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { ArrowRight, ShoppingBag, Radio, PenTool, X, Check } from "lucide-react";
+
+// ─── Tracks & intensity model ─────────────────────────────────────
+const TRACKS = [
+  {
+    id: "shop",
+    name: "TikTok Shop",
+    blurb: "Promote products, earn commissions, and unlock sample vouchers and brand deals as you level up.",
+    unit: "posts",
+    Icon: ShoppingBag,
+    accent: "#FE2C55",  // pink
+    accentSoft: "rgba(254,44,85,0.10)",
+    levels: { casual: 3, committed: 5, dedicated: 7 },
+    recommended: true,
+  },
+  {
+    id: "live",
+    name: "TikTok LIVE",
+    blurb: "Stream consistently, grow your audience, and unlock LIVE-specific perks like gift rewards and violation support.",
+    unit: "lives",
+    Icon: Radio,
+    accent: "#5e7bf6",  // periwinkle
+    accentSoft: "rgba(94,123,246,0.12)",
+    levels: { casual: 2, committed: 4, dedicated: 6 },
+    recommended: false,
+  },
+  {
+    id: "organic",
+    name: "Organic Posts",
+    blurb: "Build your TikTok presence with regular content. Stay accountable without the pressure of selling or streaming.",
+    unit: "posts",
+    Icon: PenTool,
+    accent: "#A88BFF",  // violet (3rd accent — distinct from the two product colors)
+    accentSoft: "rgba(168,139,255,0.12)",
+    levels: { casual: 3, committed: 5, dedicated: 7 },
+    recommended: false,
+  },
+];
+
+const LEVELS = [
+  { id: "casual",     label: "Casual" },
+  { id: "committed",  label: "Committed" },
+  { id: "dedicated",  label: "Dedicated" },
+];
+
+// ─── Sub-components ───────────────────────────────────────────────
+
+function IntensitySegment({ levelId, label, selected, onClick, accent, recommended }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative"
+      style={{
+        flex: 1,
+        height: 38,
+        padding: "0 10px",
+        borderRadius: 9,
+        border: "none",
+        cursor: "pointer",
+        background: selected ? accent : "transparent",
+        color: selected ? "#fff" : "rgba(255,255,255,0.6)",
+        fontSize: 12.5,
+        fontWeight: 600,
+        letterSpacing: 0.1,
+        transition: "background 200ms, color 200ms",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {label}
+      {recommended && !selected && (
+        <span
+          className="absolute"
+          style={{
+            top: -8,
+            right: 4,
+            fontSize: 8.5,
+            fontWeight: 700,
+            letterSpacing: 0.6,
+            background: "#fff",
+            color: "#0B1330",
+            padding: "2px 6px",
+            borderRadius: 999,
+            textTransform: "uppercase",
+            whiteSpace: "nowrap",
+            boxShadow: "0 4px 10px -3px rgba(0,0,0,0.4)",
+          }}
+        >
+          Pick
+        </span>
+      )}
+    </button>
+  );
+}
+
+function TrackCard({ track, selectedLevel, onChange }) {
+  const isSkipped = selectedLevel === "skip";
+  const target = isSkipped ? null : track.levels[selectedLevel];
+
+  return (
+    <div
+      className="relative flex flex-col"
+      style={{
+        background: isSkipped
+          ? "rgba(255,255,255,0.02)"
+          : "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)",
+        border: isSkipped
+          ? "1px solid rgba(255,255,255,0.06)"
+          : `1px solid ${track.accentSoft.replace(/[\d.]+\)$/, "0.30)")}`,
+        borderRadius: 20,
+        padding: "28px 26px 24px",
+        opacity: isSkipped ? 0.5 : 1,
+        transition: "opacity 250ms, border-color 250ms, background 250ms",
+        boxShadow: isSkipped
+          ? "none"
+          : `0 30px 60px -30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.02) inset`,
+      }}
+    >
+      {/* Icon tile */}
+      <div
+        className="rounded-2xl grid place-items-center"
+        style={{
+          width: 64,
+          height: 64,
+          background: track.accentSoft,
+          border: `1px solid ${track.accentSoft.replace(/[\d.]+\)$/, "0.25)")}`,
+          marginBottom: 18,
+        }}
+      >
+        <track.Icon style={{ width: 28, height: 28, color: track.accent, strokeWidth: 1.8 }} />
+      </div>
+
+      {/* Title + blurb */}
+      <h3 style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.4, color: "#fff", margin: 0 }}>
+        {track.name}
+      </h3>
+      <p
+        style={{
+          fontSize: 13.5,
+          lineHeight: 1.55,
+          color: "rgba(255,255,255,0.65)",
+          margin: "8px 0 0",
+          minHeight: 84,
+        }}
+      >
+        {track.blurb}
+      </p>
+
+      {/* Live target readout */}
+      <div style={{ marginTop: 18, marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1.2, color: "rgba(255,255,255,0.4)" }}>
+          Your commitment
+        </div>
+        <div
+          className="flex items-baseline gap-1.5"
+          style={{ marginTop: 6, color: isSkipped ? "rgba(255,255,255,0.4)" : "#fff" }}
+        >
+          {isSkipped ? (
+            <span style={{ fontSize: 20, fontWeight: 600, fontStyle: "italic", fontFamily: "Georgia, serif", color: "rgba(255,255,255,0.45)" }}>
+              Not this track
+            </span>
+          ) : (
+            <>
+              <span style={{ fontSize: 38, fontWeight: 800, letterSpacing: -1.5, lineHeight: 1, color: track.accent, fontVariantNumeric: "tabular-nums" }}>
+                {target}
+              </span>
+              <span style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>
+                {track.unit}/week
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Intensity selector */}
+      <div
+        className="flex items-center"
+        style={{
+          gap: 2,
+          padding: 4,
+          background: "rgba(0,0,0,0.35)",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: 12,
+        }}
+      >
+        {LEVELS.map((lvl) => (
+          <IntensitySegment
+            key={lvl.id}
+            levelId={lvl.id}
+            label={lvl.label}
+            selected={selectedLevel === lvl.id}
+            onClick={() => onChange(lvl.id)}
+            accent={track.accent}
+            recommended={track.recommended && lvl.id === "committed"}
+          />
+        ))}
+      </div>
+
+      {/* Skip link */}
+      <button
+        type="button"
+        onClick={() => onChange(isSkipped ? "committed" : "skip")}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          alignSelf: "flex-start",
+          marginTop: 12,
+          padding: "4px 0",
+          fontSize: 12,
+          fontWeight: 500,
+          color: isSkipped ? track.accent : "rgba(255,255,255,0.45)",
+          textDecoration: isSkipped ? "none" : "underline",
+          textUnderlineOffset: 3,
+          textDecorationColor: "rgba(255,255,255,0.2)",
+          transition: "color 200ms",
+        }}
+      >
+        {isSkipped ? "← Add this track" : "Not focusing on this track? Skip"}
+      </button>
+    </div>
+  );
+}
+
+function PlanSummary({ selections }) {
+  const lines = TRACKS.map((t) => {
+    const lv = selections[t.id];
+    if (lv === "skip") return null;
+    return { track: t, n: t.levels[lv], unit: t.unit, accent: t.accent };
+  }).filter(Boolean);
+
+  const totalAll = lines.reduce((sum, l) => sum + l.n, 0);
+  const empty = lines.length === 0;
+
+  return (
+    <div
+      className="relative overflow-hidden"
+      style={{
+        background: "linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 20,
+        padding: "26px 30px",
+      }}
+    >
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1.4, color: "#FF9FB1" }}>
+            Your weekly plan
+          </div>
+          {empty ? (
+            <div style={{ fontSize: 18, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginTop: 6, fontStyle: "italic", fontFamily: "Georgia, serif" }}>
+              Pick at least one track to get started
+            </div>
+          ) : (
+            <div className="flex items-center flex-wrap" style={{ marginTop: 6, gap: 14, color: "#fff" }}>
+              {lines.map((l, i) => (
+                <span key={l.track.id} className="inline-flex items-baseline gap-1.5">
+                  <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, color: l.accent, fontVariantNumeric: "tabular-nums" }}>
+                    {l.n}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>
+                    {l.unit}
+                  </span>
+                  {i < lines.length - 1 && (
+                    <span style={{ fontSize: 14, color: "rgba(255,255,255,0.25)", marginLeft: 8 }}>+</span>
+                  )}
+                </span>
+              ))}
+              <span
+                style={{
+                  fontSize: 13,
+                  color: "rgba(255,255,255,0.5)",
+                  paddingLeft: 14,
+                  marginLeft: 6,
+                  borderLeft: "1px solid rgba(255,255,255,0.12)",
+                }}
+              >
+                <span style={{ color: "#fff", fontWeight: 700 }}>{totalAll}</span> total commitments / week
+              </span>
+            </div>
+          )}
+        </div>
+
+        <Button
+          disabled={empty}
+          onClick={() => {
+            if (typeof window !== "undefined" && window.Softr?.modal?.open) {
+              window.Softr.modal.open("/apply");
+            } else {
+              window.location.href = "/apply";
+            }
+          }}
+          className="font-bold"
+          style={{
+            background: empty ? "rgba(255,255,255,0.08)" : "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+            color: empty ? "rgba(255,255,255,0.4)" : "#fff",
+            cursor: empty ? "not-allowed" : "pointer",
+            border: "none",
+            borderRadius: 12,
+            padding: "14px 22px",
+            fontSize: 14,
+            display: "inline-flex",
+            alignItems: "center",
+            boxShadow: empty ? "none" : "0 12px 32px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+            transition: "all 200ms",
+          }}
+        >
+          Build my plan
+          <ArrowRight className="ml-2" style={{ width: 14, height: 14 }} />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Streak/Dashboard preview tile ────────────────────────────────
+
+const EMOJI_FIRE = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png";
+const EMOJI_TROPHY = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104220/sticker-icon_blue-trophy-cup-award-winner_oojrjm.png";
+const EMOJI_ROCKET = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104227/sticker-icon_rocket-ship-red-green-multicolour-launch_qymobc.png";
+
+function StreakDashboardTile() {
+  // Faux dashboard preview — frames the section as "this is the product"
+  return (
+    <div
+      className="relative overflow-hidden"
+      style={{
+        background: "linear-gradient(180deg, #fbfbff 0%, #eef0ff 100%)",
+        borderRadius: 22,
+        boxShadow:
+          "0 60px 100px -40px rgba(0, 0, 30, 0.5), 0 0 0 1px rgba(255,255,255,0.5) inset",
+        padding: "20px 24px 22px",
+      }}
+    >
+      {/* Window chrome */}
+      <div className="flex items-center justify-between" style={{ marginBottom: 18 }}>
+        <div className="flex items-center gap-1.5">
+          <span className="rounded-full" style={{ width: 9, height: 9, background: "#FF6058" }} />
+          <span className="rounded-full" style={{ width: 9, height: 9, background: "#FFBD2E" }} />
+          <span className="rounded-full" style={{ width: 9, height: 9, background: "#28C940" }} />
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 600, color: "#6b7a99", letterSpacing: 0.4 }}>
+          your dashboard · this week
+        </div>
+        <div style={{ width: 30 }} />
+      </div>
+
+      <div
+        className="grid items-center pyp-dash-grid"
+        style={{
+          gridTemplateColumns: "1.2fr 1fr 1fr",
+          gap: 26,
+        }}
+      >
+        {/* Posts this week — dot indicator with rocket */}
+        <div>
+          <div className="flex items-center gap-1.5" style={{ marginBottom: 12 }}>
+            {[1,2,3,4,5,6,7].map((i) => (
+              <div
+                key={i}
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 5,
+                  background: i <= 5
+                    ? `linear-gradient(180deg, #FE4C6F, #FE2C55)`
+                    : "#dde1f3",
+                  boxShadow: i <= 5 ? "0 4px 10px -3px rgba(254,44,85,0.5)" : "none",
+                }}
+              />
+            ))}
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span style={{ fontSize: 36, fontWeight: 800, color: "#000F4D", letterSpacing: -1.5, lineHeight: 1 }}>5</span>
+            <span style={{ fontSize: 14, color: "#6b7a99", fontWeight: 500 }}>of 5</span>
+            <img src={EMOJI_ROCKET} alt="" style={{ width: 26, height: 26, marginLeft: 4 }} />
+          </div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2, color: "#6b7a99", textTransform: "uppercase", marginTop: 4 }}>
+            Posts this week
+          </div>
+        </div>
+
+        {/* Current streak — fire */}
+        <div className="text-center pyp-dash-cell" style={{ borderLeft: "1px solid rgba(0,15,77,0.08)", paddingLeft: 26 }}>
+          <div className="flex items-baseline justify-center gap-1.5">
+            <img src={EMOJI_FIRE} alt="" style={{ width: 32, height: 32, transform: "translateY(4px)" }} />
+            <span style={{ fontSize: 52, fontWeight: 800, color: "#FE2C55", letterSpacing: -2.5, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>8</span>
+            <span style={{ fontSize: 22, fontWeight: 700, color: "#FE2C55", letterSpacing: -0.5 }}>wk</span>
+          </div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2, color: "#6b7a99", textTransform: "uppercase", marginTop: 6 }}>
+            Current streak
+          </div>
+        </div>
+
+        {/* Consistency score — trophy */}
+        <div className="text-center pyp-dash-cell" style={{ borderLeft: "1px solid rgba(0,15,77,0.08)", paddingLeft: 26 }}>
+          <div className="flex items-baseline justify-center gap-1.5">
+            <img src={EMOJI_TROPHY} alt="" style={{ width: 32, height: 32, transform: "translateY(4px)" }} />
+            <span style={{ fontSize: 52, fontWeight: 800, color: "#5e7bf6", letterSpacing: -2.5, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>89</span>
+            <span style={{ fontSize: 24, fontWeight: 700, color: "#5e7bf6", letterSpacing: -0.5 }}>%</span>
+          </div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2, color: "#6b7a99", textTransform: "uppercase", marginTop: 6 }}>
+            Consistency score
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Block ───────────────────────────────────────────────────
+
+export default function Block() {
+  const [selections, setSelections] = useState({
+    shop: "committed",
+    live: "committed",
+    organic: "committed",
+  });
+
+  const updateTrack = (trackId, levelId) => {
+    setSelections((s) => ({ ...s, [trackId]: levelId }));
+  };
+
+  return (
+    <div
+      className="relative w-full overflow-hidden"
+      style={{ background: "#000624", color: "#fff" }}
+    >
+      {/* Soft pink glow at top */}
+      <div
+        className="absolute inset-x-0 pointer-events-none"
+        style={{
+          top: 0,
+          height: 600,
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(254, 44, 85, 0.18) 0%, rgba(254, 44, 85, 0.04) 40%, transparent 70%)",
+        }}
+      />
+      {/* Subtle dot grid */}
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      <div
+        className="relative mx-auto pyp-container"
+        style={{ maxWidth: 1140, padding: "clamp(64px, 10vw, 100px) clamp(20px, 4vw, 64px) clamp(72px, 11vw, 110px)" }}
+      >
+        {/* Header */}
+        <div className="text-center mx-auto" style={{ maxWidth: 720 }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: 2.8,
+              color: "#FF9FB1",
+              textTransform: "uppercase",
+            }}
+          >
+            Commitment tracking
+          </div>
+          <h2
+            className="font-extrabold"
+            style={{
+              fontSize: "clamp(36px, 6.5vw, 60px)",
+              lineHeight: 1.05,
+              letterSpacing: -1.8,
+              margin: "16px 0 18px",
+            }}
+          >
+            Pick your pace.{" "}
+            <span
+              style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+                color: "#FF6B8A",
+                letterSpacing: -1.5,
+              }}
+            >
+              Hit your streak.
+            </span>
+          </h2>
+          <p
+            style={{
+              fontSize: 17,
+              lineHeight: 1.6,
+              color: "rgba(255,255,255,0.72)",
+              maxWidth: 620,
+              margin: "0 auto",
+            }}
+          >
+            Choose your tracks. Pick your intensity per track. We'll track your weekly posts, your
+            consistency score, and your streak — motivation, not punishment. We celebrate wins, never
+            downgrade you for missing one.
+          </p>
+        </div>
+
+        {/* Track cards */}
+        <div
+          className="grid pyp-tracks"
+          style={{
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: 18,
+            marginTop: 56,
+          }}
+        >
+          {TRACKS.map((track) => (
+            <TrackCard
+              key={track.id}
+              track={track}
+              selectedLevel={selections[track.id]}
+              onChange={(lvl) => updateTrack(track.id, lvl)}
+            />
+          ))}
+        </div>
+
+        {/* Plan summary */}
+        <div style={{ marginTop: 18 }}>
+          <PlanSummary selections={selections} />
+        </div>
+
+        {/* Dashboard preview header */}
+        <div className="text-center mx-auto" style={{ maxWidth: 620, marginTop: 90 }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: 2.8,
+              color: "#FF9FB1",
+              textTransform: "uppercase",
+            }}
+          >
+            Your dashboard
+          </div>
+          <h3
+            style={{
+              fontSize: 32,
+              fontWeight: 700,
+              letterSpacing: -0.8,
+              lineHeight: 1.15,
+              margin: "12px 0 10px",
+              color: "#fff",
+            }}
+          >
+            Once you're in, this is what you'll see every week.
+          </h3>
+          <p
+            style={{
+              fontSize: 15,
+              lineHeight: 1.55,
+              color: "rgba(255,255,255,0.6)",
+              margin: 0,
+            }}
+          >
+            We celebrate wins, never downgrade you for missing one.
+          </p>
+        </div>
+
+        <div style={{ marginTop: 32 }}>
+          <StreakDashboardTile />
+        </div>
+      </div>
+
+      <style>{`
+        /* Tablet — 2 cols (Shop+LIVE on top, Organic full-width below) */
+        @media (max-width: 1024px) {
+          .pyp-tracks {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 14px !important;
+          }
+        }
+        /* Mobile — single column */
+        @media (max-width: 700px) {
+          .pyp-tracks {
+            grid-template-columns: 1fr !important;
+            gap: 14px !important;
+            margin-top: 36px !important;
+          }
+          .pyp-dash-grid {
+            grid-template-columns: 1fr !important;
+            gap: 18px !important;
+          }
+          .pyp-dash-grid > .pyp-dash-cell {
+            border-left: none !important;
+            border-top: 1px solid rgba(0,15,77,0.08) !important;
+            padding-left: 0 !important;
+            padding-top: 16px !important;
+            text-align: left !important;
+          }
+          .pyp-dash-grid > .pyp-dash-cell > div:first-child {
+            justify-content: flex-start !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
