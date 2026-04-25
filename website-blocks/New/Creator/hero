@@ -1,0 +1,509 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Plus } from "lucide-react";
+
+// ─── Cloudinary assets ─────────────────────────────────────────────
+const TIKTOK_LOGO = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/TIKTOK_jetgnf.png";
+
+const cld = (url, xform) => url.replace("/image/upload/", `/image/upload/${xform}/`);
+
+// 9 creator photos — positions are PERCENT and anchor to the CENTER of each photo
+// Collage is 1140 wide × 460 tall on desktop. Photos are arranged in a wide arc
+// around (and overlapping) the centered headline area.
+const PHOTOS = [
+  // LEFT CLUSTER
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774571147/action-reading-1_e4wwhu.png",
+    chip: "Pets",
+    chipSide: "left",
+    pos: { x: 7,  y: 38 },
+    rot: 5,
+    size: { w: 92,  h: 122 },
+    delay: 1.8,
+  },
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774566301/format-comedy_sedexf.png",
+    chip: "Food & beverage",
+    chipSide: "left",
+    pos: { x: 18, y: 72 },
+    rot: -5,
+    size: { w: 124, h: 162 },
+    delay: 1.2,
+  },
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774571164/action-unboxing_cykqae.png",
+    pos: { x: 30, y: 36 },
+    rot: 6,
+    size: { w: 100, h: 132 },
+    delay: 2.4,
+  },
+
+  // CENTER CLUSTER (around / above the headline)
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774566309/format-proof-of-retail_jlcec1.png",
+    chip: "Beauty & cosmetics",
+    chipSide: "right",
+    chipBelow: false,
+    pos: { x: 43, y: 32 },
+    rot: -3,
+    size: { w: 138, h: 182 },
+    delay: 0,
+  },
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774571181/action-pointing_fs9qic.png",
+    pos: { x: 55, y: 70 },
+    rot: 4,
+    size: { w: 96,  h: 126 },
+    delay: 0.6,
+  },
+
+  // RIGHT CLUSTER
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774549677/shot-size-close-up-A_m2olmc.png",
+    pos: { x: 67, y: 40 },
+    rot: 3,
+    size: { w: 110, h: 146 },
+    delay: 0.9,
+  },
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774571175/action-unboxing-C_zjemhn.png",
+    chip: "Home & appliances",
+    chipSide: "right",
+    pos: { x: 82, y: 32 },
+    rot: -4,
+    size: { w: 124, h: 164 },
+    delay: 0.3,
+  },
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774566281/format-comment-response2_aho8ui.png",
+    pos: { x: 91, y: 70 },
+    rot: 6,
+    size: { w: 90,  h: 118 },
+    delay: 1.5,
+  },
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1774571139/action-reaction-1_xyzptf.png",
+    chip: "Health & wellness",
+    chipSide: "right",
+    chipBelow: true,
+    pos: { x: 76, y: 84 },
+    rot: 4,
+    size: { w: 102, h: 134 },
+    delay: 2.1,
+  },
+];
+
+// ─── Sub-components ────────────────────────────────────────────────
+
+function PartnerBadge() {
+  return (
+    <span
+      className="backdrop-blur-sm"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "8px 16px",
+        background: "rgba(255,255,255,0.10)",
+        border: "1px solid rgba(255,255,255,0.22)",
+        borderRadius: 9999,
+        color: "#FFB8C8",
+        fontSize: 13,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <img src={TIKTOK_LOGO} alt="TikTok" style={{ width: 16, height: 16, borderRadius: 3, transform: "rotate(-5deg)" }} />
+      Official TikTok Partner Agency
+    </span>
+  );
+}
+
+function CategoryChip({ label }) {
+  return (
+    <div
+      className="inline-flex items-center gap-1.5 rounded-full bg-white"
+      style={{
+        padding: "6px 11px 6px 7px",
+        boxShadow: "0 8px 24px -10px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.6) inset",
+        whiteSpace: "nowrap",
+      }}
+    >
+      <span
+        className="rounded-full grid place-items-center"
+        style={{ width: 17, height: 17, background: "#5e7bf6" }}
+      >
+        <Plus style={{ width: 10, height: 10, color: "#fff", strokeWidth: 3 }} />
+      </span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: "#0B1330", letterSpacing: -0.1 }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function PhotoCard({ photo, scale = 1 }) {
+  const w = photo.size.w * scale;
+  const h = photo.size.h * scale;
+  const src = cld(photo.src, `c_fill,g_auto,w_${Math.round(w * 2)},h_${Math.round(h * 2)},q_auto,f_auto`);
+
+  return (
+    <div
+      className="absolute"
+      style={{
+        left: `${photo.pos.x}%`,
+        top: `${photo.pos.y}%`,
+        // Anchor by CENTER so % positions read intuitively
+        transform: "translate(-50%, -50%)",
+        animation: `floatY 7s ease-in-out ${photo.delay}s infinite alternate`,
+      }}
+    >
+      <div
+        className="relative"
+        style={{
+          width: w,
+          height: h,
+          transform: `rotate(${photo.rot}deg)`,
+        }}
+      >
+        <div
+          className="rounded-2xl overflow-hidden relative"
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundImage: `url(${src})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            boxShadow:
+              "0 30px 50px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06) inset",
+            border: "3px solid rgba(255,255,255,0.92)",
+          }}
+        />
+        {/* "+" badge bottom-left */}
+        <div
+          className="absolute rounded-full grid place-items-center"
+          style={{
+            left: -8,
+            bottom: -8,
+            width: 28 * Math.max(scale, 0.85),
+            height: 28 * Math.max(scale, 0.85),
+            background: "#0B1330",
+            border: "2.5px solid #fff",
+            boxShadow: "0 6px 16px -4px rgba(0,0,0,0.5)",
+          }}
+        >
+          <Plus style={{ width: 14, height: 14, color: "#fff", strokeWidth: 3 }} />
+        </div>
+
+        {/* Optional category chip — kept level by reversing the parent rotation */}
+        {photo.chip && (
+          <div
+            className="absolute"
+            style={{
+              ...(photo.chipSide === "left"
+                ? { left: -34, [photo.chipBelow ? "bottom" : "top"]: -16 }
+                : { right: -34, [photo.chipBelow ? "bottom" : "top"]: -16 }),
+              transform: `rotate(${-photo.rot}deg)`,
+              zIndex: 2,
+            }}
+          >
+            <CategoryChip label={photo.chip} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Block ────────────────────────────────────────────────────
+
+export default function Block() {
+  const handleApplyClick = (e) => {
+    e.preventDefault();
+    if (typeof window !== "undefined" && window.Softr?.modal?.open) {
+      window.Softr.modal.open("/apply");
+      return;
+    }
+    window.location.href = "/apply";
+  };
+
+  return (
+    <div
+      className="relative w-full overflow-hidden"
+      style={{
+        background: "#000624",
+        color: "#fff",
+      }}
+    >
+      <style>{`
+        @keyframes floatY {
+          0%   { transform: translate(-50%, -50%) translateY(0) }
+          100% { transform: translate(-50%, -50%) translateY(-12px) }
+        }
+        @keyframes pulseDot {
+          0%, 100% { opacity: 1; transform: scale(1) }
+          50%      { opacity: 0.5; transform: scale(0.85) }
+        }
+      `}</style>
+
+      {/* ─── DESKTOP (1024px+) ─── */}
+      <div className="hidden lg:block relative">
+        {/* Pink radial glow */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 55% at 50% 35%, rgba(254, 44, 85, 0.30) 0%, rgba(254, 44, 85, 0.08) 35%, transparent 65%), radial-gradient(ellipse at 50% 100%, #1a0a35 0%, #000624 70%)",
+          }}
+        />
+        {/* Subtle dot grid */}
+        <div
+          className="absolute inset-0 opacity-[0.035] pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+
+        {/* SINGLE 1140px container */}
+        <div
+          className="relative mx-auto"
+          style={{ maxWidth: 1140, padding: "60px 64px 80px" }}
+        >
+          {/* Collage layer */}
+          <div
+            className="relative"
+            style={{ height: 420 }}
+          >
+            {PHOTOS.map((p, i) => (
+              <PhotoCard key={i} photo={p} />
+            ))}
+          </div>
+
+          {/* Headline cluster */}
+          <div
+            className="relative flex flex-col items-center text-center"
+            style={{ marginTop: 32 }}
+          >
+            <PartnerBadge />
+            <h1
+              className="font-extrabold"
+              style={{
+                fontSize: 60,
+                lineHeight: 1.08,
+                letterSpacing: -1.8,
+                margin: "20px 0 18px",
+                maxWidth: 880,
+              }}
+            >
+              Apply to become a{" "}
+              <span
+                style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#FF6B8A",
+                  letterSpacing: -1.5,
+                }}
+              >
+                creator
+              </span>{" "}
+              on Creator Scans
+            </h1>
+            <p
+              style={{
+                fontSize: 16,
+                lineHeight: 1.6,
+                color: "rgba(255,255,255,0.72)",
+                maxWidth: 580,
+                margin: 0,
+              }}
+            >
+              We connect talented UK creators with the world's best brands on TikTok Shop.
+              Apply in 2 minutes, leave the outreach behind, and focus on what you do best —
+              making content that sells.
+            </p>
+
+            <div className="flex items-center gap-3" style={{ marginTop: 28 }}>
+              <Button
+                onClick={handleApplyClick}
+                className="font-bold group"
+                style={{
+                  background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+                  color: "#fff",
+                  height: "auto",
+                  padding: "15px 26px",
+                  borderRadius: 12,
+                  fontSize: 15,
+                  border: "none",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  boxShadow:
+                    "0 12px 32px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                }}
+              >
+                Apply now
+                <ArrowRight
+                  className="ml-2 group-hover:translate-x-1 transition-transform"
+                  style={{ width: 16, height: 16 }}
+                />
+              </Button>
+              <a href="/login">
+                <Button
+                  variant="ghost"
+                  className="font-semibold"
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    color: "#fff",
+                    height: "auto",
+                    padding: "15px 24px",
+                    borderRadius: 12,
+                    fontSize: 15,
+                    cursor: "pointer",
+                  }}
+                >
+                  Login
+                </Button>
+              </a>
+            </div>
+
+            <div
+              className="inline-flex items-center gap-1.5"
+              style={{ fontSize: 13, color: "#FF9FB1", marginTop: 22 }}
+            >
+              <span
+                className="rounded-full"
+                style={{
+                  width: 6,
+                  height: 6,
+                  background: "#FF9FB1",
+                  animation: "pulseDot 1.4s ease-in-out infinite",
+                }}
+              />
+              6 brands hiring this week — apply once, get matched
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── MOBILE / TABLET (below 1024px) ─── */}
+      <div className="block lg:hidden relative overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 90% 50% at 50% 25%, rgba(254, 44, 85, 0.30) 0%, rgba(254, 44, 85, 0.06) 40%, transparent 70%), linear-gradient(to bottom, #14062c, #000624 70%)",
+          }}
+        />
+        <div className="relative" style={{ padding: "32px 20px 40px" }}>
+          {/* Mobile collage */}
+          <div className="relative mx-auto" style={{ width: "100%", maxWidth: 420, height: 290 }}>
+            {PHOTOS.map((p, i) => (
+              <PhotoCard key={i} photo={p} scale={0.55} />
+            ))}
+          </div>
+
+          <div className="text-center" style={{ marginTop: 24 }}>
+            <PartnerBadge />
+            <h1
+              className="font-extrabold"
+              style={{
+                fontSize: 36,
+                lineHeight: 1.1,
+                letterSpacing: -1.2,
+                margin: "16px 0 14px",
+              }}
+            >
+              Apply to become a{" "}
+              <span
+                style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#FF6B8A",
+                }}
+              >
+                creator
+              </span>{" "}
+              on Creator Scans
+            </h1>
+            <p
+              style={{
+                fontSize: 14,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.72)",
+                margin: "0 auto",
+                maxWidth: 380,
+              }}
+            >
+              We connect talented UK creators with the world's best brands on TikTok Shop.
+              Apply in 2 minutes and focus on what you do best.
+            </p>
+
+            <div
+              className="flex flex-col items-stretch gap-2.5"
+              style={{ maxWidth: 320, margin: "24px auto 0" }}
+            >
+              <Button
+                onClick={handleApplyClick}
+                className="w-full font-bold"
+                style={{
+                  background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+                  color: "#fff",
+                  padding: "15px 22px",
+                  borderRadius: 12,
+                  fontSize: 15,
+                  border: "none",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow:
+                    "0 10px 30px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                }}
+              >
+                Apply now
+                <ArrowRight className="ml-2" style={{ width: 14, height: 14 }} />
+              </Button>
+              <a href="/login" className="block">
+                <Button
+                  className="w-full font-semibold"
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    color: "#fff",
+                    padding: "15px 22px",
+                    borderRadius: 12,
+                    fontSize: 15,
+                    cursor: "pointer",
+                  }}
+                >
+                  Login
+                </Button>
+              </a>
+            </div>
+
+            <div
+              className="inline-flex items-center gap-1.5"
+              style={{ fontSize: 12, color: "#FF9FB1", marginTop: 20 }}
+            >
+              <span
+                className="rounded-full"
+                style={{
+                  width: 6,
+                  height: 6,
+                  background: "#FF9FB1",
+                  animation: "pulseDot 1.4s ease-in-out infinite",
+                }}
+              />
+              6 brands hiring this week
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
