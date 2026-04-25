@@ -1,0 +1,251 @@
+import { Badge } from "@/components/ui/badge";
+
+// ─── Custom icons (replacing emojis) ──────────────────────────────
+const ICONS = {
+  podcast:        "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777126741/podcast_episodes_dca8ti.png",
+  video:          "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777126742/video_lesson_tbbow0.png",
+  lessonPlan:     "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777126740/lesson_plans_tobbos.png",
+  pdf:            "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777126739/downloadable-pdf_sug8pj.png",
+  quiz:           "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777126741/quizzes_vk51zl.png",
+  certification:  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777126738/certification_doamkw.png",
+};
+
+const ITEMS = [
+  { icon: ICONS.podcast,       title: "Podcast episodes",  desc: "Listen on the go, learn in the gym." },
+  { icon: ICONS.video,         title: "Video lessons",     desc: "Watch and follow along at your pace." },
+  { icon: ICONS.lessonPlan,    title: "Lesson plans",      desc: "Structured walkthroughs of every topic." },
+  { icon: ICONS.pdf,           title: "Downloadable PDFs", desc: "Every lesson, saved for your reference." },
+  { icon: ICONS.quiz,          title: "Quizzes",           desc: "Test what you've learned as you go." },
+  { icon: ICONS.certification, title: "Certification",     desc: "Earn a shareable certificate at the end of each course." },
+];
+
+// ─── Sub-components ───────────────────────────────────────────────
+
+function SectionBadge({ small = false }) {
+  return (
+    <Badge
+      className="inline-flex items-center"
+      style={{
+        gap: 8,
+        padding: small ? "6px 14px" : "8px 16px",
+        borderRadius: 9999,
+        background: "rgba(255,184,200,0.08)",
+        border: "1px solid rgba(255,184,200,0.25)",
+        color: "#FFB8C8",
+        fontSize: small ? 10 : 11.5,
+        fontWeight: 700,
+        letterSpacing: small ? 1.5 : 2,
+        textTransform: "uppercase",
+        marginBottom: small ? 18 : 24,
+      }}
+    >
+      <span
+        className="rounded-full"
+        style={{ width: small ? 5 : 6, height: small ? 5 : 6, background: "#FE2C55" }}
+      />
+      What you get in every course
+    </Badge>
+  );
+}
+
+function ToolkitItem({ icon, title, desc }) {
+  return (
+    <div className="flex flex-col items-center text-center toolkit-item">
+      <div
+        className="flex items-center justify-center toolkit-icon"
+        style={{
+          width: 68,
+          height: 68,
+          borderRadius: 18,
+          background: "linear-gradient(180deg, rgba(254,76,111,0.10) 0%, rgba(254,44,85,0.05) 100%)",
+          border: "1px solid rgba(255,184,200,0.18)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+        }}
+      >
+        <img src={icon} alt="" style={{ width: 40, height: 40, display: "block" }} />
+      </div>
+      <div
+        style={{
+          fontSize: 15,
+          fontWeight: 700,
+          color: "#fff",
+          marginTop: 16,
+          letterSpacing: -0.2,
+          lineHeight: 1.25,
+        }}
+      >
+        {title}
+      </div>
+      <div
+        style={{
+          fontSize: 12.5,
+          color: "rgba(255,255,255,0.6)",
+          marginTop: 6,
+          lineHeight: 1.5,
+          maxWidth: 170,
+        }}
+      >
+        {desc}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Block ───────────────────────────────────────────────────
+
+export default function Block() {
+  return (
+    <section
+      className="relative w-full overflow-hidden"
+      style={{
+        background: "#000624",
+        color: "#fff",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      }}
+    >
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet"
+      />
+      <style>{`
+        .toolkit-item { transition: transform .25s ease; }
+        .toolkit-item:hover { transform: translateY(-4px); }
+        .toolkit-item:hover .toolkit-icon {
+          background: linear-gradient(180deg, rgba(254,76,111,0.16) 0%, rgba(254,44,85,0.08) 100%);
+          border-color: rgba(255,184,200,0.34);
+        }
+      `}</style>
+
+      {/* Pink ambient glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 45% at 50% 25%, rgba(254,44,85,0.12) 0%, transparent 60%)",
+        }}
+      />
+      {/* Subtle dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          opacity: 0.03,
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      {/* ─── DESKTOP (1024px+) ─── */}
+      <div className="hidden lg:block relative">
+        <div className="mx-auto" style={{ maxWidth: 1200, padding: "96px 64px" }}>
+          <div className="text-center" style={{ marginBottom: 64 }}>
+            <SectionBadge />
+            <h2
+              className="font-extrabold mx-auto"
+              style={{
+                fontSize: 56,
+                lineHeight: 1.05,
+                letterSpacing: -1.6,
+                maxWidth: 880,
+                margin: "0 auto 18px",
+              }}
+            >
+              Everything you need to{" "}
+              <span
+                style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#FF6B8A",
+                  letterSpacing: -1.4,
+                }}
+              >
+                actually finish
+              </span>{" "}
+              a course.
+            </h2>
+            <p
+              className="mx-auto"
+              style={{
+                fontSize: 18,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.7)",
+                maxWidth: 640,
+                margin: 0,
+              }}
+            >
+              Most online courses give you videos and hope. Ours give you the
+              full toolkit, then certify what you've learned.
+            </p>
+          </div>
+
+          {/* 6 icons across */}
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+              gap: 28,
+            }}
+          >
+            {ITEMS.map((item, i) => (
+              <ToolkitItem key={i} {...item} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── MOBILE / TABLET (below 1024px) ─── */}
+      <div className="block lg:hidden relative">
+        <div className="mx-auto" style={{ maxWidth: 720, padding: "72px 20px" }}>
+          <div className="text-center" style={{ marginBottom: 48 }}>
+            <SectionBadge small />
+            <h2
+              className="font-extrabold"
+              style={{
+                fontSize: 34,
+                lineHeight: 1.1,
+                letterSpacing: -1.1,
+                margin: "0 0 14px",
+              }}
+            >
+              Everything you need to{" "}
+              <span
+                style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#FF6B8A",
+                }}
+              >
+                actually finish
+              </span>{" "}
+              a course.
+            </h2>
+            <p
+              style={{
+                fontSize: 14.5,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.7)",
+                margin: 0,
+              }}
+            >
+              Most online courses give you videos and hope. Ours give you the
+              full toolkit, then certify what you've learned.
+            </p>
+          </div>
+
+          {/* 2 cols on mobile, 3 cols on tablet */}
+          <div
+            className="grid grid-cols-2 sm:grid-cols-3"
+            style={{ rowGap: 36, columnGap: 20 }}
+          >
+            {ITEMS.map((item, i) => (
+              <ToolkitItem key={i} {...item} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
