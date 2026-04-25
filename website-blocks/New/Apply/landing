@@ -149,6 +149,12 @@ function AnswerRow({ answer }) {
 // ─── Main Block ───────────────────────────────────────────────────
 
 export default function Block() {
+  const scrollToQualifier = (e) => {
+    e.preventDefault();
+    const el = document.getElementById("qualifier");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <div
       className="relative w-full overflow-hidden"
@@ -261,7 +267,7 @@ export default function Block() {
             takes 2 minutes after that.
           </p>
           <div>
-            <a href="#qualifier" className="inline-block">
+            <a href="#qualifier" onClick={scrollToQualifier} className="inline-block">
               <Button
                 className="font-bold group"
                 style={{
