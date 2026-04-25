@@ -17,6 +17,8 @@ const TIKTOK_SCOPES = [
   "user.info.profile",
   "user.info.stats",
   "video.list",
+  "video.publish",
+  "video.upload",
 ].join(",");
 const TIKTOK_AUTH_URL = "https://www.tiktok.com/v2/auth/authorize/";
 
