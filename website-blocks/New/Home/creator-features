@@ -212,7 +212,7 @@ function FeatureRow({ feature, index, isActive, onActivate, accent }) {
       onClick={onActivate}
       className="feat-row w-full text-left relative transition-all duration-500"
       style={{
-        padding: "24px 28px",
+        padding: "clamp(16px, 3.5vw, 24px) clamp(16px, 3.5vw, 28px)",
         borderRadius: 14,
         background: isActive ? `linear-gradient(135deg, ${accent}14, rgba(255,255,255,0.02))` : "transparent",
         border: isActive ? `1px solid ${accent}55` : "1px solid rgba(255,255,255,0.06)",
@@ -280,12 +280,12 @@ function PreviewPanel({ feature, accent }) {
   return (
     <div
       key={feature.title}
-      className="relative overflow-hidden feat-preview-enter"
+      className="relative overflow-hidden feat-preview-enter feat-preview-panel"
       style={{
         borderRadius: 24,
         background: "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015))",
         border: "1px solid rgba(255,255,255,0.08)",
-        padding: 40,
+        padding: "clamp(20px, 4vw, 40px)",
         minHeight: 560,
       }}
     >
@@ -330,7 +330,7 @@ function PreviewPanel({ feature, accent }) {
           </div>
         </div>
 
-        <h3 className="font-black text-white mb-4" style={{ fontSize: 36, lineHeight: 1.1, letterSpacing: -0.5 }}>
+        <h3 className="font-black text-white mb-4 feat-preview-title" style={{ fontSize: 36, lineHeight: 1.1, letterSpacing: -0.5 }}>
           {feature.title}
         </h3>
 
@@ -364,7 +364,7 @@ function PreviewPanel({ feature, accent }) {
           }}
         >
           <div>
-            <div className="font-black" style={{ fontSize: 48, lineHeight: 1, color: accent, letterSpacing: -1.5 }}>
+            <div className="font-black feat-preview-stat" style={{ fontSize: 48, lineHeight: 1, color: accent, letterSpacing: -1.5 }}>
               {feature.stat.value}
             </div>
             <div className="text-white/60 uppercase mt-2" style={{ fontSize: 10, letterSpacing: 2, fontWeight: 700 }}>
@@ -414,6 +414,11 @@ export default function Block() {
         }
         .feat-preview-enter { animation: featV2Enter .45s ease; }
         .feat-row:hover { background: rgba(255,255,255,0.04); }
+        @media (max-width: 640px) {
+          .feat-preview-panel { min-height: 0 !important; padding: 22px !important; }
+          .feat-preview-title { font-size: 26px !important; line-height: 1.15 !important; }
+          .feat-preview-stat { font-size: 36px !important; }
+        }
       `}</style>
 
       <div className="absolute inset-0 pointer-events-none" style={{
@@ -492,11 +497,11 @@ export default function Block() {
       </div>
 
       {/* ─── Mobile (<1024) ─── */}
-      <div className="block lg:hidden relative" style={{ padding: "72px 20px" }}>
+      <div className="block lg:hidden relative" style={{ padding: "clamp(56px, 9vw, 72px) clamp(16px, 4vw, 28px)" }}>
         <div className="mx-auto" style={{ maxWidth: 640 }}>
           <div className="flex flex-col items-center text-center mb-10">
             <CreatorFeaturesBadge />
-            <h2 className="font-black text-white mt-5 mb-3" style={{ fontSize: 40, lineHeight: 1, letterSpacing: -1.2 }}>
+            <h2 className="font-black text-white mt-5 mb-3" style={{ fontSize: "clamp(32px, 7.5vw, 48px)", lineHeight: 1, letterSpacing: -1.2 }}>
               Land more deals,{" "}
               <span style={{
                 fontFamily: "'Instrument Serif', serif",
