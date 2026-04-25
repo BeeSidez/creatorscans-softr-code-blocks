@@ -1,0 +1,435 @@
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Check } from "lucide-react";
+
+// ─── Assets ────────────────────────────────────────────────────────
+const TIKTOK_LOGO = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/TIKTOK_jetgnf.png";
+const VIDEO_1 = "https://res.cloudinary.com/dmrekfwpj/video/upload/v1777113978/video_examples_1_rxxffm.mp4";
+const VIDEO_2 = "https://res.cloudinary.com/dmrekfwpj/video/upload/v1777115333/video_examples_2_gxikd5.mp4";
+
+// ─── Sub-components ────────────────────────────────────────────────
+
+function PartnerBadge() {
+  return (
+    <span
+      className="backdrop-blur-sm"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "8px 16px",
+        background: "rgba(168,185,255,0.08)",
+        border: "1px solid rgba(168,185,255,0.25)",
+        borderRadius: 9999,
+        color: "#a8b9ff",
+        fontSize: 13,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <img
+        src={TIKTOK_LOGO}
+        alt="TikTok"
+        style={{ width: 16, height: 16, borderRadius: 3, transform: "rotate(-5deg)" }}
+      />
+      Official TikTok Partner Agency
+    </span>
+  );
+}
+
+function VideoCard({ src, width, height, rotate = 0, delay = 0 }) {
+  return (
+    <div
+      style={{
+        animation: `brandHeroFloatY 8s ease-in-out ${delay}s infinite alternate`,
+      }}
+    >
+      <div
+        className="relative overflow-hidden"
+        style={{
+          width,
+          height,
+          borderRadius: 28,
+          transform: `rotate(${rotate}deg)`,
+          boxShadow:
+            "0 40px 80px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(168,185,255,0.14)",
+          background: "#0a0f2c",
+        }}
+      >
+        <video
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function FloatingChip({ children, dotColor, style }) {
+  return (
+    <div
+      className="absolute"
+      style={{
+        background: "#fff",
+        borderRadius: 9999,
+        padding: "10px 16px 10px 10px",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 10,
+        boxShadow:
+          "0 20px 40px -10px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.6) inset",
+        color: "#0B1330",
+        fontSize: 13,
+        fontWeight: 700,
+        whiteSpace: "nowrap",
+        zIndex: 4,
+        ...style,
+      }}
+    >
+      <span
+        className="rounded-full grid place-items-center"
+        style={{ width: 22, height: 22, background: dotColor }}
+      >
+        <Check style={{ width: 12, height: 12, color: "#fff", strokeWidth: 3.5 }} />
+      </span>
+      {children}
+    </div>
+  );
+}
+
+// ─── Main Block ────────────────────────────────────────────────────
+
+export default function Block() {
+  const handleBookClick = (e) => {
+    e.preventDefault();
+    if (typeof window !== "undefined" && window.Softr?.modal?.open) {
+      window.Softr.modal.open("/forms-brands");
+      return;
+    }
+    window.location.href = "/forms-brands";
+  };
+
+  return (
+    <div
+      className="relative w-full overflow-hidden"
+      style={{
+        background: "#000624",
+        color: "#fff",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      }}
+    >
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet"
+      />
+      <style>{`
+        @keyframes brandHeroFloatY {
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(-12px); }
+        }
+      `}</style>
+
+      {/* Brand-blue ambient glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 50% at 30% 28%, rgba(122,147,255,0.18) 0%, transparent 60%), radial-gradient(ellipse 70% 60% at 85% 80%, #0a1652 0%, transparent 55%), radial-gradient(ellipse at 50% 0%, #14215c 0%, #000624 60%)",
+        }}
+      />
+      {/* Subtle dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          opacity: 0.04,
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      {/* ─── DESKTOP (1024px+) ─── */}
+      <div className="hidden lg:block relative">
+        <div
+          className="mx-auto"
+          style={{ maxWidth: 1200, padding: "80px 64px 100px" }}
+        >
+          <div
+            className="grid grid-cols-2 items-center"
+            style={{ gap: 72 }}
+          >
+            {/* Left: copy column */}
+            <div>
+              <PartnerBadge />
+              <h1
+                className="font-extrabold"
+                style={{
+                  fontSize: 60,
+                  lineHeight: 1.05,
+                  letterSpacing: -1.8,
+                  margin: "20px 0 20px",
+                  maxWidth: 580,
+                }}
+              >
+                Tap into the Top TikTok LIVE & Shop{" "}
+                <span
+                  style={{
+                    fontFamily: "'Instrument Serif', serif",
+                    fontStyle: "italic",
+                    fontWeight: 400,
+                    color: "#a8b9ff",
+                    letterSpacing: -1.5,
+                  }}
+                >
+                  Affiliate Community
+                </span>
+              </h1>
+              <p
+                style={{
+                  fontSize: 17,
+                  lineHeight: 1.55,
+                  color: "rgba(255,255,255,0.72)",
+                  maxWidth: 520,
+                  margin: 0,
+                }}
+              >
+                Creator Scans connects brands with a high-converting affiliate
+                network, ensuring measurable results and scalable growth on
+                TikTok LIVE & Shop.
+              </p>
+
+              <div
+                className="flex items-center flex-wrap"
+                style={{ marginTop: 32, gap: 14 }}
+              >
+                <Button
+                  onClick={handleBookClick}
+                  className="font-bold group"
+                  style={{
+                    background: "linear-gradient(180deg, #8CA3FF 0%, #5A73FF 100%)",
+                    color: "#fff",
+                    height: "auto",
+                    padding: "16px 28px",
+                    borderRadius: 12,
+                    fontSize: 15,
+                    border: "none",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    boxShadow:
+                      "0 12px 32px -8px rgba(90,115,255,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
+                >
+                  Book a chat
+                  <ArrowRight
+                    className="ml-2 group-hover:translate-x-1 transition-transform"
+                    style={{ width: 16, height: 16 }}
+                  />
+                </Button>
+                <a href="#brand-features">
+                  <Button
+                    variant="ghost"
+                    className="font-semibold"
+                    style={{
+                      background: "rgba(168,185,255,0.06)",
+                      border: "1px solid rgba(168,185,255,0.22)",
+                      color: "#fff",
+                      height: "auto",
+                      padding: "16px 24px",
+                      borderRadius: 12,
+                      fontSize: 15,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Brand benefits
+                  </Button>
+                </a>
+              </div>
+            </div>
+
+            {/* Right: video composition */}
+            <div className="relative" style={{ height: 580 }}>
+              <div className="absolute" style={{ left: 20, top: 30 }}>
+                <VideoCard
+                  src={VIDEO_1}
+                  width={240}
+                  height={420}
+                  rotate={-3}
+                  delay={0}
+                />
+              </div>
+              <div className="absolute" style={{ right: 0, top: 110 }}>
+                <VideoCard
+                  src={VIDEO_2}
+                  width={260}
+                  height={460}
+                  rotate={3}
+                  delay={1.4}
+                />
+              </div>
+
+              <FloatingChip
+                style={{ top: 50, right: 30 }}
+                dotColor="#7a93ff"
+              >
+                Shop + LIVE
+              </FloatingChip>
+              <FloatingChip
+                style={{ bottom: 80, left: 0 }}
+                dotColor="#22c55e"
+              >
+                Brief-tracked content
+              </FloatingChip>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── MOBILE / TABLET (below 1024px) ─── */}
+      <div className="block lg:hidden relative">
+        <div
+          className="mx-auto"
+          style={{ maxWidth: 640, padding: "48px 20px 64px" }}
+        >
+          <div className="text-center">
+            <PartnerBadge />
+            <h1
+              className="font-extrabold"
+              style={{
+                fontSize: 36,
+                lineHeight: 1.1,
+                letterSpacing: -1.2,
+                margin: "16px 0 14px",
+              }}
+            >
+              Tap into the Top TikTok LIVE & Shop{" "}
+              <span
+                style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#a8b9ff",
+                }}
+              >
+                Affiliate Community
+              </span>
+            </h1>
+            <p
+              style={{
+                fontSize: 14.5,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.72)",
+                margin: "0 auto",
+                maxWidth: 480,
+              }}
+            >
+              Creator Scans connects brands with a high-converting affiliate
+              network, ensuring measurable results and scalable growth on
+              TikTok LIVE & Shop.
+            </p>
+
+            <div
+              className="flex flex-col items-stretch gap-2.5"
+              style={{ maxWidth: 320, margin: "24px auto 0" }}
+            >
+              <Button
+                onClick={handleBookClick}
+                className="w-full font-bold"
+                style={{
+                  background: "linear-gradient(180deg, #8CA3FF 0%, #5A73FF 100%)",
+                  color: "#fff",
+                  padding: "15px 22px",
+                  borderRadius: 12,
+                  fontSize: 15,
+                  border: "none",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow:
+                    "0 10px 30px -8px rgba(90,115,255,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                }}
+              >
+                Book a chat
+                <ArrowRight className="ml-2" style={{ width: 14, height: 14 }} />
+              </Button>
+              <a href="#brand-features" className="block">
+                <Button
+                  className="w-full font-semibold"
+                  style={{
+                    background: "rgba(168,185,255,0.06)",
+                    border: "1px solid rgba(168,185,255,0.22)",
+                    color: "#fff",
+                    padding: "15px 22px",
+                    borderRadius: 12,
+                    fontSize: 15,
+                    cursor: "pointer",
+                  }}
+                >
+                  Brand benefits
+                </Button>
+              </a>
+            </div>
+          </div>
+
+          {/* Mobile video composition */}
+          <div
+            className="relative mx-auto"
+            style={{ maxWidth: 380, height: 360, marginTop: 36 }}
+          >
+            <div className="absolute" style={{ left: 0, top: 10 }}>
+              <VideoCard
+                src={VIDEO_1}
+                width={150}
+                height={264}
+                rotate={-3}
+                delay={0}
+              />
+            </div>
+            <div className="absolute" style={{ right: 0, top: 60 }}>
+              <VideoCard
+                src={VIDEO_2}
+                width={170}
+                height={300}
+                rotate={3}
+                delay={1.4}
+              />
+            </div>
+            <FloatingChip
+              style={{
+                top: 24,
+                right: 40,
+                padding: "8px 12px 8px 8px",
+                fontSize: 11.5,
+              }}
+              dotColor="#7a93ff"
+            >
+              Shop + LIVE
+            </FloatingChip>
+            <FloatingChip
+              style={{
+                bottom: 30,
+                left: 24,
+                padding: "8px 12px 8px 8px",
+                fontSize: 11.5,
+              }}
+              dotColor="#22c55e"
+            >
+              Brief-tracked
+            </FloatingChip>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
