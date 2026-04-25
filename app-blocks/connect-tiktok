@@ -1,0 +1,258 @@
+import { useEffect, useRef, useState } from "react";
+import { useRecord, useCurrentRecordId, q } from "@/lib/datasource";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+import { Check, Loader2, AlertCircle, ExternalLink } from "lucide-react";
+
+// ============================================================================
+// CONFIG — replace WORKFLOW_WEBHOOK_URL after creating the Softr Workflow
+// ============================================================================
+const TIKTOK_CLIENT_KEY = "aw3f0uyendq72iso";
+const TIKTOK_REDIRECT_URI = "https://www.creatorscans.com/dashboard";
+const TIKTOK_SCOPES = [
+  "user.info.basic",
+  "user.info.profile",
+  "user.info.stats",
+  "video.list",
+].join(",");
+const TIKTOK_AUTH_URL = "https://www.tiktok.com/v2/auth/authorize/";
+
+// PASTE THE WORKFLOW WEBHOOK URL HERE AFTER YOU CREATE IT IN SOFTR
+const WORKFLOW_WEBHOOK_URL = "REPLACE_WITH_SOFTR_WORKFLOW_WEBHOOK_URL";
+
+const STATE_STORAGE_KEY = "cs_tiktok_oauth_state";
+
+const CS_BLUE = "#001364";
+const CS_BORDER = "#eef4fd";
+
+// ============================================================================
+// User table fields this block reads
+// ============================================================================
+const select = q.select({
+  email: "T3cFq",
+  fullName: "PXdkq",
+  tiktokUsername: "uZ8z0",
+  tiktokOpenId: "jFUGr",
+  tiktokConnectedAt: "tD0cA",
+});
+
+// ============================================================================
+// Helpers
+// ============================================================================
+function generateState() {
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function buildAuthUrl(state: string) {
+  const params = new URLSearchParams({
+    client_key: TIKTOK_CLIENT_KEY,
+    scope: TIKTOK_SCOPES,
+    response_type: "code",
+    redirect_uri: TIKTOK_REDIRECT_URI,
+    state,
+  });
+  return `${TIKTOK_AUTH_URL}?${params.toString()}`;
+}
+
+function clearOAuthParamsFromUrl() {
+  const url = new URL(window.location.href);
+  ["code", "state", "scopes", "error", "error_description"].forEach((p) =>
+    url.searchParams.delete(p)
+  );
+  window.history.replaceState({}, "", url.toString());
+}
+
+// ============================================================================
+// Block
+// ============================================================================
+export default function Block() {
+  const recordId = useCurrentRecordId();
+  const { data, status, refetch } = useRecord({ recordId, select });
+
+  const [exchangeState, setExchangeState] = useState<
+    "idle" | "exchanging" | "error"
+  >("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const ranCallback = useRef(false);
+
+  const isConnected = !!data?.tiktokOpenId;
+
+  // -- Detect OAuth callback on mount and exchange code --------------------
+  useEffect(() => {
+    if (ranCallback.current) return;
+    if (typeof window === "undefined") return;
+    if (!recordId) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const returnedState = params.get("state");
+    const oauthError = params.get("error");
+
+    if (oauthError) {
+      ranCallback.current = true;
+      setExchangeState("error");
+      setErrorMsg(
+        params.get("error_description") || `TikTok returned: ${oauthError}`
+      );
+      clearOAuthParamsFromUrl();
+      return;
+    }
+
+    if (!code) return;
+
+    ranCallback.current = true;
+
+    const expectedState = sessionStorage.getItem(STATE_STORAGE_KEY);
+    sessionStorage.removeItem(STATE_STORAGE_KEY);
+
+    if (!expectedState || expectedState !== returnedState) {
+      setExchangeState("error");
+      setErrorMsg("Security check failed. Please try connecting again.");
+      clearOAuthParamsFromUrl();
+      return;
+    }
+
+    setExchangeState("exchanging");
+
+    fetch(WORKFLOW_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code,
+        state: returnedState,
+        user_id: recordId,
+        redirect_uri: TIKTOK_REDIRECT_URI,
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(text || `Workflow returned ${res.status}`);
+        }
+        return res.json().catch(() => ({}));
+      })
+      .then(async () => {
+        await refetch();
+        setExchangeState("idle");
+        toast.success("TikTok connected");
+        clearOAuthParamsFromUrl();
+      })
+      .catch((err) => {
+        setExchangeState("error");
+        setErrorMsg(err?.message || "Could not exchange the code.");
+        toast.error("Connection failed", {
+          description: err?.message || "Please try again.",
+        });
+        clearOAuthParamsFromUrl();
+      });
+  }, [recordId, refetch]);
+
+  // -- Click handler: kick off TikTok auth ---------------------------------
+  function handleConnect() {
+    if (WORKFLOW_WEBHOOK_URL.startsWith("REPLACE_")) {
+      toast.error("Setup not complete", {
+        description:
+          "Add the Softr Workflow webhook URL in the block code before connecting.",
+      });
+      return;
+    }
+    const state = generateState();
+    sessionStorage.setItem(STATE_STORAGE_KEY, state);
+    window.location.href = buildAuthUrl(state);
+  }
+
+  // -- Render --------------------------------------------------------------
+  if (status === "pending") {
+    return (
+      <div className="container py-6">
+        <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+          <CardContent className="py-6 flex items-center gap-3 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading…
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container py-6">
+      <Toaster />
+      <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+        <CardContent className="py-6">
+          {exchangeState === "exchanging" ? (
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin" style={{ color: CS_BLUE }} />
+              <div>
+                <div className="font-semibold" style={{ color: CS_BLUE }}>
+                  Connecting your TikTok…
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  This usually takes a couple of seconds.
+                </div>
+              </div>
+            </div>
+          ) : isConnected ? (
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div
+                  className="h-10 w-10 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: CS_BLUE }}
+                >
+                  <Check className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="font-semibold" style={{ color: CS_BLUE }}>
+                    TikTok connected
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {data?.tiktokUsername
+                      ? `@${data.tiktokUsername}`
+                      : "Account linked"}
+                  </div>
+                </div>
+              </div>
+              <Badge variant="secondary" className="gap-1">
+                <Check className="h-3 w-3" />
+                Live
+              </Badge>
+            </div>
+          ) : (
+            <div className="flex items-start gap-4 flex-wrap">
+              <div className="flex-1 min-w-[240px]">
+                <div className="font-semibold mb-1" style={{ color: CS_BLUE }}>
+                  Connect your TikTok account
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  We'll read your profile, stats, and public videos so your
+                  dashboard shows your real numbers. You can disconnect any
+                  time.
+                </p>
+                {exchangeState === "error" && errorMsg && (
+                  <div className="mt-3 flex items-start gap-2 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
+              </div>
+              <Button
+                size="lg"
+                onClick={handleConnect}
+                style={{ backgroundColor: CS_BLUE }}
+                className="text-white hover:opacity-90"
+              >
+                Connect TikTok
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
