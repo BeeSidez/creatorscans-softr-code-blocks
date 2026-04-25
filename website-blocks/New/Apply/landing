@@ -4,28 +4,21 @@ import { ArrowRight } from "lucide-react";
 const TIKTOK_LOGO =
   "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/TIKTOK_jetgnf.png";
 
-// ─── GMV qualifier tiers ──────────────────────────────────────────
-const TIERS = [
+// ─── GMV qualifier answers ────────────────────────────────────────
+const ANSWERS = [
   {
     id: "starter",
-    gmv: "Under £2.5K/mo",
-    name: "Starter",
-    desc: "Just getting started. Subscription with a 7-day free trial.",
+    label: "Less than £2,500/mo (or I haven't started yet)",
     href: "/signup-starter",
   },
   {
     id: "creator",
-    gmv: "£2.5K to £50K/mo",
-    name: "Creator",
-    desc: "Earning monthly. Agency commission, no subscription.",
+    label: "£2,500 to £50,000/mo",
     href: "/signup-creator",
-    featured: true,
   },
   {
     id: "pro",
-    gmv: "£50K+/mo",
-    name: "Creator Pro",
-    desc: "Scaling fast. Custom rate, set on the call.",
+    label: "More than £50,000/mo",
     href: "/signup-pro",
   },
 ];
@@ -33,8 +26,8 @@ const TIERS = [
 const STEPS = [
   {
     n: "01",
-    title: "Pick your tier",
-    body: "Tap your GMV range above. We route you to the right signup straight away.",
+    title: "Answer one question",
+    body: "Tell us your last 28-day TikTok Shop sales. We route you to the right signup straight away.",
   },
   {
     n: "02",
@@ -83,105 +76,71 @@ function PartnerBadge() {
   );
 }
 
-function GmvCard({ tier }) {
-  const isFeatured = !!tier.featured;
+function AnswerRow({ answer }) {
   return (
     <a
-      href={tier.href}
-      className="block group gmv-card"
+      href={answer.href}
+      className="block group answer-row"
       style={{ textDecoration: "none", color: "inherit" }}
     >
       <div
-        className="relative gmv-card-inner flex flex-col"
+        className="flex items-center answer-row-inner"
         style={{
-          padding: "32px 28px 26px",
-          borderRadius: 22,
-          background: isFeatured
-            ? "linear-gradient(180deg, rgba(254,76,111,0.10) 0%, rgba(255,255,255,0.02) 80%)"
-            : "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)",
-          border: isFeatured
-            ? "1px solid rgba(254,76,111,0.50)"
-            : "1px solid rgba(255,255,255,0.10)",
-          boxShadow: isFeatured
-            ? "0 30px 80px -30px rgba(254,44,85,0.40)"
-            : "0 20px 50px -28px rgba(0,0,0,0.5)",
-          height: "100%",
+          padding: "22px 24px",
+          borderRadius: 14,
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid rgba(255,255,255,0.10)",
+          gap: 18,
+          transition: "background .25s ease, border-color .25s ease",
         }}
       >
-        {isFeatured && (
+        {/* Radio dot */}
+        <span
+          className="answer-radio rounded-full grid place-items-center shrink-0"
+          style={{
+            width: 24,
+            height: 24,
+            border: "2px solid rgba(255,184,200,0.4)",
+            transition: "all .25s ease",
+          }}
+        >
           <span
-            className="absolute"
+            className="answer-radio-dot rounded-full"
             style={{
-              top: -12,
-              left: 24,
-              background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
-              color: "#fff",
-              fontSize: 10.5,
-              fontWeight: 800,
-              letterSpacing: 1.6,
-              textTransform: "uppercase",
-              padding: "6px 12px",
-              borderRadius: 9999,
-              boxShadow: "0 8px 20px -4px rgba(254,44,85,0.55)",
-            }}
-          >
-            Most creators
-          </span>
-        )}
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color: isFeatured ? "#FFB8C8" : "rgba(255,255,255,0.55)",
-            letterSpacing: 1.6,
-            textTransform: "uppercase",
-            marginBottom: 10,
-          }}
-        >
-          {tier.gmv} TikTok GMV
-        </div>
-        <div
-          className="font-extrabold"
-          style={{
-            fontSize: 32,
-            color: "#fff",
-            letterSpacing: -0.8,
-            lineHeight: 1.05,
-            marginBottom: 8,
-          }}
-        >
-          {tier.name}
-        </div>
-        <p
-          style={{
-            fontSize: 14.5,
-            color: "rgba(255,255,255,0.62)",
-            lineHeight: 1.5,
-            marginBottom: 24,
-            flex: 1,
-          }}
-        >
-          {tier.desc}
-        </p>
-        <div
-          className="inline-flex items-center"
-          style={{
-            color: isFeatured ? "#FF6B8A" : "#fff",
-            fontSize: 14.5,
-            fontWeight: 700,
-          }}
-        >
-          Continue
-          <ArrowRight
-            className="gmv-arrow"
-            style={{
-              width: 16,
-              height: 16,
-              marginLeft: 8,
-              transition: "transform .25s ease",
+              width: 10,
+              height: 10,
+              background: "#FE2C55",
+              opacity: 0,
+              transform: "scale(0.5)",
+              transition: "all .25s ease",
             }}
           />
-        </div>
+        </span>
+
+        {/* Answer text */}
+        <span
+          style={{
+            flex: 1,
+            fontSize: 16.5,
+            fontWeight: 600,
+            color: "#fff",
+            letterSpacing: -0.2,
+            lineHeight: 1.35,
+          }}
+        >
+          {answer.label}
+        </span>
+
+        {/* Arrow */}
+        <ArrowRight
+          className="answer-arrow shrink-0"
+          style={{
+            width: 18,
+            height: 18,
+            color: "rgba(255,255,255,0.3)",
+            transition: "all .25s ease",
+          }}
+        />
       </div>
     </a>
   );
@@ -205,10 +164,24 @@ export default function Block() {
         rel="stylesheet"
       />
       <style>{`
-        .gmv-card { transition: transform .35s ease; }
-        .gmv-card:hover { transform: translateY(-6px); }
-        .gmv-card:hover .gmv-card-inner { border-color: rgba(255,184,200,0.55) !important; }
-        .gmv-card:hover .gmv-arrow { transform: translateX(4px); }
+        .answer-row { transition: transform .25s ease; }
+        .answer-row:hover { transform: translateY(-2px); }
+        .answer-row:hover .answer-row-inner {
+          background: rgba(254,76,111,0.08);
+          border-color: rgba(255,184,200,0.50);
+        }
+        .answer-row:hover .answer-radio {
+          border-color: #FE2C55;
+          box-shadow: 0 0 0 4px rgba(254,44,85,0.15);
+        }
+        .answer-row:hover .answer-radio-dot {
+          opacity: 1;
+          transform: scale(1);
+        }
+        .answer-row:hover .answer-arrow {
+          color: #FF6B8A;
+          transform: translateX(4px);
+        }
         @keyframes applyPulseDot {
           0%, 100% { opacity: 1; transform: scale(1); }
           50%      { opacity: 0.5; transform: scale(0.85); }
@@ -284,8 +257,8 @@ export default function Block() {
               margin: "0 auto 36px",
             }}
           >
-            Three tiers, matched to your last 28-day TikTok GMV. Pick yours
-            below and we'll route you to onboarding in 2 minutes.
+            One quick question to route you to the right signup. Onboarding
+            takes 2 minutes after that.
           </p>
           <a href="#qualifier" className="inline-block">
             <Button
@@ -306,7 +279,7 @@ export default function Block() {
                   "0 12px 32px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
               }}
             >
-              Find my tier
+              Get started
               <ArrowRight
                 style={{
                   width: 16,
@@ -342,7 +315,7 @@ export default function Block() {
         </div>
       </div>
 
-      {/* ─── GMV QUALIFIER ─── */}
+      {/* ─── GMV QUALIFIER QUESTION ─── */}
       <div
         id="qualifier"
         className="relative"
@@ -351,40 +324,84 @@ export default function Block() {
             "clamp(72px, 9vw, 100px) clamp(20px, 4vw, 64px) clamp(40px, 5vw, 56px)",
         }}
       >
-        <div className="mx-auto" style={{ maxWidth: 1200 }}>
-          <div className="text-center" style={{ marginBottom: 48 }}>
+        <div className="mx-auto" style={{ maxWidth: 720 }}>
+          <div className="text-center" style={{ marginBottom: 36 }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 14px",
+                borderRadius: 9999,
+                background: "rgba(255,184,200,0.08)",
+                border: "1px solid rgba(255,184,200,0.25)",
+                color: "#FFB8C8",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 1.6,
+                textTransform: "uppercase",
+                marginBottom: 18,
+              }}
+            >
+              <span
+                className="rounded-full"
+                style={{ width: 5, height: 5, background: "#FE2C55" }}
+              />
+              Question 1 of 1
+            </span>
             <h2
               className="font-bold mx-auto"
               style={{
-                fontSize: "clamp(26px, 3vw, 38px)",
-                lineHeight: 1.15,
+                fontSize: "clamp(26px, 3.2vw, 38px)",
+                lineHeight: 1.18,
                 letterSpacing: -0.8,
                 color: "#fff",
-                margin: "0 auto 12px",
-                maxWidth: 720,
+                margin: "0 auto 14px",
+                maxWidth: 640,
               }}
             >
-              How much GMV did you earn the last 28 days?
+              What's your TikTok Shop GMV from the last 28 days?
             </h2>
             <p
+              className="mx-auto"
               style={{
-                fontSize: 15.5,
+                fontSize: 14.5,
+                lineHeight: 1.55,
                 color: "rgba(255,255,255,0.6)",
-                margin: 0,
+                margin: "0 auto",
+                maxWidth: 560,
               }}
             >
-              Pick your range. We'll route you to the right signup.
+              <span style={{ color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>
+                GMV
+              </span>{" "}
+              = Gross Merchandise Value, your total TikTok Shop sales before
+              fees. Pick the band you're actually in. We use this to route
+              you to the right signup.
             </p>
           </div>
 
-          <div
-            className="grid grid-cols-1 md:grid-cols-3"
-            style={{ gap: 22 }}
-          >
-            {TIERS.map((tier) => (
-              <GmvCard key={tier.id} tier={tier} />
+          {/* Stacked answer rows */}
+          <div className="flex flex-col" style={{ gap: 12 }}>
+            {ANSWERS.map((answer) => (
+              <AnswerRow key={answer.id} answer={answer} />
             ))}
           </div>
+
+          <p
+            className="text-center mx-auto"
+            style={{
+              fontSize: 12.5,
+              lineHeight: 1.55,
+              color: "rgba(255,255,255,0.42)",
+              marginTop: 24,
+              maxWidth: 540,
+            }}
+          >
+            Honest answer please. We verify your last 28-day GMV during
+            onboarding, so picking the wrong band just means you'll be
+            re-routed.
+          </p>
         </div>
       </div>
 
