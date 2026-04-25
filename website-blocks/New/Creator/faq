@@ -1,0 +1,465 @@
+"use client";
+
+import React, { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+
+// ────────────────────────────────────────────────────────────
+// FAQ — visual continuation of the GMV ticker section
+// Same palette: #000624 base, radial purple/blue glow, #7ED9A7 accent
+// ────────────────────────────────────────────────────────────
+const FAQS = [
+  {
+    q: "What is Creator Scans?",
+    a: "Creator Scans is a TikTok growth platform that gives you the tools, feedback, and support to earn more on TikTok. We're an official TikTok Shop Partner and TikTok Creator Network — which means we're an agency for both Shop affiliates and LIVE creators.",
+    cat: "About",
+  },
+  {
+    q: "Do I need to already be earning to join?",
+    a: "No. We work with creators who are completely new and creators already pulling thousands per month. The platform meets you where you are — new creators get structure, AI tools, and accountability; established creators get trending product data, personalised remix scripts, and agency rewards.",
+    cat: "About",
+  },
+  {
+    q: "How much does it cost?",
+    a: "It depends on where you are in your TikTok journey. You can either pay a monthly subscription, or we take a percentage based on your GMV. We'll talk through the right fit on the discovery call. There's also a free option with limited access — basic accountability and the ability to connect to our agency. AI tools are paid-only.",
+    cat: "Pricing",
+  },
+  {
+    q: "Can I cancel anytime?",
+    a: "Yes, you can cancel your platform membership anytime. Note: if you've connected to our agency through TikTok, that's a 12-month binding through TikTok's own system, so the agency connection stays active even if you cancel the platform.",
+    cat: "Pricing",
+  },
+  {
+    q: "What does it mean to connect to your agency?",
+    a: "We hold two official TikTok credentials — a Shop Partner (for affiliates) and a Creator Network (for LIVE). Connecting unlocks rewards like higher commissions, product samples, brand campaigns, violation support, and more. You don't have to connect to use the platform — agency rewards are only for creators who do.",
+    cat: "Agency",
+  },
+  {
+    q: "What if I'm already with another agency?",
+    a: "You can still join the platform and use all the tools. Once your cooldown period ends with your current agency (usually 30 days), you can connect to us if you want the agency rewards.",
+    cat: "Agency",
+  },
+  {
+    q: "What do I get when I join?",
+    a: "Access to the dashboard, trending products library, AI scripts and storyboards, the remix tool, live outlines, live reviews, AI content feedback on your videos, and weekly accountability tracking. Paid members get 30 AI credits per month and up to 7 video reviews per week.",
+    cat: "Tools",
+  },
+  {
+    q: "What's the difference between Script and Remix?",
+    a: "Script gives you a full breakdown of an existing viral video — shot by shot, frame by frame. Remix takes that script and personalises it to you, factoring in your voice, your audience, and creative direction you provide. The remix is unique to you.",
+    cat: "Tools",
+  },
+  {
+    q: "How does the AI feedback work?",
+    a: "You submit a video and the AI analyses it across hook, story structure, script, captions, visual execution, audio, product/CTA presence, and technical quality. You get a score for each category and one focus to work on for your next video.",
+    cat: "Tools",
+  },
+  {
+    q: "How does Live Review work?",
+    a: "You upload a 30-minute segment of one of your TikTok lives. The AI watches it, scores you across the 4-phase live framework (Opening, Value Delivery, Monetisation, Closing), and gives you one focus for next time. It also counts as proof of commitment for your weekly accountability.",
+    cat: "Tools",
+  },
+  {
+    q: "What's an intensity level?",
+    a: "Intensity is your weekly posting commitment. Starter is light (3 Shop posts, 2 lives, or your own custom organic frequency). Pro is moderate (5 posts or 4 lives). Advanced is intense (7 posts or 6 lives). Higher intensity unlocks bigger agency rewards. You can change it later — move up or down based on what's realistic.",
+    cat: "Commitment",
+  },
+  {
+    q: "What rewards can I unlock?",
+    a: "At Starter you get TikTok Shop affiliate or LIVE agency status. Pro adds sample vouchers, product samples, PR packages, higher commissions, violation support, and performance bonuses. Advanced adds priority coaching, one-on-one calls, brand campaigns, event invites, networking, and VIP violation resolution.",
+    cat: "Rewards",
+  },
+  {
+    q: "Do I get brand deals?",
+    a: "Brand campaign access opens at Pro and expands at Advanced. We match creators with brands based on niche, consistency, and intensity level.",
+    cat: "Rewards",
+  },
+  {
+    q: "How do I sign up?",
+    a: "Pick your content type, choose your intensity level, and sign up. The onboarding walks you through everything step by step, including connecting to the agency if you want to. The only requirement is a TikTok account — you don't need existing GMV, a big following, or a specific track record.",
+    cat: "Getting started",
+  },
+];
+
+function FAQItem({ item, isOpen, onToggle, idx }) {
+  return (
+    <div
+      style={{
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        transition: "background 0.3s ease",
+        background: isOpen ? "rgba(126,217,167,0.03)" : "transparent",
+      }}
+    >
+      <button
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 24,
+          padding: "28px 4px",
+          background: "transparent",
+          border: "none",
+          color: "#fff",
+          textAlign: "left",
+          cursor: "pointer",
+          fontFamily: "inherit",
+        }}
+      >
+        <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flex: 1, minWidth: 0 }}>
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: isOpen ? "#7ED9A7" : "rgba(255,255,255,0.4)",
+              fontVariantNumeric: "tabular-nums",
+              letterSpacing: "0.02em",
+              paddingTop: 4,
+              minWidth: 28,
+              transition: "color 0.3s ease",
+            }}
+          >
+            {String(idx + 1).padStart(2, "0")}
+          </span>
+          <span
+            style={{
+              fontSize: "clamp(17px, 2vw, 20px)",
+              fontWeight: 600,
+              lineHeight: 1.4,
+              letterSpacing: "-0.01em",
+              color: isOpen ? "#fff" : "rgba(255,255,255,0.92)",
+              transition: "color 0.3s ease",
+            }}
+          >
+            {item.q}
+          </span>
+        </div>
+        <span
+          style={{
+            flexShrink: 0,
+            width: 36,
+            height: 36,
+            borderRadius: 999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: isOpen ? "#7ED9A7" : "rgba(255,255,255,0.06)",
+            border: isOpen ? "1px solid #7ED9A7" : "1px solid rgba(255,255,255,0.12)",
+            transition: "all 0.3s ease",
+            transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path
+              d="M7 1V13M1 7H13"
+              stroke={isOpen ? "#000624" : "#fff"}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </span>
+      </button>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: isOpen ? "1fr" : "0fr",
+          transition: "grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
+        <div style={{ overflow: "hidden" }}>
+          <div
+            style={{
+              paddingLeft: 48,
+              paddingRight: 60,
+              paddingBottom: 32,
+              paddingTop: 0,
+              fontSize: 16,
+              lineHeight: 1.65,
+              color: "rgba(255,255,255,0.72)",
+              maxWidth: 720,
+            }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "#7ED9A7",
+                marginBottom: 12,
+              }}
+            >
+              {item.cat}
+            </span>
+            <div>{item.a}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Block() {
+  const [openIdx, setOpenIdx] = useState(0);
+
+  return (
+    <section
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        background: "#000624",
+        width: "100%",
+      }}
+    >
+      {/* Continuation of GMV ticker glow — softer, lower intensity */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(ellipse at 80% 20%, #1a0a30 0%, transparent 50%), radial-gradient(ellipse at 15% 85%, #0a1652 0%, transparent 55%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Top hairline — visual seam to GMV ticker above */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 1,
+          background:
+            "linear-gradient(90deg, transparent 0%, rgba(126,217,167,0.18) 50%, transparent 100%)",
+        }}
+      />
+
+      <div
+        style={{
+          position: "relative",
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px)",
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr)",
+            gap: 64,
+          }}
+          className="faq-grid"
+        >
+          {/* HEADER — left column on desktop, top on mobile */}
+          <div className="faq-header">
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "7px 14px",
+                borderRadius: 999,
+                background: "rgba(126,217,167,0.1)",
+                border: "1px solid rgba(126,217,167,0.28)",
+                color: "#7ED9A7",
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                marginBottom: 24,
+              }}
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 999,
+                  background: "#7ED9A7",
+                  animation: "gmvPulseDot 1.4s ease-in-out infinite",
+                }}
+              />
+              FAQ
+            </div>
+
+            <h2
+              style={{
+                fontSize: "clamp(40px, 5.5vw, 64px)",
+                fontWeight: 700,
+                lineHeight: 1.05,
+                letterSpacing: "-0.025em",
+                color: "#fff",
+                margin: 0,
+                marginBottom: 20,
+              }}
+            >
+              Still have{" "}
+              <span
+                style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#7ED9A7",
+                }}
+              >
+                questions?
+              </span>
+            </h2>
+
+            <p
+              style={{
+                fontSize: 17,
+                lineHeight: 1.6,
+                color: "rgba(255,255,255,0.6)",
+                margin: 0,
+                marginBottom: 32,
+                maxWidth: 540,
+              }}
+            >
+              Everything you need to know before joining Creator Scans. Can't
+              find what you're looking for?{" "}
+              <a
+                href="#book-call"
+                style={{
+                  color: "#7ED9A7",
+                  textDecoration: "underline",
+                  textDecorationColor: "rgba(126,217,167,0.4)",
+                  textUnderlineOffset: "3px",
+                }}
+              >
+                Book a discovery call
+              </a>
+              .
+            </p>
+          </div>
+
+          {/* ACCORDION */}
+          <div
+            style={{
+              borderTop: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            {FAQS.map((item, i) => (
+              <FAQItem
+                key={i}
+                idx={i}
+                item={item}
+                isOpen={openIdx === i}
+                onToggle={() => setOpenIdx(openIdx === i ? -1 : i)}
+              />
+            ))}
+          </div>
+
+          {/* FOOTER — soft CTA */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 24,
+              flexWrap: "wrap",
+              padding: "32px 24px",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 16,
+              marginTop: 8,
+            }}
+            className="faq-footer"
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 999,
+                  background: "rgba(126,217,167,0.12)",
+                  border: "1px solid rgba(126,217,167,0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M3 8L10.89 13.26C11.2187 13.4793 11.6049 13.5963 12 13.5963C12.3951 13.5963 12.7813 13.4793 13.11 13.26L21 8M5 19H19C19.5304 19 20.0391 18.7893 20.4142 18.4142C20.7893 18.0391 21 17.5304 21 17V7C21 6.46957 20.7893 5.96086 20.4142 5.58579C20.0391 5.21071 19.5304 5 19 5H5C4.46957 5 3.96086 5.21071 3.58579 5.58579C3.21071 5.96086 3 6.46957 3 7V17C3 17.5304 3.21071 18.0391 3.58579 18.4142C3.96086 18.7893 4.46957 19 5 19Z"
+                    stroke="#7ED9A7"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "#fff", marginBottom: 2 }}>
+                  Still got questions? Let's talk.
+                </div>
+                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>
+                  We'll walk through pricing, intensity, and fit on the call.
+                </div>
+              </div>
+            </div>
+            <a
+              href="#book-call"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "12px 20px",
+                background: "#7ED9A7",
+                color: "#000624",
+                fontSize: 14,
+                fontWeight: 700,
+                borderRadius: 999,
+                textDecoration: "none",
+                letterSpacing: "-0.01em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Book a discovery call
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path
+                  d="M1 7H13M13 7L7 1M13 7L7 13"
+                  stroke="#000624"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes gmvPulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(0.85); }
+        }
+        @media (min-width: 900px) {
+          .faq-grid {
+            grid-template-columns: 360px 1fr !important;
+            grid-template-areas:
+              "header accordion"
+              "footer footer" !important;
+            column-gap: 80px !important;
+            row-gap: 48px !important;
+          }
+          .faq-header { grid-area: header; position: sticky; top: 80px; align-self: start; }
+          .faq-grid > div:nth-child(2) { grid-area: accordion; }
+          .faq-footer { grid-area: footer; }
+        }
+        @media (max-width: 600px) {
+          .faq-footer {
+            padding: 24px !important;
+          }
+          .faq-footer > div:first-child {
+            width: 100%;
+          }
+        }
+      `}</style>
+    </section>
+  );
+}
