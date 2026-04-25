@@ -95,119 +95,40 @@ function CourseCard({ course, accent }) {
   const difficultyLabel = DIFFICULTY_LABEL[f.difficulty] || "Course";
   const url = f.firstLessonUrl;
 
-  const meta = [
-    f.numberOfLessons ? `${f.numberOfLessons} lessons` : null,
-    f.duration || null,
-    f.hostName || null,
-  ].filter(Boolean);
+
 
   const inner = (
     <>
       {/* Thumbnail */}
-      <div
-        className="relative course-thumb"
-        style={{
-          aspectRatio: "16 / 10",
-          borderRadius: 18,
-          overflow: "hidden",
-          backgroundImage: f.thumbnail ? `url(${f.thumbnail})` : undefined,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          background: f.thumbnail
-            ? undefined
-            : "linear-gradient(135deg, #1a0a35, #14062c)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: "0 30px 60px -25px rgba(0,0,0,0.6)",
-        }}
-      >
-        {/* Difficulty chip — top-left overlay */}
-        <div
-          className="absolute"
+      {f.thumbnail && (
+        <img
+          src={f.thumbnail}
+          alt={f.name || "Course thumbnail"}
+          className="course-thumb"
           style={{
-            top: 14,
-            left: 14,
-            background: "rgba(0,6,36,0.72)",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-            padding: "6px 12px",
-            borderRadius: 9999,
-            fontSize: 10.5,
-            fontWeight: 700,
-            color: accent,
-            letterSpacing: 1.6,
-            textTransform: "uppercase",
-            border: `1px solid ${accent}55`,
+            width: "100%",
+            aspectRatio: "16 / 10",
+            borderRadius: 18,
+            objectFit: "cover",
+            border: "1px solid rgba(255,255,255,0.08)",
+            boxShadow: "0 30px 60px -25px rgba(0,0,0,0.6)",
           }}
-        >
-          {difficultyLabel}
-        </div>
-      </div>
+        />
+      )}
 
-      {/* Body */}
-      <div style={{ marginTop: 20 }}>
-        <h3
-          className="course-title"
+      {/* Overview - Rich Text */}
+      {f.overview && (
+        <div
+          className="course-overview"
           style={{
-            fontSize: 22,
-            fontWeight: 700,
-            color: "#fff",
-            letterSpacing: -0.4,
-            lineHeight: 1.2,
-            margin: 0,
-            transition: "color .25s ease",
+            marginTop: 20,
+            fontSize: 14.5,
+            lineHeight: 1.55,
+            color: "rgba(255,255,255,0.65)",
           }}
-        >
-          {f.name}
-        </h3>
-        {f.overview && (
-          <p
-            style={{
-              fontSize: 14.5,
-              lineHeight: 1.55,
-              color: "rgba(255,255,255,0.65)",
-              marginTop: 10,
-              margin: "10px 0 0",
-            }}
-          >
-            {f.overview}
-          </p>
-        )}
-        {meta.length > 0 && (
-          <div
-            className="flex items-center flex-wrap"
-            style={{
-              marginTop: 18,
-              gap: 14,
-              fontSize: 12.5,
-              color: "rgba(255,255,255,0.5)",
-            }}
-          >
-            {meta.map((m, i) => (
-              <span key={i} className="inline-flex items-center" style={{ gap: 14 }}>
-                {i > 0 && <span style={{ opacity: 0.4 }}>·</span>}
-                {m}
-              </span>
-            ))}
-          </div>
-        )}
-        {url && (
-          <div
-            className="inline-flex items-center"
-            style={{
-              marginTop: 20,
-              color: accent,
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            View course
-            <ArrowRight
-              className="course-arrow"
-              style={{ width: 14, height: 14, marginLeft: 6 }}
-            />
-          </div>
-        )}
-      </div>
+          dangerouslySetInnerHTML={{ __html: f.overview }}
+        />
+      )}
     </>
   );
 
@@ -242,7 +163,16 @@ export default function Block() {
 
   const courses = useMemo(() => {
     return allCourses
-      .filter((c) => c.fields.category === activeCategoryId)
+      .filter((c) => {
+        const categoryValue = c.fields.category;
+        if (typeof categoryValue === 'string') {
+          return categoryValue === activeCategoryId;
+        }
+        if (categoryValue && typeof categoryValue === 'object' && 'id' in categoryValue) {
+          return categoryValue.id === activeCategoryId;
+        }
+        return false;
+      })
       .sort(
         (a, b) =>
           (DIFFICULTY_RANK[a.fields.difficulty] ?? 99) -
@@ -352,13 +282,12 @@ export default function Block() {
             </span>
           </h2>
           <p
-            className="mx-auto"
             style={{
               fontSize: 17,
               lineHeight: 1.55,
               color: "rgba(255,255,255,0.7)",
               maxWidth: 560,
-              margin: 0,
+              margin: "0 auto",
             }}
           >
             Choose Shop, LIVE, or Organic. Each track ships two mastery
