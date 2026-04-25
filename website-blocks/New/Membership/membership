@@ -1,0 +1,566 @@
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Check } from "lucide-react";
+
+// ─── Tiers ─────────────────────────────────────────────────────────
+const TIERS = [
+  {
+    id: "free",
+    name: "Free",
+    tagline: "Try the app, no card needed.",
+    gmv: "Anyone, no GMV requirement",
+    pricing: "Free forever",
+    bullets: [
+      "Basic dashboard access",
+      "Free AI Twin course",
+      "All 15 free tools",
+      "Connect to our TikTok agency",
+    ],
+    cta: { label: "Sign up free", href: "/forms-creators" },
+  },
+  {
+    id: "starter",
+    name: "Starter",
+    tagline: "For creators just getting started.",
+    gmv: "Under £2.5K/mo TikTok GMV",
+    pricing: "Monthly subscription, 7-day trial",
+    bullets: [
+      "Everything in Free",
+      "Full Academy access (6 courses)",
+      "AI scripts, remix and feedback tools",
+      "Weekly accountability tracking",
+      "30 AI credits and up to 7 video reviews / week",
+    ],
+    cta: { label: "Apply", href: "/forms-creators" },
+  },
+  {
+    id: "creator",
+    name: "Creator",
+    tagline: "For earning creators ready for agency rewards.",
+    gmv: "£2.5K to £50K/mo TikTok GMV",
+    pricing: "Agency commission, no subscription",
+    featured: true,
+    badge: "Most creators",
+    bullets: [
+      "Everything in Starter",
+      "Sample vouchers and product samples",
+      "Higher commission rates from brands",
+      "Violation support and escalation",
+      "Brand campaign access",
+    ],
+    cta: { label: "Apply", href: "/forms-creators" },
+  },
+  {
+    id: "pro",
+    name: "Creator Pro",
+    tagline: "For six-figure creators scaling fast.",
+    gmv: "£50K+/mo TikTok GMV",
+    pricing: "Custom rate, set on the call",
+    bullets: [
+      "Everything in Creator",
+      "Custom commission rate",
+      "Priority coaching and 1:1 calls",
+      "Premium brand campaigns",
+      "Event invites and VIP support",
+    ],
+    cta: { label: "Book a call", href: "/forms-creators" },
+  },
+];
+
+// ─── Sub-components ────────────────────────────────────────────────
+
+function EyebrowBadge({ small = false }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: small ? "6px 14px" : "8px 16px",
+        borderRadius: 9999,
+        background: "rgba(255,184,200,0.08)",
+        border: "1px solid rgba(255,184,200,0.25)",
+        color: "#FFB8C8",
+        fontSize: small ? 10 : 11.5,
+        fontWeight: 700,
+        letterSpacing: small ? 1.5 : 2,
+        textTransform: "uppercase",
+      }}
+    >
+      <span
+        className="rounded-full"
+        style={{
+          width: small ? 5 : 6,
+          height: small ? 5 : 6,
+          background: "#FE2C55",
+        }}
+      />
+      Membership
+    </span>
+  );
+}
+
+function TierBullet({ text }) {
+  return (
+    <div className="flex items-start" style={{ gap: 10, marginBottom: 10 }}>
+      <span
+        className="rounded-full grid place-items-center shrink-0"
+        style={{
+          width: 18,
+          height: 18,
+          marginTop: 3,
+          background: "rgba(254,44,85,0.16)",
+          border: "1px solid rgba(254,44,85,0.40)",
+        }}
+      >
+        <Check
+          style={{ width: 10, height: 10, color: "#FF6B8A", strokeWidth: 3 }}
+        />
+      </span>
+      <span
+        style={{
+          fontSize: 13.5,
+          lineHeight: 1.45,
+          color: "rgba(255,255,255,0.82)",
+        }}
+      >
+        {text}
+      </span>
+    </div>
+  );
+}
+
+function TierCard({ tier }) {
+  const isFeatured = !!tier.featured;
+  return (
+    <div
+      className="relative flex flex-col"
+      style={{
+        padding: "32px 26px 28px",
+        borderRadius: 22,
+        background: isFeatured
+          ? "linear-gradient(180deg, rgba(254,76,111,0.10) 0%, rgba(255,255,255,0.02) 80%)"
+          : "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)",
+        border: isFeatured
+          ? "1px solid rgba(254,76,111,0.50)"
+          : "1px solid rgba(255,255,255,0.10)",
+        boxShadow: isFeatured
+          ? "0 30px 80px -30px rgba(254,44,85,0.40), inset 0 1px 0 rgba(255,255,255,0.05)"
+          : "0 20px 50px -28px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+      }}
+    >
+      {/* Featured pill */}
+      {isFeatured && tier.badge && (
+        <span
+          className="absolute"
+          style={{
+            top: -12,
+            left: 24,
+            background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+            color: "#fff",
+            fontSize: 10.5,
+            fontWeight: 800,
+            letterSpacing: 1.6,
+            textTransform: "uppercase",
+            padding: "6px 12px",
+            borderRadius: 9999,
+            boxShadow: "0 8px 20px -4px rgba(254,44,85,0.55)",
+          }}
+        >
+          {tier.badge}
+        </span>
+      )}
+
+      {/* GMV chip */}
+      <span
+        style={{
+          display: "inline-flex",
+          alignSelf: "flex-start",
+          alignItems: "center",
+          gap: 6,
+          padding: "5px 10px",
+          borderRadius: 9999,
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.10)",
+          color: "rgba(255,255,255,0.72)",
+          fontSize: 10.5,
+          fontWeight: 600,
+          letterSpacing: 0.6,
+          marginBottom: 14,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {tier.gmv}
+      </span>
+
+      {/* Tier name */}
+      <div
+        className="font-extrabold"
+        style={{
+          fontSize: 26,
+          color: "#fff",
+          letterSpacing: -0.6,
+          lineHeight: 1.05,
+          marginBottom: 6,
+        }}
+      >
+        {tier.name}
+      </div>
+
+      {/* Tagline */}
+      <div
+        style={{
+          fontSize: 13.5,
+          color: "rgba(255,255,255,0.55)",
+          lineHeight: 1.45,
+          marginBottom: 18,
+        }}
+      >
+        {tier.tagline}
+      </div>
+
+      {/* Pricing model */}
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 700,
+          color: isFeatured ? "#FFB8C8" : "rgba(255,255,255,0.78)",
+          padding: "10px 14px",
+          borderRadius: 10,
+          background: isFeatured
+            ? "rgba(254,76,111,0.10)"
+            : "rgba(255,255,255,0.04)",
+          border: isFeatured
+            ? "1px solid rgba(254,76,111,0.30)"
+            : "1px solid rgba(255,255,255,0.08)",
+          marginBottom: 22,
+          textAlign: "center",
+        }}
+      >
+        {tier.pricing}
+      </div>
+
+      {/* Bullets */}
+      <div style={{ flex: 1 }}>
+        {tier.bullets.map((b, i) => (
+          <TierBullet key={i} text={b} />
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div style={{ marginTop: 22 }}>
+        <a href={tier.cta.href} className="block">
+          <Button
+            className="w-full font-bold group"
+            style={{
+              background: isFeatured
+                ? "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)"
+                : "rgba(255,255,255,0.06)",
+              color: "#fff",
+              padding: "14px 20px",
+              height: "auto",
+              borderRadius: 11,
+              fontSize: 14,
+              border: isFeatured
+                ? "none"
+                : "1px solid rgba(255,184,200,0.28)",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: isFeatured
+                ? "0 12px 30px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)"
+                : "none",
+            }}
+          >
+            {tier.cta.label}
+            <ArrowRight
+              className="ml-2 group-hover:translate-x-1 transition-transform"
+              style={{ width: 14, height: 14 }}
+            />
+          </Button>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function FooterCta() {
+  return (
+    <div
+      className="text-center mx-auto"
+      style={{
+        marginTop: 56,
+        padding: "32px 28px",
+        maxWidth: 720,
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 18,
+      }}
+    >
+      <h3
+        className="font-bold"
+        style={{
+          fontSize: 22,
+          color: "#fff",
+          letterSpacing: -0.4,
+          marginBottom: 8,
+        }}
+      >
+        Not sure which tier fits?
+      </h3>
+      <p
+        style={{
+          fontSize: 14.5,
+          color: "rgba(255,255,255,0.65)",
+          lineHeight: 1.55,
+          marginBottom: 22,
+          margin: "0 0 22px",
+        }}
+      >
+        Apply once and we'll match you to the right tier based on your last
+        28-day TikTok GMV. Exact subscription rate or commission rate is
+        confirmed during onboarding.
+      </p>
+      <a href="/forms-creators" className="inline-block">
+        <Button
+          className="font-bold group"
+          style={{
+            background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+            color: "#fff",
+            padding: "16px 28px",
+            height: "auto",
+            borderRadius: 12,
+            fontSize: 15,
+            border: "none",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            boxShadow:
+              "0 12px 30px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+          }}
+        >
+          Apply now
+          <ArrowRight
+            className="ml-2 group-hover:translate-x-1 transition-transform"
+            style={{ width: 16, height: 16 }}
+          />
+        </Button>
+      </a>
+    </div>
+  );
+}
+
+// ─── Main Block ────────────────────────────────────────────────────
+
+export default function Block() {
+  return (
+    <section
+      className="relative w-full overflow-hidden"
+      style={{
+        background: "#000624",
+        color: "#fff",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      }}
+    >
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet"
+      />
+
+      {/* Pink ambient glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 45% at 50% 20%, rgba(254,44,85,0.12) 0%, transparent 60%), radial-gradient(ellipse 40% 50% at 90% 80%, rgba(254,44,85,0.06) 0%, transparent 60%)",
+        }}
+      />
+      {/* Dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          opacity: 0.03,
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      {/* ─── DESKTOP (1024px+) ─── */}
+      <div className="hidden lg:block relative">
+        <div
+          className="mx-auto"
+          style={{ maxWidth: 1280, padding: "100px 64px" }}
+        >
+          {/* Header */}
+          <div className="text-center" style={{ marginBottom: 64 }}>
+            <EyebrowBadge />
+            <h1
+              className="font-extrabold mx-auto"
+              style={{
+                fontSize: 60,
+                lineHeight: 1.04,
+                letterSpacing: -1.8,
+                maxWidth: 880,
+                margin: "20px auto 16px",
+              }}
+            >
+              Membership that{" "}
+              <span
+                style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#FF6B8A",
+                  letterSpacing: -1.6,
+                }}
+              >
+                scales with you.
+              </span>
+            </h1>
+            <p
+              className="mx-auto"
+              style={{
+                fontSize: 18,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.7)",
+                maxWidth: 680,
+                margin: 0,
+              }}
+            >
+              Four tiers, matched to your last 28-day TikTok GMV. Most
+              creators don't pay until they earn. Apply once and we'll route
+              you to the right one.
+            </p>
+          </div>
+
+          {/* 4 tier cards */}
+          <div
+            className="grid"
+            style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 22 }}
+          >
+            {TIERS.map((tier) => (
+              <TierCard key={tier.id} tier={tier} />
+            ))}
+          </div>
+
+          {/* Footer CTA */}
+          <FooterCta />
+        </div>
+      </div>
+
+      {/* ─── TABLET (640-1023px) ─── */}
+      <div className="hidden md:block lg:hidden relative">
+        <div
+          className="mx-auto"
+          style={{ maxWidth: 800, padding: "80px 32px" }}
+        >
+          <div className="text-center" style={{ marginBottom: 48 }}>
+            <EyebrowBadge />
+            <h1
+              className="font-extrabold mx-auto"
+              style={{
+                fontSize: 44,
+                lineHeight: 1.06,
+                letterSpacing: -1.4,
+                maxWidth: 620,
+                margin: "16px auto 14px",
+              }}
+            >
+              Membership that{" "}
+              <span
+                style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#FF6B8A",
+                }}
+              >
+                scales with you.
+              </span>
+            </h1>
+            <p
+              className="mx-auto"
+              style={{
+                fontSize: 16,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.7)",
+                maxWidth: 560,
+                margin: 0,
+              }}
+            >
+              Four tiers, matched to your last 28-day TikTok GMV. Most
+              creators don't pay until they earn. Apply once and we'll route
+              you to the right one.
+            </p>
+          </div>
+
+          <div
+            className="grid grid-cols-2"
+            style={{ gap: 18 }}
+          >
+            {TIERS.map((tier) => (
+              <TierCard key={tier.id} tier={tier} />
+            ))}
+          </div>
+
+          <FooterCta />
+        </div>
+      </div>
+
+      {/* ─── MOBILE (<640px) ─── */}
+      <div className="block md:hidden relative">
+        <div
+          className="mx-auto"
+          style={{ maxWidth: 640, padding: "64px 20px" }}
+        >
+          <div className="text-center" style={{ marginBottom: 36 }}>
+            <EyebrowBadge small />
+            <h1
+              className="font-extrabold"
+              style={{
+                fontSize: 34,
+                lineHeight: 1.1,
+                letterSpacing: -1.1,
+                margin: "16px 0 12px",
+              }}
+            >
+              Membership that{" "}
+              <span
+                style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#FF6B8A",
+                }}
+              >
+                scales with you.
+              </span>
+            </h1>
+            <p
+              style={{
+                fontSize: 14.5,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.7)",
+                margin: 0,
+              }}
+            >
+              Four tiers, matched to your last 28-day TikTok GMV. Most
+              creators don't pay until they earn. Apply once and we'll route
+              you to the right one.
+            </p>
+          </div>
+
+          <div className="flex flex-col" style={{ gap: 18 }}>
+            {TIERS.map((tier) => (
+              <TierCard key={tier.id} tier={tier} />
+            ))}
+          </div>
+
+          <FooterCta />
+        </div>
+      </div>
+    </section>
+  );
+}
