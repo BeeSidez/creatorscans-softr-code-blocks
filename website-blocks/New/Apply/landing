@@ -1,0 +1,537 @@
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+
+const TIKTOK_LOGO =
+  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/TIKTOK_jetgnf.png";
+
+// ─── GMV qualifier tiers ──────────────────────────────────────────
+const TIERS = [
+  {
+    id: "starter",
+    gmv: "Under £2.5K/mo",
+    name: "Starter",
+    desc: "Just getting started. Subscription with a 7-day free trial.",
+    href: "/signup-starter",
+  },
+  {
+    id: "creator",
+    gmv: "£2.5K to £50K/mo",
+    name: "Creator",
+    desc: "Earning monthly. Agency commission, no subscription.",
+    href: "/signup-creator",
+    featured: true,
+  },
+  {
+    id: "pro",
+    gmv: "£50K+/mo",
+    name: "Creator Pro",
+    desc: "Scaling fast. Custom rate, set on the call.",
+    href: "/signup-pro",
+  },
+];
+
+const STEPS = [
+  {
+    n: "01",
+    title: "Pick your tier",
+    body: "Tap your GMV range above. We route you to the right signup straight away.",
+  },
+  {
+    n: "02",
+    title: "2-minute onboarding",
+    body: "Tell us your TikTok handle, what you post, and how often. Done in two minutes.",
+  },
+  {
+    n: "03",
+    title: "Welcome and agency invite",
+    body: "We send your TikTok Partner Centre invite within 24 hours and you're live.",
+  },
+];
+
+// ─── Sub-components ───────────────────────────────────────────────
+
+function PartnerBadge() {
+  return (
+    <span
+      className="backdrop-blur-sm"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "8px 16px",
+        background: "rgba(255,255,255,0.10)",
+        border: "1px solid rgba(255,255,255,0.22)",
+        borderRadius: 9999,
+        color: "#FFB8C8",
+        fontSize: 13,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <img
+        src={TIKTOK_LOGO}
+        alt="TikTok"
+        style={{
+          width: 16,
+          height: 16,
+          borderRadius: 3,
+          transform: "rotate(-5deg)",
+        }}
+      />
+      Official TikTok Partner Agency
+    </span>
+  );
+}
+
+function GmvCard({ tier }) {
+  const isFeatured = !!tier.featured;
+  return (
+    <a
+      href={tier.href}
+      className="block group gmv-card"
+      style={{ textDecoration: "none", color: "inherit" }}
+    >
+      <div
+        className="relative gmv-card-inner flex flex-col"
+        style={{
+          padding: "32px 28px 26px",
+          borderRadius: 22,
+          background: isFeatured
+            ? "linear-gradient(180deg, rgba(254,76,111,0.10) 0%, rgba(255,255,255,0.02) 80%)"
+            : "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)",
+          border: isFeatured
+            ? "1px solid rgba(254,76,111,0.50)"
+            : "1px solid rgba(255,255,255,0.10)",
+          boxShadow: isFeatured
+            ? "0 30px 80px -30px rgba(254,44,85,0.40)"
+            : "0 20px 50px -28px rgba(0,0,0,0.5)",
+          height: "100%",
+        }}
+      >
+        {isFeatured && (
+          <span
+            className="absolute"
+            style={{
+              top: -12,
+              left: 24,
+              background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+              color: "#fff",
+              fontSize: 10.5,
+              fontWeight: 800,
+              letterSpacing: 1.6,
+              textTransform: "uppercase",
+              padding: "6px 12px",
+              borderRadius: 9999,
+              boxShadow: "0 8px 20px -4px rgba(254,44,85,0.55)",
+            }}
+          >
+            Most creators
+          </span>
+        )}
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: isFeatured ? "#FFB8C8" : "rgba(255,255,255,0.55)",
+            letterSpacing: 1.6,
+            textTransform: "uppercase",
+            marginBottom: 10,
+          }}
+        >
+          {tier.gmv} TikTok GMV
+        </div>
+        <div
+          className="font-extrabold"
+          style={{
+            fontSize: 32,
+            color: "#fff",
+            letterSpacing: -0.8,
+            lineHeight: 1.05,
+            marginBottom: 8,
+          }}
+        >
+          {tier.name}
+        </div>
+        <p
+          style={{
+            fontSize: 14.5,
+            color: "rgba(255,255,255,0.62)",
+            lineHeight: 1.5,
+            marginBottom: 24,
+            flex: 1,
+          }}
+        >
+          {tier.desc}
+        </p>
+        <div
+          className="inline-flex items-center"
+          style={{
+            color: isFeatured ? "#FF6B8A" : "#fff",
+            fontSize: 14.5,
+            fontWeight: 700,
+          }}
+        >
+          Continue
+          <ArrowRight
+            className="gmv-arrow"
+            style={{
+              width: 16,
+              height: 16,
+              marginLeft: 8,
+              transition: "transform .25s ease",
+            }}
+          />
+        </div>
+      </div>
+    </a>
+  );
+}
+
+// ─── Main Block ───────────────────────────────────────────────────
+
+export default function Block() {
+  return (
+    <div
+      className="relative w-full overflow-hidden"
+      style={{
+        background: "#000624",
+        color: "#fff",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      }}
+    >
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet"
+      />
+      <style>{`
+        .gmv-card { transition: transform .35s ease; }
+        .gmv-card:hover { transform: translateY(-6px); }
+        .gmv-card:hover .gmv-card-inner { border-color: rgba(255,184,200,0.55) !important; }
+        .gmv-card:hover .gmv-arrow { transform: translateX(4px); }
+        @keyframes applyPulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%      { opacity: 0.5; transform: scale(0.85); }
+        }
+        @keyframes applyBounceY {
+          0%, 100% { transform: translateY(0); }
+          50%      { transform: translateY(3px); }
+        }
+      `}</style>
+
+      {/* Pink ambient glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 55% at 50% 25%, rgba(254, 44, 85, 0.25) 0%, rgba(254, 44, 85, 0.06) 35%, transparent 65%), radial-gradient(ellipse at 50% 100%, #1a0a35 0%, #000624 70%)",
+        }}
+      />
+      {/* Dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          opacity: 0.035,
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      {/* ─── HERO ─── */}
+      <div
+        className="relative"
+        style={{ paddingTop: "clamp(72px, 9vw, 100px)" }}
+      >
+        <div
+          className="mx-auto text-center"
+          style={{
+            maxWidth: 900,
+            padding: "0 clamp(20px, 4vw, 64px)",
+          }}
+        >
+          <PartnerBadge />
+          <h1
+            className="font-extrabold"
+            style={{
+              fontSize: "clamp(36px, 5vw, 60px)",
+              lineHeight: 1.06,
+              letterSpacing: -1.6,
+              margin: "20px 0 18px",
+            }}
+          >
+            Apply to become a{" "}
+            <span
+              style={{
+                fontFamily: "'Instrument Serif', serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+                color: "#FF6B8A",
+                letterSpacing: -1.5,
+              }}
+            >
+              creator
+            </span>{" "}
+            at Creator Scans
+          </h1>
+          <p
+            className="mx-auto"
+            style={{
+              fontSize: "clamp(15px, 1.6vw, 18px)",
+              lineHeight: 1.55,
+              color: "rgba(255,255,255,0.72)",
+              maxWidth: 620,
+              margin: "0 auto 36px",
+            }}
+          >
+            Three tiers, matched to your last 28-day TikTok GMV. Pick yours
+            below and we'll route you to onboarding in 2 minutes.
+          </p>
+          <a href="#qualifier" className="inline-block">
+            <Button
+              className="font-bold group"
+              style={{
+                background:
+                  "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+                color: "#fff",
+                height: "auto",
+                padding: "16px 28px",
+                borderRadius: 12,
+                fontSize: 15,
+                border: "none",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                boxShadow:
+                  "0 12px 32px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+              }}
+            >
+              Find my tier
+              <ArrowRight
+                style={{
+                  width: 16,
+                  height: 16,
+                  marginLeft: 8,
+                  transform: "rotate(90deg)",
+                  animation: "applyBounceY 1.6s ease-in-out infinite",
+                }}
+              />
+            </Button>
+          </a>
+
+          <div
+            className="inline-flex items-center"
+            style={{
+              marginTop: 22,
+              gap: 6,
+              fontSize: 13,
+              color: "#FF9FB1",
+            }}
+          >
+            <span
+              className="rounded-full"
+              style={{
+                width: 6,
+                height: 6,
+                background: "#FF9FB1",
+                animation: "applyPulseDot 1.4s ease-in-out infinite",
+              }}
+            />
+            127 creators joined this month
+          </div>
+        </div>
+      </div>
+
+      {/* ─── GMV QUALIFIER ─── */}
+      <div
+        id="qualifier"
+        className="relative"
+        style={{
+          padding:
+            "clamp(72px, 9vw, 100px) clamp(20px, 4vw, 64px) clamp(40px, 5vw, 56px)",
+        }}
+      >
+        <div className="mx-auto" style={{ maxWidth: 1200 }}>
+          <div className="text-center" style={{ marginBottom: 48 }}>
+            <h2
+              className="font-bold mx-auto"
+              style={{
+                fontSize: "clamp(26px, 3vw, 38px)",
+                lineHeight: 1.15,
+                letterSpacing: -0.8,
+                color: "#fff",
+                margin: "0 auto 12px",
+                maxWidth: 720,
+              }}
+            >
+              How much GMV did you earn the last 28 days?
+            </h2>
+            <p
+              style={{
+                fontSize: 15.5,
+                color: "rgba(255,255,255,0.6)",
+                margin: 0,
+              }}
+            >
+              Pick your range. We'll route you to the right signup.
+            </p>
+          </div>
+
+          <div
+            className="grid grid-cols-1 md:grid-cols-3"
+            style={{ gap: 22 }}
+          >
+            {TIERS.map((tier) => (
+              <GmvCard key={tier.id} tier={tier} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── TRUST STRIP ─── */}
+      <div
+        className="relative"
+        style={{
+          padding:
+            "0 clamp(20px, 4vw, 64px) clamp(56px, 7vw, 80px)",
+        }}
+      >
+        <div className="mx-auto" style={{ maxWidth: 900 }}>
+          <div
+            className="flex flex-wrap items-center justify-center"
+            style={{
+              gap: 18,
+              padding: "16px 28px",
+              borderRadius: 9999,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              fontSize: 13,
+              color: "rgba(255,255,255,0.62)",
+              textAlign: "center",
+            }}
+          >
+            <span>
+              <span style={{ color: "#fff", fontWeight: 600 }}>
+                Official TikTok Partner
+              </span>{" "}
+              agency
+            </span>
+            <span style={{ opacity: 0.3 }}>·</span>
+            <span>
+              <span style={{ color: "#fff", fontWeight: 600 }}>£1.1M+</span>{" "}
+              GMV driven last quarter
+            </span>
+            <span style={{ opacity: 0.3 }}>·</span>
+            <span>
+              <span style={{ color: "#fff", fontWeight: 600 }}>1,240+</span>{" "}
+              creators in network
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── WHAT HAPPENS NEXT ─── */}
+      <div
+        className="relative"
+        style={{
+          padding:
+            "clamp(40px, 6vw, 72px) clamp(20px, 4vw, 64px) clamp(96px, 10vw, 140px)",
+        }}
+      >
+        <div className="mx-auto" style={{ maxWidth: 1100 }}>
+          <div className="text-center" style={{ marginBottom: 48 }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 14px",
+                borderRadius: 9999,
+                background: "rgba(255,184,200,0.08)",
+                border: "1px solid rgba(255,184,200,0.25)",
+                color: "#FFB8C8",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 1.6,
+                textTransform: "uppercase",
+              }}
+            >
+              <span
+                className="rounded-full"
+                style={{ width: 5, height: 5, background: "#FE2C55" }}
+              />
+              What happens next
+            </span>
+            <h2
+              className="font-bold"
+              style={{
+                fontSize: "clamp(26px, 3vw, 36px)",
+                lineHeight: 1.15,
+                letterSpacing: -0.8,
+                color: "#fff",
+                margin: "16px 0 0",
+              }}
+            >
+              Apply once, in under two minutes.
+            </h2>
+          </div>
+
+          <div
+            className="grid grid-cols-1 md:grid-cols-3"
+            style={{ gap: 24 }}
+          >
+            {STEPS.map((step) => (
+              <div
+                key={step.n}
+                style={{
+                  padding: 26,
+                  borderRadius: 16,
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <div
+                  className="grid place-items-center"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    background:
+                      "linear-gradient(135deg, rgba(254,76,111,0.25), rgba(254,44,85,0.35))",
+                    border: "1px solid rgba(254,76,111,0.30)",
+                    fontSize: 16,
+                    fontWeight: 900,
+                    color: "#FF6B8A",
+                    marginBottom: 14,
+                  }}
+                >
+                  {step.n}
+                </div>
+                <div
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: "#fff",
+                    letterSpacing: -0.3,
+                    marginBottom: 6,
+                  }}
+                >
+                  {step.title}
+                </div>
+                <div
+                  style={{
+                    fontSize: 13.5,
+                    color: "rgba(255,255,255,0.6)",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {step.body}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
