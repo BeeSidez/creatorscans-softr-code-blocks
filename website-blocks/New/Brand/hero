@@ -36,11 +36,11 @@ function PartnerBadge() {
   );
 }
 
-function VideoCard({ src, width, height, rotate = 0, delay = 0 }) {
+function VideoCard({ src, width, height, rotate = 0, delay = 0, reverse = false }) {
   return (
     <div
       style={{
-        animation: `brandHeroFloatY 8s ease-in-out ${delay}s infinite alternate`,
+        animation: `brandHeroFloatY 7s ease-in-out ${delay}s infinite ${reverse ? "alternate-reverse" : "alternate"}`,
       }}
     >
       <div
@@ -74,7 +74,7 @@ function VideoCard({ src, width, height, rotate = 0, delay = 0 }) {
   );
 }
 
-function FloatingChip({ children, dotColor, style }) {
+function FloatingChip({ children, dotColor, style, floatDelay = 0, floatReverse = false }) {
   return (
     <div
       className="absolute"
@@ -92,6 +92,7 @@ function FloatingChip({ children, dotColor, style }) {
         fontWeight: 700,
         whiteSpace: "nowrap",
         zIndex: 4,
+        animation: `brandHeroChipFloat 6s ease-in-out ${floatDelay}s infinite ${floatReverse ? "alternate-reverse" : "alternate"}`,
         ...style,
       }}
     >
@@ -135,7 +136,11 @@ export default function Block() {
       <style>{`
         @keyframes brandHeroFloatY {
           0%   { transform: translateY(0); }
-          100% { transform: translateY(-12px); }
+          100% { transform: translateY(-18px); }
+        }
+        @keyframes brandHeroChipFloat {
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(-7px); }
         }
       `}</style>
 
@@ -274,19 +279,23 @@ export default function Block() {
                   width={260}
                   height={460}
                   rotate={3}
-                  delay={1.4}
+                  delay={0.4}
+                  reverse
                 />
               </div>
 
               <FloatingChip
                 style={{ top: 50, right: 30 }}
                 dotColor="#7a93ff"
+                floatDelay={0.6}
               >
                 Shop + LIVE
               </FloatingChip>
               <FloatingChip
                 style={{ bottom: 80, left: 0 }}
                 dotColor="#22c55e"
+                floatDelay={1.2}
+                floatReverse
               >
                 Brief-tracked content
               </FloatingChip>
@@ -402,7 +411,8 @@ export default function Block() {
                 width={170}
                 height={300}
                 rotate={3}
-                delay={1.4}
+                delay={0.4}
+                reverse
               />
             </div>
             <FloatingChip
@@ -413,6 +423,7 @@ export default function Block() {
                 fontSize: 11.5,
               }}
               dotColor="#7a93ff"
+              floatDelay={0.6}
             >
               Shop + LIVE
             </FloatingChip>
@@ -424,6 +435,8 @@ export default function Block() {
                 fontSize: 11.5,
               }}
               dotColor="#22c55e"
+              floatDelay={1.2}
+              floatReverse
             >
               Brief-tracked
             </FloatingChip>
