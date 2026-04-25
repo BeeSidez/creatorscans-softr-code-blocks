@@ -22,8 +22,7 @@ const TIKTOK_SCOPES = [
 ].join(",");
 const TIKTOK_AUTH_URL = "https://www.tiktok.com/v2/auth/authorize/";
 
-// PASTE THE WORKFLOW WEBHOOK URL HERE AFTER YOU CREATE IT IN SOFTR
-const WORKFLOW_WEBHOOK_URL = "REPLACE_WITH_SOFTR_WORKFLOW_WEBHOOK_URL";
+const WORKFLOW_WEBHOOK_URL = "https://workflows-api.softr.io/v1/workflows/62f0c639-4d24-4bdf-936f-9f3fe616503d/executions/4f26166c-83c0-4ef1-a267-79337c5a8f7d";
 
 const STATE_STORAGE_KEY = "cs_tiktok_oauth_state";
 
