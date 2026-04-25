@@ -1,0 +1,563 @@
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Check } from "lucide-react";
+
+// ─── Assets ────────────────────────────────────────────────────────
+const TIKTOK_LOGO = "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/TIKTOK_jetgnf.png";
+
+const cld = (url, xform) =>
+  url.replace("/image/upload/", `/image/upload/${xform}/`);
+
+// 4 community photos — TikTok HQ + creator day + community lounges
+const PHOTOS = [
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777124515/group-photo-green-lounge_wlgbjn.jpg",
+    desktop: { left: 0, top: 0, w: 200, h: 265, rotate: -5 },
+    mobile: { left: 0, top: 0, w: 145, h: 195, rotate: -5 },
+    delay: 0,
+    reverse: false,
+  },
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777124517/skincare-group-yellow-clouds_njlyrg.jpg",
+    desktop: { right: 0, top: 30, w: 215, h: 285, rotate: 4 },
+    mobile: { right: 0, top: 18, w: 155, h: 205, rotate: 4 },
+    delay: 0.5,
+    reverse: true,
+  },
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777124519/tiktok-creator-day-blonde-selfie_eemygz.jpg",
+    desktop: { left: 60, bottom: 10, w: 190, h: 250, rotate: 6 },
+    mobile: { left: 30, bottom: 6, w: 135, h: 180, rotate: 6 },
+    delay: 1.0,
+    reverse: false,
+  },
+  {
+    src: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777124520/tiktok-creator-day-brunette-selfie_e6cz1u.jpg",
+    desktop: { right: 20, bottom: 40, w: 200, h: 260, rotate: -4 },
+    mobile: { right: 0, bottom: 24, w: 145, h: 190, rotate: -4 },
+    delay: 0.3,
+    reverse: true,
+  },
+];
+
+// ─── Sub-components ────────────────────────────────────────────────
+
+function PartnerBadge() {
+  return (
+    <span
+      className="backdrop-blur-sm"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "8px 16px",
+        background: "rgba(255,184,200,0.08)",
+        border: "1px solid rgba(255,184,200,0.25)",
+        borderRadius: 9999,
+        color: "#FFB8C8",
+        fontSize: 13,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <img
+        src={TIKTOK_LOGO}
+        alt="TikTok"
+        style={{ width: 16, height: 16, borderRadius: 3, transform: "rotate(-5deg)" }}
+      />
+      Built by an Official TikTok Partner
+    </span>
+  );
+}
+
+function PolaroidPhoto({ photo, dims }) {
+  const { w, h, rotate } = dims;
+  const src = cld(
+    photo.src,
+    `c_fill,g_auto,w_${Math.round(w * 2)},h_${Math.round(h * 2)},q_auto,f_auto`,
+  );
+
+  return (
+    <div
+      style={{
+        animation: `academyHeroFloatY 7s ease-in-out ${photo.delay}s infinite ${
+          photo.reverse ? "alternate-reverse" : "alternate"
+        }`,
+      }}
+    >
+      <div
+        className="relative"
+        style={{
+          width: w,
+          height: h,
+          transform: `rotate(${rotate}deg)`,
+        }}
+      >
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundImage: `url(${src})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            boxShadow:
+              "0 30px 50px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06) inset",
+            border: "3px solid rgba(255,255,255,0.92)",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function FloatingPill({ children, style, floatDelay = 0, floatReverse = false }) {
+  return (
+    <div
+      className="absolute"
+      style={{
+        background: "#fff",
+        borderRadius: 9999,
+        padding: "10px 16px",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 10,
+        boxShadow:
+          "0 20px 40px -10px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.6) inset",
+        color: "#0B1330",
+        fontSize: 13,
+        fontWeight: 700,
+        whiteSpace: "nowrap",
+        zIndex: 4,
+        animation: `academyHeroChipFloat 6s ease-in-out ${floatDelay}s infinite ${
+          floatReverse ? "alternate-reverse" : "alternate"
+        }`,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SkillsPillContent() {
+  return (
+    <>
+      <span
+        className="rounded-full"
+        style={{ width: 8, height: 8, background: "#FE2C55" }}
+      />
+      <span>Shop</span>
+      <span style={{ color: "rgba(0,0,0,0.18)" }}>·</span>
+      <span
+        className="rounded-full"
+        style={{ width: 8, height: 8, background: "#7a93ff" }}
+      />
+      <span>LIVE</span>
+      <span style={{ color: "rgba(0,0,0,0.18)" }}>·</span>
+      <span
+        className="rounded-full"
+        style={{ width: 8, height: 8, background: "#7ED9A7" }}
+      />
+      <span>Organic</span>
+    </>
+  );
+}
+
+function CertifiedPillContent() {
+  return (
+    <>
+      <span
+        className="rounded-full grid place-items-center"
+        style={{
+          width: 22,
+          height: 22,
+          background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+        }}
+      >
+        <Check style={{ width: 12, height: 12, color: "#fff", strokeWidth: 3.5 }} />
+      </span>
+      Certified by Academy
+    </>
+  );
+}
+
+// ─── Main Block ────────────────────────────────────────────────────
+
+export default function Block() {
+  const handleJoinClick = (e) => {
+    e.preventDefault();
+    if (typeof window !== "undefined" && window.Softr?.modal?.open) {
+      window.Softr.modal.open("/forms-creators");
+      return;
+    }
+    window.location.href = "/forms-creators";
+  };
+
+  return (
+    <div
+      className="relative w-full overflow-hidden"
+      style={{
+        background: "#000624",
+        color: "#fff",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      }}
+    >
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet"
+      />
+      <style>{`
+        @keyframes academyHeroFloatY {
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(-18px); }
+        }
+        @keyframes academyHeroChipFloat {
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(-7px); }
+        }
+        @keyframes academyHeroPulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%      { opacity: 0.5; transform: scale(0.85); }
+        }
+      `}</style>
+
+      {/* Pink creator glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 50% at 70% 30%, rgba(254,44,85,0.20) 0%, transparent 60%), radial-gradient(ellipse 70% 60% at 20% 80%, rgba(254,44,85,0.10) 0%, transparent 55%), radial-gradient(ellipse at 50% 0%, #1a0a35 0%, #000624 60%)",
+        }}
+      />
+      {/* Subtle dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          opacity: 0.04,
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      {/* ─── DESKTOP (1024px+) ─── */}
+      <div className="hidden lg:block relative">
+        <div
+          className="mx-auto"
+          style={{ maxWidth: 1200, padding: "80px 64px 100px" }}
+        >
+          <div className="grid grid-cols-2 items-center" style={{ gap: 72 }}>
+            {/* Left: copy column */}
+            <div>
+              <PartnerBadge />
+              <h1
+                className="font-extrabold"
+                style={{
+                  fontSize: 56,
+                  lineHeight: 1.05,
+                  letterSpacing: -1.6,
+                  margin: "20px 0 20px",
+                  maxWidth: 560,
+                }}
+              >
+                Six courses. Three skills. One{" "}
+                <span
+                  style={{
+                    fontFamily: "'Instrument Serif', serif",
+                    fontStyle: "italic",
+                    fontWeight: 400,
+                    color: "#FF6B8A",
+                    letterSpacing: -1.5,
+                  }}
+                >
+                  certified TikTok creator.
+                </span>
+              </h1>
+              <p
+                style={{
+                  fontSize: 17,
+                  lineHeight: 1.55,
+                  color: "rgba(255,255,255,0.72)",
+                  maxWidth: 540,
+                  margin: 0,
+                }}
+              >
+                Learn how to make money on TikTok Shop, TikTok LIVE, and
+                organic content. The Creator Scans Academy is built around how
+                creators actually earn. Not theory, not fluff.
+              </p>
+
+              {/* CTAs */}
+              <div
+                className="flex items-center flex-wrap"
+                style={{ marginTop: 32, gap: 14 }}
+              >
+                <Button
+                  onClick={handleJoinClick}
+                  className="font-bold group"
+                  style={{
+                    background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+                    color: "#fff",
+                    height: "auto",
+                    padding: "16px 26px",
+                    borderRadius: 12,
+                    fontSize: 15,
+                    border: "none",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    boxShadow:
+                      "0 12px 32px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
+                >
+                  Join Creator Scans
+                  <span
+                    style={{
+                      marginLeft: 8,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "rgba(255,255,255,0.78)",
+                    }}
+                  >
+                    (Academy included)
+                  </span>
+                  <ArrowRight
+                    className="ml-2 group-hover:translate-x-1 transition-transform"
+                    style={{ width: 16, height: 16 }}
+                  />
+                </Button>
+                <a href="/tiktok-shop-ugc-ai-twin">
+                  <Button
+                    variant="ghost"
+                    className="font-semibold"
+                    style={{
+                      background: "rgba(255,184,200,0.06)",
+                      border: "1px solid rgba(255,184,200,0.22)",
+                      color: "#fff",
+                      height: "auto",
+                      padding: "16px 24px",
+                      borderRadius: 12,
+                      fontSize: 15,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Try the AI Twin course free
+                  </Button>
+                </a>
+              </div>
+
+              {/* Pulsing trust line */}
+              <div
+                className="inline-flex items-center gap-1.5"
+                style={{ fontSize: 13, color: "#FF9FB1", marginTop: 22 }}
+              >
+                <span
+                  className="rounded-full"
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: "#FF9FB1",
+                    animation: "academyHeroPulseDot 1.4s ease-in-out infinite",
+                  }}
+                />
+                Free mini-course. No credit card.
+              </div>
+            </div>
+
+            {/* Right: community photo composition */}
+            <div className="relative" style={{ height: 620 }}>
+              {PHOTOS.map((p, i) => (
+                <div
+                  key={i}
+                  className="absolute"
+                  style={{
+                    left: p.desktop.left !== undefined ? p.desktop.left : "auto",
+                    right: p.desktop.right !== undefined ? p.desktop.right : "auto",
+                    top: p.desktop.top !== undefined ? p.desktop.top : "auto",
+                    bottom: p.desktop.bottom !== undefined ? p.desktop.bottom : "auto",
+                  }}
+                >
+                  <PolaroidPhoto photo={p} dims={p.desktop} />
+                </div>
+              ))}
+
+              <FloatingPill style={{ top: 40, right: -20 }} floatDelay={0.6}>
+                <SkillsPillContent />
+              </FloatingPill>
+              <FloatingPill
+                style={{ bottom: 100, left: -20 }}
+                floatDelay={1.2}
+                floatReverse
+              >
+                <CertifiedPillContent />
+              </FloatingPill>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── MOBILE / TABLET (below 1024px) ─── */}
+      <div className="block lg:hidden relative">
+        <div
+          className="mx-auto"
+          style={{ maxWidth: 640, padding: "48px 20px 64px" }}
+        >
+          <div className="text-center">
+            <PartnerBadge />
+            <h1
+              className="font-extrabold"
+              style={{
+                fontSize: 34,
+                lineHeight: 1.1,
+                letterSpacing: -1.1,
+                margin: "16px 0 14px",
+              }}
+            >
+              Six courses. Three skills. One{" "}
+              <span
+                style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "#FF6B8A",
+                }}
+              >
+                certified TikTok creator.
+              </span>
+            </h1>
+            <p
+              style={{
+                fontSize: 14.5,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.72)",
+                margin: "0 auto",
+                maxWidth: 480,
+              }}
+            >
+              Learn how to make money on TikTok Shop, TikTok LIVE, and organic
+              content. Built around how creators actually earn. Not theory,
+              not fluff.
+            </p>
+
+            <div
+              className="flex flex-col items-stretch gap-2.5"
+              style={{ maxWidth: 320, margin: "24px auto 0" }}
+            >
+              <Button
+                onClick={handleJoinClick}
+                className="w-full font-bold"
+                style={{
+                  background: "linear-gradient(180deg, #FE4C6F 0%, #FE2C55 100%)",
+                  color: "#fff",
+                  padding: "15px 18px",
+                  borderRadius: 12,
+                  fontSize: 14.5,
+                  border: "none",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow:
+                    "0 10px 30px -8px rgba(254,44,85,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                }}
+              >
+                Join Creator Scans
+                <span
+                  style={{
+                    marginLeft: 6,
+                    fontSize: 12.5,
+                    fontWeight: 500,
+                    color: "rgba(255,255,255,0.78)",
+                  }}
+                >
+                  (Academy included)
+                </span>
+                <ArrowRight className="ml-2" style={{ width: 14, height: 14 }} />
+              </Button>
+              <a href="/tiktok-shop-ugc-ai-twin" className="block">
+                <Button
+                  className="w-full font-semibold"
+                  style={{
+                    background: "rgba(255,184,200,0.06)",
+                    border: "1px solid rgba(255,184,200,0.22)",
+                    color: "#fff",
+                    padding: "15px 22px",
+                    borderRadius: 12,
+                    fontSize: 14.5,
+                    cursor: "pointer",
+                  }}
+                >
+                  Try the AI Twin course free
+                </Button>
+              </a>
+            </div>
+
+            <div
+              className="inline-flex items-center gap-1.5"
+              style={{ fontSize: 12, color: "#FF9FB1", marginTop: 18 }}
+            >
+              <span
+                className="rounded-full"
+                style={{
+                  width: 5,
+                  height: 5,
+                  background: "#FF9FB1",
+                  animation: "academyHeroPulseDot 1.4s ease-in-out infinite",
+                }}
+              />
+              Free mini-course. No credit card.
+            </div>
+          </div>
+
+          {/* Mobile community composition */}
+          <div
+            className="relative mx-auto"
+            style={{ maxWidth: 380, height: 420, marginTop: 40 }}
+          >
+            {PHOTOS.map((p, i) => (
+              <div
+                key={i}
+                className="absolute"
+                style={{
+                  left: p.mobile.left !== undefined ? p.mobile.left : "auto",
+                  right: p.mobile.right !== undefined ? p.mobile.right : "auto",
+                  top: p.mobile.top !== undefined ? p.mobile.top : "auto",
+                  bottom: p.mobile.bottom !== undefined ? p.mobile.bottom : "auto",
+                }}
+              >
+                <PolaroidPhoto photo={p} dims={p.mobile} />
+              </div>
+            ))}
+
+            <FloatingPill
+              style={{
+                top: 30,
+                right: -8,
+                padding: "8px 12px",
+                fontSize: 11.5,
+                gap: 7,
+              }}
+              floatDelay={0.6}
+            >
+              <SkillsPillContent />
+            </FloatingPill>
+            <FloatingPill
+              style={{
+                bottom: 70,
+                left: -4,
+                padding: "8px 12px 8px 8px",
+                fontSize: 11.5,
+                gap: 7,
+              }}
+              floatDelay={1.2}
+              floatReverse
+            >
+              <CertifiedPillContent />
+            </FloatingPill>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
