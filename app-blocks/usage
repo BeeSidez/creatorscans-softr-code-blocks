@@ -49,21 +49,21 @@ const WARNING_STYLES = {
     bg: "rgba(180,83,9,0.10)",
     border: "rgba(180,83,9,0.30)",
     title: "Heads up",
-    body: "You've fallen below your weekly commitment. Hit your minimums this week to clear the warning.",
+    body: "You've fallen below your weekly commitment. Hit your minimums this week to keep your streak going.",
   },
   cooldown: {
     color: CS_AMBER,
     bg: "rgba(180,83,9,0.12)",
     border: "rgba(180,83,9,0.35)",
     title: "Cooldown",
-    body: "You're in a cooldown period. Catch up to keep your tier.",
+    body: "You're in a cooldown week. Catch up before it ends to keep your streak.",
   },
   pending_downgrade: {
     color: CS_RED,
     bg: "rgba(185,28,28,0.10)",
     border: "rgba(185,28,28,0.30)",
-    title: "Pending downgrade",
-    body: "Your tier will be downgraded if you don't hit your weekly commitment soon.",
+    title: "Streak at risk",
+    body: "If you don't hit your weekly commitment soon, your streak will reset.",
   },
 };
 
@@ -249,7 +249,7 @@ export default function Block() {
           className="font-semibold gap-2"
           style={{ color: CS_NAVY, borderColor: CS_BORDER }}
         >
-          <a href="/commitments">
+          <a href="/change-commitments">
             Change commitments
             <ArrowRight className="h-4 w-4" />
           </a>
