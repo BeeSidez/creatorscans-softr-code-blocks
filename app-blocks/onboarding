@@ -37,7 +37,6 @@ const select = q.select({
   fullName: "PXdkq",
   email: "T3cFq",
   memberships: "PxOWN",
-  age: "aNbbk",
   pronouns: "W933n",
   gender: "ZrMCm",
   birthday: "A79E9",
@@ -88,14 +87,6 @@ const MEMBERSHIP_OPTIONS = [
 ];
 
 const TIER_ORDER = { Casual: 0, Committed: 1, Dedicated: 2 };
-
-const AGE_OPTIONS = [
-  { id: "7c18b135-14c3-4495-b16e-95b72d3e0cbc", label: "18-24" },
-  { id: "5b2a810b-00f7-4858-88db-6d0c423d646b", label: "25-34" },
-  { id: "52f19f78-b5fb-40ce-be37-6328d3cd01c8", label: "35-44" },
-  { id: "78b01971-c8c5-40fe-8d82-f28f87d2b3bb", label: "45-54" },
-  { id: "eadfa9ad-457b-438a-9ffd-c49141be5aa8", label: "55+" },
-];
 
 const PRONOUNS_OPTIONS = [
   { id: "7c923ac9-29b6-4f43-9bdd-26c41f3d4a87", label: "She" },
@@ -444,7 +435,6 @@ export default function Block() {
   const [form, setForm] = useState({
     track: [],
     membershipsByTrack: {}, // { shop: "rec123", live: "rec456", organic: "rec789" }
-    age: "",
     pronouns: "",
     gender: "",
     birthday: "",
@@ -526,7 +516,7 @@ export default function Block() {
   };
 
   const continueAbout = () => {
-    if (!form.age || !form.gender || !form.pronouns || !form.birthday) return;
+    if (!form.gender || !form.pronouns || !form.birthday) return;
     if (!isAtLeast18(form.birthday)) {
       toast.error("You must be 18 or over to join Creator Scans.");
       return;
@@ -585,7 +575,6 @@ export default function Block() {
 
     return {
       PxOWN: membershipIds,
-      aNbbk: toIdLabel(AGE_OPTIONS, form.age),
       ZrMCm: toIdLabel(GENDER_OPTIONS, form.gender),
       W933n: toIdLabel(PRONOUNS_OPTIONS, form.pronouns),
       A79E9: form.birthday,
@@ -825,17 +814,6 @@ export default function Block() {
                   />
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Age</Label>
-                      <Select value={form.age} onValueChange={(v) => set("age", v)}>
-                        <SelectTrigger><SelectValue placeholder="Pick one" /></SelectTrigger>
-                        <SelectContent>
-                          {AGE_OPTIONS.map((o) => (
-                            <SelectItem key={o.id} value={o.id}>{o.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
                       <Label>Gender</Label>
                       <Select value={form.gender} onValueChange={(v) => set("gender", v)}>
                         <SelectTrigger><SelectValue placeholder="Pick one" /></SelectTrigger>
@@ -874,7 +852,7 @@ export default function Block() {
                     onBack={goBack}
                     onContinue={continueAbout}
                     isSaving={saving}
-                    canContinue={!!form.age && !!form.gender && !!form.pronouns && !!form.birthday}
+                    canContinue={!!form.gender && !!form.pronouns && !!form.birthday}
                     showBack={showBack}
                   />
                 </>
