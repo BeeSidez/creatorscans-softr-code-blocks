@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRecordUpdate, q } from "@/lib/datasource";
 import { useCurrentUser } from "@/lib/user";
 import { Button } from "@/components/ui/button";
@@ -455,6 +455,39 @@ export default function Block() {
   // Tracks whether the in-flight save was triggered by Connect TikTok
   // (so onSuccess knows it needs to do the OAuth redirect after).
   const oauthPendingRef = useRef(false);
+
+  // Diagnostic: Softr's internal fetch wrapper throws away the
+  // response body on errors, so we never see WHY a 400 happened.
+  // Monkey-patch window.fetch while this block is mounted to clone
+  // and log the response body whenever a records-trigger request
+  // fails. Cleans up on unmount so it doesn't affect other pages.
+  useEffect(() => {
+    const original = window.fetch;
+    window.fetch = async function (...args) {
+      const response = await original.apply(this, args);
+      try {
+        const url = typeof args[0] === "string" ? args[0] : args[0]?.url || "";
+        if (url.includes("records-trigger") && !response.ok) {
+          const body = await response.clone().text();
+          console.error(
+            "=== Softr records-trigger error",
+            response.status,
+            response.statusText,
+            "\nURL:",
+            url,
+            "\nResponse body:",
+            body,
+          );
+        }
+      } catch (e) {
+        console.error("=== fetch interceptor failed:", e);
+      }
+      return response;
+    };
+    return () => {
+      window.fetch = original;
+    };
+  }, []);
 
   const updateRecord = useRecordUpdate({
     fields: select,
