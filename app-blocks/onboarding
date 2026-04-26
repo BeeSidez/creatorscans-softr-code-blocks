@@ -606,23 +606,27 @@ export default function Block() {
       .filter(Boolean)
       .map((id) => ({ id }));
 
+    // Keys are the ALIASES from q.select, NOT field IDs. Softr's data
+    // layer maps alias -> field ID internally. Sending field IDs as
+    // keys results in every field being stripped and a 400 with
+    // "Record data cannot be empty".
     return {
-      PxOWN: membershipIds,
-      ZrMCm: toIdLabel(GENDER_OPTIONS, form.gender),
-      W933n: toIdLabel(PRONOUNS_OPTIONS, form.pronouns),
-      A79E9: form.birthday,
-      z4TF1: form.city.trim(),
-      TV7Nz: toIdLabel(REGIONAL_ACCENT_OPTIONS, form.regionalAccent),
-      FzvXF: form.heritage.trim(),
-      "3hJpt": form.firstLanguage.trim(),
-      aWNgr: form.localDialect,
-      "6aChZ": form.jobTitle.trim(),
-      aDyIX: [form.industry],
-      "1kULp": [form.position],
-      SCLTv: [form.careerStage],
-      iwraT: [form.income],
-      VzOte: form.lookingFor,
-      uNdfV: form.myGoal.trim(),
+      memberships: membershipIds,
+      gender: toIdLabel(GENDER_OPTIONS, form.gender),
+      pronouns: toIdLabel(PRONOUNS_OPTIONS, form.pronouns),
+      birthday: form.birthday,
+      city: form.city.trim(),
+      regionalAccent: toIdLabel(REGIONAL_ACCENT_OPTIONS, form.regionalAccent),
+      heritage: form.heritage.trim(),
+      firstLanguage: form.firstLanguage.trim(),
+      localDialect: form.localDialect,
+      jobTitle: form.jobTitle.trim(),
+      industry: [form.industry],
+      position: [form.position],
+      careerStage: [form.careerStage],
+      income: [form.income],
+      lookingFor: form.lookingFor,
+      myGoal: form.myGoal.trim(),
     };
   };
 
