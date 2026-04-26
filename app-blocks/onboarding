@@ -388,7 +388,13 @@ function TrackTile({ option, selected, onToggle }) {
         <img
           src={option.icon}
           alt={option.label}
-          style={{ width: 56, height: 56, objectFit: "contain", display: "block" }}
+          style={{
+            width: 56,
+            height: 56,
+            objectFit: "cover",
+            display: "block",
+            borderRadius: 14,
+          }}
         />
         <div className="font-semibold" style={{ color: CS_BLUE }}>
           {option.label}
@@ -718,7 +724,13 @@ export default function Block() {
                             <img
                               src={t.icon}
                               alt={t.label}
-                              style={{ width: 36, height: 36, objectFit: "contain", display: "block" }}
+                              style={{
+                                width: 36,
+                                height: 36,
+                                objectFit: "cover",
+                                display: "block",
+                                borderRadius: 9,
+                              }}
                             />
                             <div className="font-semibold text-sm" style={{ color: CS_BLUE }}>
                               {t.label}
