@@ -75,22 +75,20 @@ const TRACK_OPTIONS = [
 ];
 
 // Membership options for the Users.memberships field (PxOWN).
-// PASTE the option ID for each one from Softr — you can find them by
-// clicking into the memberships field on a user and inspecting the
-// dropdown options.
+// IDs are the Membership row IDs from Softr.
 const MEMBERSHIP_OPTIONS = [
-  { id: "<<paste id>>", track: "shop",    tier: "Starter",  cadence: 3, unit: "posts" },
-  { id: "<<paste id>>", track: "shop",    tier: "Pro",      cadence: 5, unit: "posts" },
-  { id: "<<paste id>>", track: "shop",    tier: "Advanced", cadence: 7, unit: "posts" },
-  { id: "<<paste id>>", track: "live",    tier: "Starter",  cadence: 2, unit: "lives" },
-  { id: "<<paste id>>", track: "live",    tier: "Pro",      cadence: 4, unit: "lives" },
-  { id: "<<paste id>>", track: "live",    tier: "Advanced", cadence: 6, unit: "lives" },
-  { id: "<<paste id>>", track: "organic", tier: "Starter",  cadence: 3, unit: "posts" },
-  { id: "<<paste id>>", track: "organic", tier: "Pro",      cadence: 5, unit: "posts" },
-  { id: "<<paste id>>", track: "organic", tier: "Advanced", cadence: 7, unit: "posts" },
+  { id: "c3EqdciuLbXkHu", track: "shop",    tier: "Casual",    cadence: 3, unit: "posts" },
+  { id: "y02977G0TnLx0k", track: "shop",    tier: "Committed", cadence: 5, unit: "posts" },
+  { id: "zsruDrIoDr948G", track: "shop",    tier: "Dedicated", cadence: 7, unit: "posts" },
+  { id: "8mbjundbXfpQto", track: "live",    tier: "Casual",    cadence: 2, unit: "lives" },
+  { id: "hkuclCaU0JFqwY", track: "live",    tier: "Committed", cadence: 4, unit: "lives" },
+  { id: "AWeguSE0bEBtdq", track: "live",    tier: "Dedicated", cadence: 6, unit: "lives" },
+  { id: "eWq5hrIgKdgtWC", track: "organic", tier: "Casual",    cadence: 3, unit: "posts" },
+  { id: "mIvTXaHi6WYrEM", track: "organic", tier: "Committed", cadence: 5, unit: "posts" },
+  { id: "EukDLpN91QEUHV", track: "organic", tier: "Dedicated", cadence: 7, unit: "posts" },
 ];
 
-const TIER_ORDER = { Starter: 0, Pro: 1, Advanced: 2 };
+const TIER_ORDER = { Casual: 0, Committed: 1, Dedicated: 2 };
 
 const AGE_OPTIONS = [
   { id: "7c18b135-14c3-4495-b16e-95b72d3e0cbc", label: "18-24" },
