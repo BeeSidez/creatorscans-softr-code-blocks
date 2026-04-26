@@ -3,7 +3,6 @@ import { useCurrentUser } from "@/lib/user";
 import { useRecordCreate, q } from "@/lib/datasource";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -68,17 +67,12 @@ Thanks!`;
 
 export default function Block() {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [message, setMessage] = useState(PREFILLED_MESSAGE);
   const [submitting, setSubmitting] = useState(false);
 
   const user = useCurrentUser();
   const createRecord = useRecordCreate({ fields: select });
 
   const handleSubmit = async () => {
-    if (!message.trim()) {
-      toast.error("Please add a message before sending.");
-      return;
-    }
     if (!user?.id) {
       toast.error("You need to be signed in to send a request.");
       return;
@@ -92,8 +86,10 @@ export default function Block() {
 
     setSubmitting(true);
     try {
+      // Both notes and request are hidden from the user. The user sees the
+      // resulting record later in their support inbox / messages.
       const fields = {
-        notes: message.trim(),
+        notes: PREFILLED_MESSAGE,
         request: REQUEST_PAYMENT_BILLING,
         // type: TYPE_SUPPORT,  // uncomment once you've filled the constants above
       };
@@ -101,7 +97,6 @@ export default function Block() {
       await createRecord.mutateAsync(fields);
       toast.success("Request sent. We'll be in touch shortly.");
       setDialogOpen(false);
-      setMessage(PREFILLED_MESSAGE); // reset for next time
     } catch (e) {
       console.error("=== fee-wall request error:", e);
       toast.error("Couldn't send request", {
@@ -204,33 +199,17 @@ export default function Block() {
         </div>
       </div>
 
-      {/* ── Modal ── */}
+      {/* ── Confirmation modal (no editable fields) ── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle style={{ color: CS_NAVY }}>
-              Request your fee agreement
+              Request your fee agreement?
             </DialogTitle>
             <DialogDescription>
-              We'll set up the 10% agreement and send the next steps to your inbox.
-              Tweak the message below if you'd like, or send as is.
+              We'll create a support request to set up your 10% agreement and send the next steps to your inbox. You can track the response in your messages.
             </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: CS_NAVY }}>
-              Message
-            </label>
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={7}
-              autoFocus
-            />
-            <p className="text-xs" style={{ color: CS_MUTED }}>
-              Saved as a request in your support inbox so you can track the response.
-            </p>
-          </div>
 
           <DialogFooter>
             <Button
@@ -243,7 +222,7 @@ export default function Block() {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={submitting || !message.trim()}
+              disabled={submitting}
               className="font-semibold"
               style={{ backgroundColor: CS_PERIWINKLE, color: "#fff" }}
             >
