@@ -323,7 +323,7 @@ export default function Block() {
     <>
       <Toaster />
       <div className="container py-8">
-        <div className="content max-w-4xl mx-auto space-y-6">
+        <div className="content mx-auto space-y-6" style={{ maxWidth: 1140 }}>
           {/* ─── Profile (avatar + name + email + bio + tagline) ─── */}
           <SectionCard
             title="Profile"
