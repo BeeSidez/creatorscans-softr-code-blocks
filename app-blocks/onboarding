@@ -44,7 +44,6 @@ const CS_BORDER = "#eef4fd";
 const select = q.select({
   fullName: "PXdkq",
   email: "T3cFq",
-  tiktokUsername: "uZ8z0",
   memberships: "PxOWN",
   age: "aNbbk",
   pronouns: "W933n",
@@ -232,7 +231,6 @@ const LOOKING_FOR_OPTIONS = [
 // ─── Step config ──────────────────────────────────────────────────
 const STEPS = [
   { id: "welcome",   label: "Welcome",     skippable: false },
-  { id: "tiktok",    label: "Handle",      skippable: false },
   { id: "track",     label: "Tracks",      skippable: false },
   { id: "cadence",   label: "Cadence",     skippable: false },
   { id: "about",     label: "About you",   skippable: false },
@@ -423,7 +421,6 @@ export default function Block() {
 
   // Local form state — initialised from the user record once loaded
   const [form, setForm] = useState({
-    tiktokUsername: "",
     track: [],
     membershipsByTrack: {}, // { shop: "rec123", live: "rec456", organic: "rec789" }
     age: "",
@@ -449,7 +446,6 @@ export default function Block() {
     if (!data?.fields) return;
     setForm((prev) => ({
       ...prev,
-      tiktokUsername: data.fields.tiktokUsername || prev.tiktokUsername,
       age: data.fields.age?.id || prev.age,
       pronouns: data.fields.pronouns?.id || prev.pronouns,
       gender: data.fields.gender?.id || prev.gender,
@@ -516,14 +512,6 @@ export default function Block() {
 
   // ─── Per-step continue handlers ────────────────────────────────
   const continueWelcome = () => goNext();
-
-  const continueTiktok = async () => {
-    if (!form.tiktokUsername.trim()) return;
-    const handle = form.tiktokUsername.trim().replace(/^@/, "");
-    await persistFields({ uZ8z0: handle });
-    setForm((f) => ({ ...f, tiktokUsername: handle }));
-    goNext();
-  };
 
   const continueTrack = () => {
     // Track picks are local-state only — no User.Track write.
@@ -653,10 +641,9 @@ export default function Block() {
                       <Sparkles className="h-4 w-4" /> What we'll cover
                     </div>
                     <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li>• Your TikTok handle and the content you post</li>
-                      <li>• Your weekly posting commitment</li>
+                      <li>• The content you post and your weekly commitment</li>
                       <li>• A few profile basics so we can match you to brands</li>
-                      <li>• Connect TikTok at the end</li>
+                      <li>• Connect TikTok at the end (we pull your handle from there)</li>
                     </ul>
                   </div>
                   <NavBar
@@ -668,42 +655,12 @@ export default function Block() {
                 </>
               )}
 
-              {/* ─── 2. TikTok handle ─── */}
-              {step.id === "tiktok" && (
-                <>
-                  <StepHeading
-                    eyebrow="Step 1"
-                    title="What's your TikTok handle?"
-                    description="The username people find you under on TikTok. We use this to verify you and pull your stats once you connect."
-                  />
-                  <div className="space-y-2">
-                    <Label htmlFor="tiktok-handle">TikTok username</Label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg text-muted-foreground">@</span>
-                      <Input
-                        id="tiktok-handle"
-                        value={form.tiktokUsername.replace(/^@/, "")}
-                        onChange={(e) => set("tiktokUsername", e.target.value)}
-                        placeholder="yourhandle"
-                        className="text-base"
-                      />
-                    </div>
-                  </div>
-                  <NavBar
-                    onBack={goBack}
-                    onContinue={continueTiktok}
-                    isSaving={saving}
-                    canContinue={!!form.tiktokUsername.trim()}
-                    showBack={showBack}
-                  />
-                </>
-              )}
 
               {/* ─── 3. Track ─── */}
               {step.id === "track" && (
                 <>
                   <StepHeading
-                    eyebrow="Step 2"
+                    eyebrow="Step 1"
                     title="What kind of content do you post?"
                     description="Pick everything you do. You can change this later. Each one you pick gets its own posting commitment in the next step."
                   />
@@ -731,7 +688,7 @@ export default function Block() {
               {step.id === "cadence" && (
                 <>
                   <StepHeading
-                    eyebrow="Step 3"
+                    eyebrow="Step 2"
                     title="Pick your weekly intensity."
                     description="Each track has three levels. Pick the one you can realistically commit to. You can change it later."
                   />
@@ -812,7 +769,7 @@ export default function Block() {
               {step.id === "about" && (
                 <>
                   <StepHeading
-                    eyebrow="Step 4"
+                    eyebrow="Step 3"
                     title="A bit about you"
                     description="Used to match you to brands and content opportunities. Age and gender are required so we can verify partnership eligibility."
                   />
@@ -873,7 +830,7 @@ export default function Block() {
               {step.id === "where" && (
                 <>
                   <StepHeading
-                    eyebrow="Step 5"
+                    eyebrow="Step 4"
                     title="Where you're from"
                     description="Helps us match you to regional brand campaigns and content opportunities. All optional — skip if you'd rather not say."
                   />
@@ -946,7 +903,7 @@ export default function Block() {
               {step.id === "career" && (
                 <>
                   <StepHeading
-                    eyebrow="Step 6"
+                    eyebrow="Step 5"
                     title="Your career"
                     description="Helps us route you to relevant brand deals and content angles. All optional."
                   />
@@ -1026,7 +983,7 @@ export default function Block() {
               {step.id === "why" && (
                 <>
                   <StepHeading
-                    eyebrow="Step 7"
+                    eyebrow="Step 6"
                     title="Why you're here"
                     description="What you want out of Creator Scans. We use this to surface the right tools, perks, and brand opportunities for you."
                   />
