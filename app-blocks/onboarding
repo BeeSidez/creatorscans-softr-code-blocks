@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import {
   useRecord,
   useRecordUpdate,
-  useLinkedRecords,
   useCurrentRecordId,
   q,
 } from "@/lib/datasource";
@@ -41,9 +40,7 @@ const CS_BLUE = "#001364";
 const CS_PINK = "#FE2C55";
 const CS_BORDER = "#eef4fd";
 
-// ─── Field map (Users table) ──────────────────────────────────────
-// Note: User.Track (QbvGk) intentionally NOT mapped — we drive content
-// type purely from Memberships now. Track on Users is superficial.
+// ─── Field map (Users table — every field this form reads or writes) ──
 const select = q.select({
   fullName: "PXdkq",
   email: "T3cFq",
@@ -67,45 +64,33 @@ const select = q.select({
   myGoal: "uNdfV",
 });
 
-// Memberships table fields (used by useLinkedRecords to read the
-// available membership options — does NOT write to the Memberships table)
-const membershipSelect = q.select({
-  name: "yZbhV",
-  trackType: "cxm7q",
-  tier: "21LDd",
-  postsPerWeek: "M16Ja",
-  livesPerWeek: "OY4r9",
-});
-
 // ─── Option UUIDs ─────────────────────────────────────────────────
-// Memberships table — Track Type select options
-const MEMBERSHIP_TRACK_TYPES = {
-  shop:    "336ec709-8e8b-4682-987d-64d68cd7adbc",
-  live:    "f93109ee-4c99-4a91-829e-9ad09e145956",
-  organic: "fb3cfd46-591f-49e1-a377-d4dfef279a88",
-};
 
-// Memberships table — Tier select options (with display order)
-const MEMBERSHIP_TIERS = [
-  { id: "e8812629-fe19-4030-afd2-49cde46f3fb6", label: "Starter",  order: 0 },
-  { id: "97d97d97-ee66-431b-a4cd-4f7f913118af", label: "Pro",      order: 1 },
-  { id: "de6306fe-9033-484c-b0c2-cbdf8f55efee", label: "Advanced", order: 2 },
-  { id: "03420e8e-b8a9-43c8-9200-c953f729e9ab", label: "Custom",   order: 3 },
-];
-const TIER_LABEL_BY_ID = Object.fromEntries(MEMBERSHIP_TIERS.map((t) => [t.id, t.label]));
-const TIER_ORDER_BY_ID = Object.fromEntries(MEMBERSHIP_TIERS.map((t) => [t.id, t.order]));
-
-// Track picker options — local form state only, not written to Users.
-// `membershipTrackTypeId` matches Memberships.Track Type so we can
-// filter the available membership rows for that track.
+// Track picker options — local UI state only, not saved anywhere.
+// Picking these just filters which membership options show in step 4.
 const TRACK_OPTIONS = [
-  { key: "shop",    label: "TikTok Shop",    Icon: ShoppingBag, membershipTrackTypeId: MEMBERSHIP_TRACK_TYPES.shop },
-  { key: "live",    label: "TikTok Lives",   Icon: Radio,       membershipTrackTypeId: MEMBERSHIP_TRACK_TYPES.live },
-  { key: "organic", label: "Organic Posts",  Icon: PenTool,     membershipTrackTypeId: MEMBERSHIP_TRACK_TYPES.organic },
+  { key: "shop",    label: "TikTok Shop",   Icon: ShoppingBag },
+  { key: "live",    label: "TikTok Lives",  Icon: Radio },
+  { key: "organic", label: "Organic Posts", Icon: PenTool },
 ];
 
-// Helper: read a select field that might come back as {id, label} OR a plain UUID string
-const selectId = (val) => (val && typeof val === "object" ? val.id : val) || "";
+// Membership options for the Users.memberships field (PxOWN).
+// PASTE the option ID for each one from Softr — you can find them by
+// clicking into the memberships field on a user and inspecting the
+// dropdown options.
+const MEMBERSHIP_OPTIONS = [
+  { id: "<<paste id>>", track: "shop",    tier: "Starter",  cadence: 3, unit: "posts" },
+  { id: "<<paste id>>", track: "shop",    tier: "Pro",      cadence: 5, unit: "posts" },
+  { id: "<<paste id>>", track: "shop",    tier: "Advanced", cadence: 7, unit: "posts" },
+  { id: "<<paste id>>", track: "live",    tier: "Starter",  cadence: 2, unit: "lives" },
+  { id: "<<paste id>>", track: "live",    tier: "Pro",      cadence: 4, unit: "lives" },
+  { id: "<<paste id>>", track: "live",    tier: "Advanced", cadence: 6, unit: "lives" },
+  { id: "<<paste id>>", track: "organic", tier: "Starter",  cadence: 3, unit: "posts" },
+  { id: "<<paste id>>", track: "organic", tier: "Pro",      cadence: 5, unit: "posts" },
+  { id: "<<paste id>>", track: "organic", tier: "Advanced", cadence: 7, unit: "posts" },
+];
+
+const TIER_ORDER = { Starter: 0, Pro: 1, Advanced: 2 };
 
 const AGE_OPTIONS = [
   { id: "7c18b135-14c3-4495-b16e-95b72d3e0cbc", label: "18-24" },
@@ -438,18 +423,6 @@ export default function Block() {
   const [stepIdx, setStepIdx] = useState(0);
   const [saving, setSaving] = useState(false);
 
-  // Fetch the available Memberships rows (read-only, populates the
-  // dropdown of tier options the user can link themselves to).
-  const { data: membershipData } = useLinkedRecords({
-    select: membershipSelect,
-    field: "memberships",
-    count: 100,
-  });
-  const allMemberships = useMemo(
-    () => membershipData?.pages.flatMap((p) => p.items) || [],
-    [membershipData],
-  );
-
   // Local form state — initialised from the user record once loaded
   const [form, setForm] = useState({
     tiktokUsername: "",
@@ -766,16 +739,9 @@ export default function Block() {
                   />
                   <div className="space-y-6">
                     {TRACK_OPTIONS.filter((t) => form.track.includes(t.key)).map((t) => {
-                      // Filter Memberships rows by Track Type UUID match
-                      const optionsForTrack = allMemberships.filter(
-                        (m) => selectId(m.fields?.trackType) === t.membershipTrackTypeId,
-                      );
-                      // Sort by tier display order (Starter -> Pro -> Advanced -> Custom)
-                      const sorted = [...optionsForTrack].sort(
-                        (a, b) =>
-                          (TIER_ORDER_BY_ID[selectId(a.fields?.tier)] ?? 99) -
-                          (TIER_ORDER_BY_ID[selectId(b.fields?.tier)] ?? 99),
-                      );
+                      const optionsForTrack = MEMBERSHIP_OPTIONS
+                        .filter((opt) => opt.track === t.key)
+                        .sort((a, b) => (TIER_ORDER[a.tier] ?? 99) - (TIER_ORDER[b.tier] ?? 99));
                       return (
                         <div key={t.key}>
                           <div className="flex items-center gap-2 mb-3">
@@ -789,58 +755,43 @@ export default function Block() {
                               {t.label}
                             </div>
                           </div>
-                          {sorted.length === 0 ? (
-                            <div className="text-xs text-muted-foreground italic">
-                              No membership tiers found for {t.label}. Check the Memberships table.
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-3 gap-2">
-                              {sorted.map((m) => {
-                                const tierId = selectId(m.fields?.tier);
-                                const tierLabel = TIER_LABEL_BY_ID[tierId] || m.title || "";
-                                const cadence =
-                                  t.key === "live"
-                                    ? m.fields?.livesPerWeek
-                                    : m.fields?.postsPerWeek;
-                                const unit = t.key === "live" ? "lives" : "posts";
-                                const selected = form.membershipsByTrack[t.key] === m.id;
-                                return (
-                                  <button
-                                    key={m.id}
-                                    type="button"
-                                    onClick={() =>
-                                      setForm((f) => ({
-                                        ...f,
-                                        membershipsByTrack: {
-                                          ...f.membershipsByTrack,
-                                          [t.key]: m.id,
-                                        },
-                                      }))
-                                    }
-                                    className="text-left transition-all rounded-xl p-3 border-2"
-                                    style={{
-                                      borderColor: selected ? CS_PINK : CS_BORDER,
-                                      backgroundColor: selected
-                                        ? "rgba(254,44,85,0.04)"
-                                        : "#fff",
-                                    }}
+                          <div className="grid grid-cols-3 gap-2">
+                            {optionsForTrack.map((opt) => {
+                              const selected = form.membershipsByTrack[t.key] === opt.id;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() =>
+                                    setForm((f) => ({
+                                      ...f,
+                                      membershipsByTrack: {
+                                        ...f.membershipsByTrack,
+                                        [t.key]: opt.id,
+                                      },
+                                    }))
+                                  }
+                                  className="text-left transition-all rounded-xl p-3 border-2"
+                                  style={{
+                                    borderColor: selected ? CS_PINK : CS_BORDER,
+                                    backgroundColor: selected
+                                      ? "rgba(254,44,85,0.04)"
+                                      : "#fff",
+                                  }}
+                                >
+                                  <div
+                                    className="text-xs font-bold uppercase tracking-wider mb-1"
+                                    style={{ color: selected ? CS_PINK : CS_BLUE }}
                                   >
-                                    <div
-                                      className="text-xs font-bold uppercase tracking-wider mb-1"
-                                      style={{ color: selected ? CS_PINK : CS_BLUE }}
-                                    >
-                                      {tierLabel}
-                                    </div>
-                                    {cadence != null && (
-                                      <div className="text-xs text-muted-foreground">
-                                        {cadence} {unit}/wk
-                                      </div>
-                                    )}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
+                                    {opt.tier}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {opt.cadence} {opt.unit}/wk
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       );
                     })}
