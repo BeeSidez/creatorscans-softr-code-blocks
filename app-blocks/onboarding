@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRecordUpdate, q } from "@/lib/datasource";
 import { useCurrentUser } from "@/lib/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -451,7 +452,7 @@ export default function Block() {
     regionalAccent: "",
     heritage: "",
     firstLanguage: "",
-    localDialect: "", // "yes" | "no"
+    localDialect: false, // boolean checkbox
     jobTitle: "",
     industry: "",
     position: "",
@@ -461,9 +462,28 @@ export default function Block() {
     myGoal: "",
   });
 
+  // Tracks whether the in-flight save was triggered by Connect TikTok
+  // (so onSuccess knows it needs to do the OAuth redirect after).
+  const oauthPendingRef = useRef(false);
+
   const updateRecord = useRecordUpdate({
     fields: select,
+    onSuccess() {
+      if (!oauthPendingRef.current) return;
+      oauthPendingRef.current = false;
+
+      // Server confirmed the save. Now safe to fire CSRF state +
+      // navigate away — no race with an in-flight write.
+      const state = generateOAuthState();
+      try {
+        sessionStorage.setItem("cs_tiktok_oauth_state", state);
+      } catch (e) {
+        // sessionStorage might be blocked; proceed anyway
+      }
+      window.location.href = `${TIKTOK_OAUTH_BASE}&state=${state}`;
+    },
     onError(err) {
+      oauthPendingRef.current = false;
       toast.error("Save failed", { description: err.message });
       setSaving(false);
     },
@@ -512,12 +532,12 @@ export default function Block() {
   };
 
   const continueWhere = () => {
+    // Local dialect is a checkbox so unticked is a valid answer (means "no").
     if (
       !form.city.trim() ||
       !form.regionalAccent ||
       !form.heritage.trim() ||
-      !form.firstLanguage.trim() ||
-      !form.localDialect
+      !form.firstLanguage.trim()
     )
       return;
     goNext();
@@ -572,35 +592,21 @@ export default function Block() {
     };
   };
 
-  const handleConnectTikTok = async () => {
+  const handleConnectTikTok = () => {
     if (!user?.id) {
       toast.error("Not signed in");
       return;
     }
 
     setSaving(true);
+    oauthPendingRef.current = true;
 
-    // 1. One atomic save of every answer collected across all steps
+    // Fire the save. The OAuth redirect is now triggered inside the
+    // onSuccess callback above, only once the server has confirmed
+    // the write — no race with window.location.href.
     const updates = buildUpdates();
     console.log("=== onboarding save payload:", JSON.stringify(updates, null, 2));
-    try {
-      await updateRecord.mutateAsync({ recordId: user.id, fields: updates });
-    } catch (e) {
-      // onError already toasted; bail before OAuth so we don't lose the state
-      return;
-    }
-
-    // 2. Generate CSRF state, store in sessionStorage to match dashboard block
-    const state = generateOAuthState();
-    try {
-      sessionStorage.setItem("cs_tiktok_oauth_state", state);
-    } catch (e) {
-      // sessionStorage might be blocked; proceed anyway
-    }
-
-    // 3. Redirect to TikTok OAuth with our state
-    const url = `${TIKTOK_OAUTH_BASE}&state=${state}`;
-    window.location.href = url;
+    updateRecord.mutate({ recordId: user.id, fields: updates });
   };
 
   // ─── Render guards ─────────────────────────────────────────────
@@ -900,15 +906,21 @@ export default function Block() {
                         placeholder="English"
                       />
                     </div>
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label>Do you post in your local dialect?</Label>
-                      <Select value={form.localDialect} onValueChange={(v) => set("localDialect", v)}>
-                        <SelectTrigger><SelectValue placeholder="Pick one" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="yes">Yes</SelectItem>
-                          <SelectItem value="no">No</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="sm:col-span-2 flex items-start gap-3 rounded-xl p-4" style={{ backgroundColor: CS_BORDER }}>
+                      <Checkbox
+                        id="localDialect"
+                        checked={form.localDialect}
+                        onCheckedChange={(c) => set("localDialect", !!c)}
+                        className="mt-0.5"
+                      />
+                      <div>
+                        <Label htmlFor="localDialect" className="cursor-pointer">
+                          I post in my local dialect
+                        </Label>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Tick this if you do. We'll use it to remix and write scripts in your voice. Leave it unticked and we'll use a neutral tone instead.
+                        </p>
+                      </div>
                     </div>
                   </div>
                   <NavBar
@@ -919,8 +931,7 @@ export default function Block() {
                       !!form.city.trim() &&
                       !!form.regionalAccent &&
                       !!form.heritage.trim() &&
-                      !!form.firstLanguage.trim() &&
-                      !!form.localDialect
+                      !!form.firstLanguage.trim()
                     }
                     showBack={showBack}
                   />
