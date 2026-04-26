@@ -255,6 +255,45 @@ try {
 }
 ```
 
+### ⚠️ Keys MUST be aliases, not field IDs
+
+The single most common reason a save silently 400s. The `fields` object passed to `mutate` / `mutateAsync` must be keyed by the **alias names** declared in `q.select`, NOT the underlying Softr field IDs. Softr's data layer maps alias → field ID internally; if you send field IDs as keys, every key gets stripped as unrecognised, the payload is empty, and the API returns:
+
+```json
+{ "message": "Record data cannot be empty" }
+```
+
+The Softr fetch wrapper throws away the response body, so the only error your block sees is `Failed to update record: 400` — completely invisible until you intercept `window.fetch` (see "Debugging save failures" below).
+
+**Right** — keys are aliases:
+
+```jsx
+const select = q.select({
+  memberships: "PxOWN",
+  pronouns: "W933n",
+});
+
+updateRecord.mutate({
+  recordId: user.id,
+  fields: {
+    memberships: [{ id: "rec_xyz" }],
+    pronouns: { id: "uuid", label: "She" },
+  },
+});
+```
+
+**Wrong** — keys are field IDs (silently fails):
+
+```jsx
+updateRecord.mutate({
+  recordId: user.id,
+  fields: {
+    PxOWN: [{ id: "rec_xyz" }],   // ❌ field ID, not alias
+    W933n: { id: "uuid", label: "She" },
+  },
+});
+```
+
 ### Field value formats
 
 | Field type | Format | Example |
@@ -263,11 +302,59 @@ try {
 | Number, currency, percent, rating | number | `42` |
 | Checkbox | boolean | `true` |
 | Date / datetime | ISO string `"YYYY-MM-DD"` | `"2026-04-13"` |
-| Select (single) | option UUID string | `"20c847f5-..."` |
+| Select (single) | `{ id, label }` object | `{ id: "20c847f5-...", label: "Beauty" }` |
 | Multi-select | array of option UUIDs | `["uuid1", "uuid2"]` |
 | Linked record | array of `{ id }` objects | `[{ id: "rec_abc" }]` |
 | User | `user.id` from `useCurrentUser()` | `user.id` |
 | Attachment | object or array of objects from `useUpload` | (see upload section) |
+
+Note on single-selects: an earlier version of this doc said the format was a plain UUID string. That's wrong in practice — Softr expects the full `{ id, label }` object. The `bulk-import-briefs-v10.jsx` working block sends multi-selects as plain UUID arrays but single-selects need the object form.
+
+### Debugging save failures
+
+Softr's internal fetch wrapper around the data hooks calls `fetch`, checks `response.ok`, and throws `new Error("Failed to update record: " + response.status)` without ever calling `.text()` or `.json()` on the response body. So when you get a 400, the actual API error message is invisible to your block code.
+
+To capture it, monkey-patch `window.fetch` while the block is mounted:
+
+```jsx
+useEffect(() => {
+  const original = window.fetch;
+  window.fetch = async function (...args) {
+    const response = await original.apply(this, args);
+    try {
+      const url = typeof args[0] === "string" ? args[0] : args[0]?.url || "";
+      if (url.includes("records-trigger") && !response.ok) {
+        const body = await response.clone().text();
+        console.error(
+          "=== Softr error",
+          response.status,
+          response.statusText,
+          "\nURL:", url,
+          "\nBody:", body,
+        );
+      }
+    } catch (e) {
+      console.error("=== fetch interceptor failed:", e);
+    }
+    return response;
+  };
+  return () => { window.fetch = original; };
+}, []);
+```
+
+Common error bodies and what they mean:
+
+| Response body | Cause |
+|---|---|
+| `{ "message": "Record data cannot be empty" }` | You sent field IDs as keys. Switch to alias names. |
+| `{ "message": "Invalid value for field 'X'" }` | Field-format mismatch. Check the type table above. |
+| `{ "message": "..." }` referencing a specific UUID | Option UUID is wrong, or the option was deleted from the source table. |
+
+Once the bug is fixed, remove the interceptor — leaving it in production wraps every fetch on the page, which is fine but unnecessary noise.
+
+### Actions tab is auto-populated, not editable
+
+The **Actions tab > Edit > FIELDS USED** list is generated from the aliases in `q.select`. There is no UI to add, remove, or rename fields there. The "Edit" button on that panel only controls visibility/permissions for the edit action (which user groups can perform writes), not the field list. Don't ask Bev to "add a field to the Actions tab" — she literally cannot. If a field shows up in `q.select`, it's in the Actions tab.
 
 ### Multi-select label-to-UUID lookup pattern
 
