@@ -118,7 +118,7 @@ export default function Block() {
         <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-semibold" style={{ color: CS_NAVY }}>
-              <Icon name="post" size={20} />
+              <Icon name="post" size={56} />
               Post tank
             </CardTitle>
           </CardHeader>
@@ -141,7 +141,7 @@ export default function Block() {
         <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-semibold" style={{ color: CS_NAVY }}>
-              <Icon name="live" size={20} />
+              <Icon name="live" size={56} />
               Live tank
             </CardTitle>
           </CardHeader>
@@ -166,7 +166,7 @@ export default function Block() {
       <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-semibold" style={{ color: CS_NAVY }}>
-            <Icon name="bolt" size={20} />
+            <Icon name="bolt" size={56} />
             Consistency score
           </CardTitle>
         </CardHeader>
@@ -203,7 +203,7 @@ export default function Block() {
         <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
           <CardContent className="pt-5">
             <div className="flex items-center gap-3">
-              <Icon name="fire" size={32} />
+              <Icon name="fire" size={72} />
               <div>
                 <div className="font-extrabold" style={{ color: CS_NAVY, fontSize: 28, lineHeight: 1 }}>
                   {f.postsThisYear || 0}
@@ -219,7 +219,7 @@ export default function Block() {
         <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
           <CardContent className="pt-5">
             <div className="flex items-center gap-3">
-              <Icon name="rocket" size={32} />
+              <Icon name="rocket" size={72} />
               <div>
                 <div className="font-extrabold" style={{ color: CS_NAVY, fontSize: 28, lineHeight: 1 }}>
                   {f.liveCompletedThisYear || 0}
@@ -242,7 +242,7 @@ export default function Block() {
           <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold" style={{ color: CS_NAVY }}>
-                <Icon name="shop" size={18} />
+                <Icon name="shop" size={44} />
                 Shop content
               </CardTitle>
             </CardHeader>
@@ -259,7 +259,7 @@ export default function Block() {
           <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold" style={{ color: CS_NAVY }}>
-                <Icon name="live" size={18} />
+                <Icon name="live" size={44} />
                 Live content
               </CardTitle>
             </CardHeader>
@@ -276,7 +276,7 @@ export default function Block() {
           <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold" style={{ color: CS_NAVY }}>
-                <Icon name="organic" size={18} />
+                <Icon name="organic" size={44} />
                 Organic content
               </CardTitle>
             </CardHeader>
