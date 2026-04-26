@@ -23,28 +23,22 @@ const CS_MUTED = "#6b7a99";
 
 // ─── Field map (Requests table) ───────────────────────────────────
 // SOURCE TAB IN SOFTR MUST BE SET TO THE REQUESTS TABLE.
-// Field IDs come from the existing support-inbox block.
 const select = q.select({
-  notes: "cy26q",      // long text — the message body the user can edit
-  request: "zPHQj",    // SELECT — request subject (Payment and billing question)
-  // type: "<<TYPE_FIELD_ID>>",  // see TODO below
+  notes: "cy26q",   // LONG_TEXT — the message body
+  request: "zPHQj", // SELECT — request subject
+  type: "5GA3J",    // SELECT — request type (Bug / Suggestion / Praise / Support)
 });
 
-// ─── Option UUIDs ─────────────────────────────────────────────────
-// PASTE THE REAL UUIDs from your Requests table options.
-// Both fields are select-type, so Softr expects { id, label } objects.
+// ─── Option UUIDs (verified via Softr Database API) ───────────────
 const REQUEST_PAYMENT_BILLING = {
-  id: "<<paste option UUID for 'Payment and billing question'>>",
-  label: "Payment and billing question",
+  id: "312273f5-b900-4a5b-b71f-7b61b18fb56f",
+  label: "Payment/billing question",
 };
 
-// If you also have a separate "type" field with a "support" option, fill
-// in BOTH the field ID above (uncomment the line) AND the option below.
-// Otherwise leave commented out and the request will save without a type.
-// const TYPE_SUPPORT = {
-//   id: "<<paste option UUID for 'support'>>",
-//   label: "support",
-// };
+const TYPE_SUPPORT = {
+  id: "7b4f93a8-a67a-4d98-9d5b-9d0e9afc86b5",
+  label: "Support",
+};
 
 const FEE_PERCENT = "10%";
 
@@ -86,12 +80,12 @@ export default function Block() {
 
     setSubmitting(true);
     try {
-      // Both notes and request are hidden from the user. The user sees the
+      // All three fields are hidden from the user. The user sees the
       // resulting record later in their support inbox / messages.
       const fields = {
         notes: PREFILLED_MESSAGE,
         request: REQUEST_PAYMENT_BILLING,
-        // type: TYPE_SUPPORT,  // uncomment once you've filled the constants above
+        type: TYPE_SUPPORT,
       };
       console.log("=== fee-wall request payload:", JSON.stringify(fields, null, 2));
       await createRecord.mutateAsync(fields);
