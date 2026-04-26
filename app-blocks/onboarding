@@ -483,8 +483,11 @@ export default function Block() {
       window.location.href = `${TIKTOK_OAUTH_BASE}&state=${state}`;
     },
     onError(err) {
+      console.error("=== onboarding save error:", err);
       oauthPendingRef.current = false;
-      toast.error("Save failed", { description: err.message });
+      toast.error("Save failed", {
+        description: err?.message || "Open the browser console for details.",
+      });
       setSaving(false);
     },
   });
@@ -581,7 +584,7 @@ export default function Block() {
       TV7Nz: form.regionalAccent,
       FzvXF: form.heritage.trim(),
       "3hJpt": form.firstLanguage.trim(),
-      aWNgr: form.localDialect === "yes",
+      aWNgr: form.localDialect,
       "6aChZ": form.jobTitle.trim(),
       aDyIX: [form.industry],
       "1kULp": [form.position],
@@ -597,15 +600,21 @@ export default function Block() {
       toast.error("Not signed in");
       return;
     }
+    if (updateRecord.enabled === false) {
+      toast.error("Saving is disabled for this block. Check the Visibility / permissions tabs in Softr.");
+      return;
+    }
 
     setSaving(true);
     oauthPendingRef.current = true;
 
     // Fire the save. The OAuth redirect is now triggered inside the
     // onSuccess callback above, only once the server has confirmed
-    // the write — no race with window.location.href.
+    // the write. No race with window.location.href.
     const updates = buildUpdates();
     console.log("=== onboarding save payload:", JSON.stringify(updates, null, 2));
+    console.log("=== onboarding recordId:", user.id);
+    console.log("=== onboarding updateRecord.enabled:", updateRecord.enabled);
     updateRecord.mutate({ recordId: user.id, fields: updates });
   };
 
