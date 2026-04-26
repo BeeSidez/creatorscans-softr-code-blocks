@@ -31,7 +31,7 @@ const CS_BLUE = "#001364";
 const CS_PINK = "#FE2C55";
 const CS_BORDER = "#eef4fd";
 
-// ─── Field map (Users table — every field this form reads or writes) ──
+// ─── Field map (Users table. Every field this form reads or writes) ──
 const select = q.select({
   fullName: "PXdkq",
   email: "T3cFq",
@@ -64,7 +64,7 @@ const ICONS = {
 
 // ─── Option UUIDs ─────────────────────────────────────────────────
 
-// Track picker options — local UI state only, not saved anywhere.
+// Track picker options. Local UI state only, not saved anywhere.
 // Picking these just filters which membership options show in step 4.
 const TRACK_OPTIONS = [
   { key: "shop",    label: "TikTok Shop",   icon: ICONS.shop },
@@ -240,6 +240,25 @@ const STEPS = [
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────
+function isAtLeast18(dateStr) {
+  if (!dateStr) return false;
+  const birth = new Date(dateStr);
+  if (isNaN(birth.getTime())) return false;
+  const today = new Date();
+  const eighteen = new Date(
+    today.getFullYear() - 18,
+    today.getMonth(),
+    today.getDate(),
+  );
+  return birth <= eighteen;
+}
+
+function getMaxBirthDate() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 18);
+  return d.toISOString().split("T")[0];
+}
+
 function generateOAuthState() {
   const r = Math.random().toString(36).slice(2);
   const t = Date.now().toString(36);
@@ -359,37 +378,30 @@ function TrackTile({ option, selected, onToggle }) {
     <button
       type="button"
       onClick={onToggle}
-      className="text-left transition-all rounded-2xl p-5 border-2"
+      className="text-left transition-all rounded-2xl p-5 border-2 relative"
       style={{
         borderColor: selected ? CS_PINK : CS_BORDER,
         backgroundColor: selected ? "rgba(254,44,85,0.04)" : "#fff",
       }}
     >
-      <div className="flex items-start gap-3">
-        <div
-          className="rounded-xl flex items-center justify-center"
-          style={{
-            width: 44,
-            height: 44,
-            backgroundColor: selected ? CS_PINK : "#000624",
-          }}
-        >
-          <img src={option.icon} alt={option.label} style={{ width: 22, height: 22 }} />
+      <div className="flex flex-col items-center text-center gap-3">
+        <img
+          src={option.icon}
+          alt={option.label}
+          style={{ width: 56, height: 56, objectFit: "contain", display: "block" }}
+        />
+        <div className="font-semibold" style={{ color: CS_BLUE }}>
+          {option.label}
         </div>
-        <div className="flex-1">
-          <div className="font-semibold" style={{ color: CS_BLUE }}>
-            {option.label}
-          </div>
-        </div>
-        {selected && (
-          <div
-            className="rounded-full p-1"
-            style={{ backgroundColor: CS_PINK }}
-          >
-            <Check className="h-3 w-3 text-white" strokeWidth={3} />
-          </div>
-        )}
       </div>
+      {selected && (
+        <div
+          className="absolute top-2 right-2 rounded-full p-1"
+          style={{ backgroundColor: CS_PINK }}
+        >
+          <Check className="h-3 w-3 text-white" strokeWidth={3} />
+        </div>
+      )}
     </button>
   );
 }
@@ -420,7 +432,7 @@ export default function Block() {
   const [stepIdx, setStepIdx] = useState(0);
   const [saving, setSaving] = useState(false);
 
-  // Local form state — starts blank every visit (no hydration from User
+  // Local form state. Starts blank every visit (no hydration from User
   // record), so required validation actually forces a real entry.
   const [form, setForm] = useState({
     track: [],
@@ -433,6 +445,7 @@ export default function Block() {
     regionalAccent: "",
     heritage: "",
     firstLanguage: "",
+    localDialect: "", // "yes" | "no"
     jobTitle: "",
     industry: "",
     position: "",
@@ -450,20 +463,6 @@ export default function Block() {
     },
   });
 
-  const persistFields = async (fields) => {
-    if (!user?.id) {
-      toast.error("Not signed in");
-      return;
-    }
-    setSaving(true);
-    try {
-      await updateRecord.mutateAsync({ recordId: user.id, fields });
-      setSaving(false);
-    } catch (e) {
-      // onError handler already toasted
-    }
-  };
-
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
   const toggleInArray = (key, id) => {
@@ -479,9 +478,10 @@ export default function Block() {
   const goNext = () => setStepIdx((i) => Math.min(i + 1, STEPS.length - 1));
   const goBack = () => setStepIdx((i) => Math.max(i - 1, 0));
 
-  // ─── Per-step continue handlers ────────────────────────────────
-  // All select fields write as plain UUID strings. Multi-selects on the
-  // Users table get sent as arrays of UUIDs. Linked records use [{id}].
+  // ─── Per-step validators ──────────────────────────────────────
+  // Each step just validates and advances. Nothing writes to the
+  // database until the final Connect TikTok step does one big atomic
+  // save. If the user bails before that, no half-finished record.
   const continueWelcome = () => goNext();
 
   const continueTrack = () => {
@@ -489,67 +489,102 @@ export default function Block() {
     goNext();
   };
 
-  const continueCadence = async () => {
+  const continueCadence = () => {
     const selectedKeys = TRACK_OPTIONS.filter((t) => form.track.includes(t.key)).map((t) => t.key);
     const allPicked = selectedKeys.every((k) => !!form.membershipsByTrack[k]);
     if (!allPicked) return;
-    const ids = selectedKeys
-      .map((k) => form.membershipsByTrack[k])
-      .filter(Boolean)
-      .map((id) => ({ id }));
-    await persistFields({ PxOWN: ids });
     goNext();
   };
 
-  const continueAbout = async () => {
+  const continueAbout = () => {
     if (!form.age || !form.gender || !form.pronouns || !form.birthday) return;
-    await persistFields({
+    if (!isAtLeast18(form.birthday)) {
+      toast.error("You must be 18 or over to join Creator Scans.");
+      return;
+    }
+    goNext();
+  };
+
+  const continueWhere = () => {
+    if (
+      !form.city.trim() ||
+      !form.regionalAccent ||
+      !form.heritage.trim() ||
+      !form.firstLanguage.trim() ||
+      !form.localDialect
+    )
+      return;
+    goNext();
+  };
+
+  const continueCareer = () => {
+    if (
+      !form.jobTitle.trim() ||
+      !form.industry ||
+      !form.position ||
+      !form.careerStage ||
+      !form.income
+    )
+      return;
+    goNext();
+  };
+
+  const continueWhy = () => {
+    if (form.lookingFor.length === 0 || !form.myGoal.trim()) return;
+    goNext();
+  };
+
+  // ─── Build the single atomic save payload ─────────────────────
+  // Industry / Position / Career Stage / Income are multi-select fields
+  // in the schema but the UI is single-pick, so wrap each in a one-item
+  // array so Softr accepts them.
+  const buildUpdates = () => {
+    const membershipIds = TRACK_OPTIONS
+      .filter((t) => form.track.includes(t.key))
+      .map((t) => form.membershipsByTrack[t.key])
+      .filter(Boolean)
+      .map((id) => ({ id }));
+
+    return {
+      PxOWN: membershipIds,
       aNbbk: form.age,
       ZrMCm: form.gender,
       W933n: form.pronouns,
       A79E9: form.birthday,
-    });
-    goNext();
-  };
-
-  const continueWhere = async () => {
-    if (!form.city || !form.regionalAccent || !form.heritage || !form.firstLanguage) return;
-    await persistFields({
-      z4TF1: form.city,
+      z4TF1: form.city.trim(),
       TV7Nz: form.regionalAccent,
-      FzvXF: form.heritage,
-      "3hJpt": form.firstLanguage,
-    });
-    goNext();
-  };
-
-  const continueCareer = async () => {
-    if (!form.jobTitle || !form.industry || !form.position || !form.careerStage || !form.income) return;
-    // Industry / Position / Career Stage / Income are multi-select fields in
-    // the schema but the UI is single-pick — wrap each in a one-item array.
-    await persistFields({
-      "6aChZ": form.jobTitle,
+      FzvXF: form.heritage.trim(),
+      "3hJpt": form.firstLanguage.trim(),
+      aWNgr: form.localDialect === "yes",
+      "6aChZ": form.jobTitle.trim(),
       aDyIX: [form.industry],
       "1kULp": [form.position],
       SCLTv: [form.careerStage],
       iwraT: [form.income],
-    });
-    goNext();
-  };
-
-  const continueWhy = async () => {
-    if (form.lookingFor.length === 0 || !form.myGoal.trim()) return;
-    await persistFields({
       VzOte: form.lookingFor,
       uNdfV: form.myGoal.trim(),
-    });
-    goNext();
+    };
   };
 
   const handleConnectTikTok = async () => {
+    if (!user?.id) {
+      toast.error("Not signed in");
+      return;
+    }
+
     setSaving(true);
 
-    // Generate CSRF state, store in sessionStorage to match dashboard block
+    // 1. One atomic save of every answer collected across all steps
+    const updates = buildUpdates();
+    console.log("=== onboarding save payload:", JSON.stringify(updates, null, 2));
+    try {
+      await updateRecord.mutateAsync({ recordId: user.id, fields: updates });
+    } catch (e) {
+      // onError already toasted; bail before OAuth so we don't lose the state
+      return;
+    }
+
+    // 2. Generate CSRF state, store in sessionStorage to match dashboard block
     const state = generateOAuthState();
     try {
       sessionStorage.setItem("cs_tiktok_oauth_state", state);
@@ -557,7 +592,7 @@ export default function Block() {
       // sessionStorage might be blocked; proceed anyway
     }
 
-    // Redirect to TikTok OAuth with our state
+    // 3. Redirect to TikTok OAuth with our state
     const url = `${TIKTOK_OAUTH_BASE}&state=${state}`;
     window.location.href = url;
   };
@@ -596,7 +631,7 @@ export default function Block() {
                 <>
                   <StepHeading
                     eyebrow="Welcome"
-                    title={`Hey ${firstName} — let's get you set up.`}
+                    title={`Hey ${firstName}, let's get you set up.`}
                     description="A few quick questions to set up your account, then we'll connect your TikTok and you're in. Most people finish in under 3 minutes."
                   />
                   <div className="rounded-xl p-5 space-y-3" style={{ backgroundColor: CS_BORDER }}>
@@ -632,7 +667,7 @@ export default function Block() {
                     accountability. We help you stick to a weekly minimum so
                     you don't ghost your TikTok journey.
                     <br /><br />
-                    Pick what you actually do — Shop creators must pick Shop,
+                    Pick what you actually do. Shop creators must pick Shop,
                     Live creators must pick Live. If you want to push into
                     other content too, add it. We'll hold you accountable to
                     all of them.
@@ -667,8 +702,8 @@ export default function Block() {
                   />
                   <InfoToggle>
                     This is your weekly minimum. We always encourage posting
-                    more — ideally multiple times a day — but pick what you
-                    can realistically commit to.
+                    more, ideally multiple times a day. But pick what you can
+                    realistically commit to.
                     <br /><br />
                     Drop below your minimum and you lose your streak.
                   </InfoToggle>
@@ -679,13 +714,12 @@ export default function Block() {
                         .sort((a, b) => (TIER_ORDER[a.tier] ?? 99) - (TIER_ORDER[b.tier] ?? 99));
                       return (
                         <div key={t.key}>
-                          <div className="flex items-center gap-2 mb-3">
-                            <div
-                              className="rounded-lg flex items-center justify-center"
-                              style={{ width: 32, height: 32, backgroundColor: "#000624" }}
-                            >
-                              <img src={t.icon} alt={t.label} style={{ width: 18, height: 18 }} />
-                            </div>
+                          <div className="flex items-center gap-3 mb-3">
+                            <img
+                              src={t.icon}
+                              alt={t.label}
+                              style={{ width: 36, height: 36, objectFit: "contain", display: "block" }}
+                            />
                             <div className="font-semibold text-sm" style={{ color: CS_BLUE }}>
                               {t.label}
                             </div>
@@ -793,7 +827,11 @@ export default function Block() {
                         type="date"
                         value={form.birthday}
                         onChange={(e) => set("birthday", e.target.value)}
+                        max={getMaxBirthDate()}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        You must be 18 or over to join Creator Scans.
+                      </p>
                     </div>
                   </div>
                   <NavBar
@@ -850,16 +888,27 @@ export default function Block() {
                         placeholder="English"
                       />
                     </div>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label>Do you post in your local dialect?</Label>
+                      <Select value={form.localDialect} onValueChange={(v) => set("localDialect", v)}>
+                        <SelectTrigger><SelectValue placeholder="Pick one" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <NavBar
                     onBack={goBack}
                     onContinue={continueWhere}
                     isSaving={saving}
                     canContinue={
-                      !!form.city &&
+                      !!form.city.trim() &&
                       !!form.regionalAccent &&
                       !!form.heritage.trim() &&
-                      !!form.firstLanguage.trim()
+                      !!form.firstLanguage.trim() &&
+                      !!form.localDialect
                     }
                     showBack={showBack}
                   />
@@ -876,7 +925,7 @@ export default function Block() {
                   />
                   <InfoToggle>
                     We work with side-hustlers, full-time employees,
-                    students, founders — every kind of creator. The more we
+                    students, founders. Every kind of creator. The more we
                     know about your day-to-day, the better we can tailor
                     your scripts and content reviews to you.
                   </InfoToggle>
@@ -998,7 +1047,7 @@ export default function Block() {
                   <StepHeading
                     eyebrow="Last step"
                     title="Connect your TikTok."
-                    description="We use TikTok's official auth to pull your bio, profile picture, and stats — and to send your TikTok Shop / Creator Network agency invite. Takes about 30 seconds."
+                    description="We use TikTok's official auth to pull your bio, profile picture, and stats. We also send your TikTok Shop and Creator Network agency invite. Takes about 30 seconds."
                   />
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 rounded-xl p-4" style={{ backgroundColor: CS_BORDER }}>
@@ -1020,18 +1069,41 @@ export default function Block() {
                       </div>
                     </div>
                   </div>
-                  <NavBar
-                    onBack={goBack}
-                    onContinue={handleConnectTikTok}
-                    isSaving={saving}
-                    canContinue
-                    showBack={showBack}
-                    continueLabel="Connect TikTok"
-                    continueIconLeft={ICONS.tiktokLogo}
-                  />
-                  <p className="text-xs text-muted-foreground text-center">
-                    You'll be redirected to TikTok to authorise. After approval you'll land back in the dashboard.
-                  </p>
+                  <button
+                    type="button"
+                    onClick={handleConnectTikTok}
+                    disabled={saving}
+                    className="w-full flex items-center justify-center gap-3 rounded-xl px-6 py-5 font-bold transition-opacity"
+                    style={{
+                      backgroundColor: "#FE2C55",
+                      color: "#fff",
+                      fontSize: 17,
+                      opacity: saving ? 0.6 : 1,
+                      cursor: saving ? "wait" : "pointer",
+                      border: "none",
+                    }}
+                  >
+                    <img
+                      src={ICONS.tiktokLogo}
+                      alt=""
+                      style={{ width: 32, height: 32, display: "block" }}
+                    />
+                    {saving ? "Saving and redirecting…" : "Connect TikTok"}
+                  </button>
+                  <div className="flex items-center justify-between pt-4">
+                    <Button
+                      variant="ghost"
+                      onClick={goBack}
+                      disabled={saving}
+                      className="gap-2"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Back
+                    </Button>
+                    <p className="text-xs text-muted-foreground text-right">
+                      You'll be redirected to TikTok to authorise. After approval you'll land back in the dashboard.
+                    </p>
+                  </div>
                 </>
               )}
 
