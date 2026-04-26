@@ -38,6 +38,7 @@ const select = q.select({
   fullName: "PXdkq",
   avatar: "8L9hV",
   tiktokUsername: "uZ8z0",
+  tiktokConnected: "gfgBN",
   shopBound: "bTOzJ",
   liveBound: "sZ3R2",
   bio: "on8OZ",
@@ -257,9 +258,9 @@ export default function Block() {
         .slice(0, 2)
     : "?";
 
-  // Connection status. Switch this to data.fields.tiktokConnected once
-  // that field is added to q.select and the schema.
-  const isConnected = !!(data.fields.shopBound || data.fields.liveBound);
+  // Connection status comes from the dedicated tiktokConnected boolean
+  // (gfgBN). Bev's n8n OAuth callback flips this true on success.
+  const isConnected = !!data.fields.tiktokConnected;
 
   const startEdit = (section, initialData) => {
     setEditSection(section);
@@ -311,6 +312,7 @@ export default function Block() {
     updateRecord.mutate({
       recordId: data.id,
       fields: {
+        tiktokConnected: false,
         shopBound: false,
         liveBound: false,
       },
