@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
@@ -12,6 +18,21 @@ import { Toaster } from "@/components/ui/sonner";
 import { useState } from "react";
 import { Edit2, Save, X, Check } from "lucide-react";
 
+// ─── Brand palette ────────────────────────────────────────────────
+const CS_NAVY = "#001364";
+const CS_PERIWINKLE = "#7a93ff";
+const CS_BORDER = "#eef4fd";
+const CS_MUTED = "#6b7a99";
+const CS_GREEN = "#16a34a";
+
+// ─── Assets ───────────────────────────────────────────────────────
+const TIKTOK_LOGO =
+  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776343756/tiktok_logo_wht_tras_bkg_zk9cqt.png";
+
+const TIKTOK_OAUTH_BASE =
+  "https://www.tiktok.com/v2/auth/authorize/?client_key=sbaw80qjizq8tx78nd&scope=user.info.basic%2Cuser.info.profile%2Cuser.info.stats%2Cvideo.list%2Cvideo.publish%2Cvideo.upload&response_type=code&redirect_uri=https%3A%2F%2Fwww.creatorscans.com%2Fdashboard";
+
+// ─── Field map (Users table). Keys are aliases used everywhere ────
 const select = q.select({
   email: "T3cFq",
   fullName: "PXdkq",
@@ -23,34 +44,17 @@ const select = q.select({
   tagline: "v2Gu1",
   myGoal: "uNdfV",
   city: "z4TF1",
-  age: "aNbbk",
   pronouns: "W933n",
   gender: "ZrMCm",
-  address: "ONDAV",
   birthday: "A79E9",
   jobTitle: "6aChZ",
-  industry: "aDyIX",
-  position: "1kULp",
-  careerStage: "SCLTv",
-  income: "iwraT",
-  lookingFor: "VzOte",
   heritage: "FzvXF",
   regionalAccent: "TV7Nz",
   firstLanguage: "3hJpt",
   localDialect: "aWNgr",
 });
 
-const CS_BLUE = "#001364";
-const CS_BORDER = "#eef4fd";
-
-const AGE_OPTIONS = [
-  { id: "7c18b135-14c3-4495-b16e-95b72d3e0cbc", label: "18-24" },
-  { id: "5b2a810b-00f7-4858-88db-6d0c423d646b", label: "25-34" },
-  { id: "52f19f78-b5fb-40ce-be37-6328d3cd01c8", label: "35-44" },
-  { id: "78b01971-c8c5-40fe-8d82-f28f87d2b3bb", label: "45-54" },
-  { id: "eadfa9ad-457b-438a-9ffd-c49141be5aa8", label: "55+" },
-];
-
+// ─── Option UUIDs ─────────────────────────────────────────────────
 const PRONOUNS_OPTIONS = [
   { id: "7c923ac9-29b6-4f43-9bdd-26c41f3d4a87", label: "She" },
   { id: "4561af4c-a1db-4d5b-8f8c-dbf4f138cc58", label: "Her" },
@@ -77,86 +81,53 @@ const REGIONAL_ACCENT_OPTIONS = [
   { id: "7cd041dd-dd06-4128-a650-376ea9edd022", label: "Other" },
 ];
 
-function getLabel(options: { id: string; label: string }[], value: { id: string; label: string } | null) {
+const SELECT_OPTIONS_BY_ALIAS = {
+  pronouns: PRONOUNS_OPTIONS,
+  gender: GENDER_OPTIONS,
+  regionalAccent: REGIONAL_ACCENT_OPTIONS,
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────
+function getLabel(options, value) {
   if (!value) return "";
-  const option = options.find((o) => o.id === value.id);
-  return option ? option.label : value.label;
+  const id = typeof value === "object" ? value.id : value;
+  const found = options.find((o) => o.id === id);
+  return found ? found.label : "";
 }
 
-function DisplayField({ label, value }: { label: string; value: string | boolean | null | undefined }) {
+function generateOAuthState() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+// ─── Sub-components ───────────────────────────────────────────────
+function DisplayField({ label, value }) {
   return (
     <div className="space-y-1">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
-      <div className="text-sm">{value === true ? "Yes" : value === false ? "No" : value || "—"}</div>
+      <Label className="text-xs" style={{ color: CS_MUTED }}>{label}</Label>
+      <div className="text-sm" style={{ color: CS_NAVY }}>
+        {value === true ? "Yes" : value === false ? "No" : value || "—"}
+      </div>
     </div>
   );
 }
 
-function SectionCard({
-  title,
-  isEditing,
-  onEdit,
-  onSave,
-  onCancel,
-  isSaving,
-  children,
-}: {
-  title: string;
-  isEditing: boolean;
-  onEdit: () => void;
-  onSave: () => void;
-  onCancel: () => void;
-  isSaving: boolean;
-  children: React.ReactNode;
-}) {
+function TextField({ label, value, onChange, multiline }) {
   return (
-    <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg font-semibold" style={{ color: CS_BLUE }}>
-          {title}
-        </CardTitle>
-        <div className="flex gap-2">
-          {!isEditing ? (
-            <Button variant="ghost" size="sm" onClick={onEdit} style={{ color: CS_BLUE }}>
-              <Edit2 className="h-4 w-4" />
-            </Button>
-          ) : (
-            <>
-              <Button variant="ghost" size="sm" onClick={onCancel} disabled={isSaving}>
-                <X className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={onSave}
-                disabled={isSaving}
-                style={{ backgroundColor: CS_BLUE }}
-              >
-                {isSaving ? "Saving..." : <Save className="h-4 w-4" />}
-              </Button>
-            </>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
+    <div className="space-y-2">
+      <Label className="text-sm" style={{ color: CS_NAVY }}>{label}</Label>
+      {multiline ? (
+        <Textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} />
+      ) : (
+        <Input value={value} onChange={(e) => onChange(e.target.value)} />
+      )}
+    </div>
   );
 }
 
-function SelectField({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: { id: string; label: string }[];
-}) {
+function SelectField({ label, value, onChange, options }) {
   return (
     <div className="space-y-2">
-      <Label className="text-sm">{label}</Label>
+      <Label className="text-sm" style={{ color: CS_NAVY }}>{label}</Label>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger>
           <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
@@ -173,47 +144,82 @@ function SelectField({
   );
 }
 
-function TextField({
-  label,
-  value,
-  onChange,
-  multiline,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  multiline?: boolean;
-}) {
+function SectionCard({ title, isEditing, onEdit, onSave, onCancel, isSaving, children }) {
   return (
-    <div className="space-y-2">
-      <Label className="text-sm">{label}</Label>
-      {multiline ? (
-        <Textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} />
+    <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-lg font-semibold" style={{ color: CS_NAVY }}>
+          {title}
+        </CardTitle>
+        <div className="flex gap-2">
+          {!isEditing ? (
+            <Button variant="ghost" size="sm" onClick={onEdit} style={{ color: CS_PERIWINKLE }}>
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" onClick={onCancel} disabled={isSaving}>
+                <X className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                onClick={onSave}
+                disabled={isSaving}
+                style={{ backgroundColor: CS_PERIWINKLE, color: "#fff" }}
+              >
+                {isSaving ? "Saving…" : <><Save className="h-4 w-4 mr-1" /> Save</>}
+              </Button>
+            </>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+}
+
+function BoundChip({ label, bound }) {
+  return (
+    <div
+      className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium"
+      style={{
+        backgroundColor: bound ? "rgba(122,147,255,0.10)" : "rgba(0,0,0,0.04)",
+        color: bound ? CS_NAVY : CS_MUTED,
+        border: bound ? `1px solid ${CS_PERIWINKLE}40` : "1px solid transparent",
+      }}
+    >
+      {bound ? (
+        <Check className="h-3 w-3" style={{ color: CS_PERIWINKLE }} strokeWidth={3} />
       ) : (
-        <Input value={value} onChange={(e) => onChange(e.target.value)} />
+        <X className="h-3 w-3" strokeWidth={3} />
       )}
+      {label} agency
     </div>
   );
 }
 
+// ─── Main Block ───────────────────────────────────────────────────
 export default function Block() {
   const recordId = useCurrentRecordId();
-  const { data, status, error, refetch } = useRecord({ recordId, select });
+  const { data, status, refetch } = useRecord({ recordId, select });
 
-  const [editSection, setEditSection] = useState<string | null>(null);
+  const [editSection, setEditSection] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [draft, setDraft] = useState<any>({});
+  const [draft, setDraft] = useState({});
 
   const updateRecord = useRecordUpdate({
     fields: select,
     async onSuccess() {
       await refetch();
-      toast.success("Profile updated successfully!");
+      toast.success("Profile updated");
       setEditSection(null);
       setSaving(false);
     },
-    onError(error) {
-      toast.error("Failed to update profile", { description: error.message });
+    onError(err) {
+      console.error("=== user-profile save error:", err);
+      toast.error("Save failed", {
+        description: err?.message || "Open the browser console for details.",
+      });
       setSaving(false);
     },
   });
@@ -222,7 +228,7 @@ export default function Block() {
     return (
       <div className="container py-12">
         <div className="content flex items-center justify-center min-h-[400px]">
-          <div className="text-muted-foreground">Loading profile...</div>
+          <div style={{ color: CS_MUTED }}>Loading profile…</div>
         </div>
       </div>
     );
@@ -232,23 +238,30 @@ export default function Block() {
     return (
       <div className="container py-12">
         <div className="content flex items-center justify-center min-h-[400px]">
-          <div className="text-destructive">Error loading profile</div>
+          <div className="text-destructive">Couldn't load your profile.</div>
         </div>
       </div>
     );
   }
 
-  const avatarUrl = Array.isArray(data.fields.avatar) && data.fields.avatar.length > 0 ? data.fields.avatar[0].url : null;
+  const avatarUrl =
+    Array.isArray(data.fields.avatar) && data.fields.avatar.length > 0
+      ? data.fields.avatar[0].url
+      : null;
   const initials = data.fields.fullName
     ? data.fields.fullName
         .split(" ")
-        .map((n: string) => n[0])
+        .map((n) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)
     : "?";
 
-  const startEdit = (section: string, initialData: any) => {
+  // Connection status. Switch this to data.fields.tiktokConnected once
+  // that field is added to q.select and the schema.
+  const isConnected = !!(data.fields.shopBound || data.fields.liveBound);
+
+  const startEdit = (section, initialData) => {
     setEditSection(section);
     setDraft(initialData);
   };
@@ -258,21 +271,50 @@ export default function Block() {
     setDraft({});
   };
 
-  const saveSection = async (section: string, fieldMapping: Record<string, string>) => {
+  // KEYS in the saved fields object MUST be aliases (matching q.select),
+  // not field IDs. Sending field IDs as keys causes Softr to silently
+  // strip them all and return "Record data cannot be empty" (see docs).
+  const saveSection = (aliases) => {
     setSaving(true);
-    const updates: Record<string, any> = {};
-    Object.keys(fieldMapping).forEach((key) => {
-      const value = draft[key];
-      // For select fields, convert ID string to {id, label} object
-      if (typeof value === 'string' && value && (key === 'age' || key === 'pronouns' || key === 'gender' || key === 'regionalAccent')) {
-        const options = key === 'age' ? AGE_OPTIONS : key === 'pronouns' ? PRONOUNS_OPTIONS : key === 'gender' ? GENDER_OPTIONS : REGIONAL_ACCENT_OPTIONS;
-        const option = options.find(o => o.id === value);
-        updates[fieldMapping[key]] = option ? { id: option.id, label: option.label } : null;
-      } else {
-        updates[fieldMapping[key]] = value;
+    const updates = {};
+    aliases.forEach((alias) => {
+      let value = draft[alias];
+      // Single-select fields write as { id, label }, not as plain UUID.
+      if (typeof value === "string" && value && SELECT_OPTIONS_BY_ALIAS[alias]) {
+        const opt = SELECT_OPTIONS_BY_ALIAS[alias].find((o) => o.id === value);
+        value = opt ? { id: opt.id, label: opt.label } : null;
       }
+      updates[alias] = value;
     });
+    console.log("=== user-profile save:", JSON.stringify(updates, null, 2));
     updateRecord.mutate({ recordId: data.id, fields: updates });
+  };
+
+  const handleConnect = () => {
+    const state = generateOAuthState();
+    try {
+      sessionStorage.setItem("cs_tiktok_oauth_state", state);
+    } catch (e) {
+      // sessionStorage might be blocked; proceed anyway
+    }
+    window.location.href = `${TIKTOK_OAUTH_BASE}&state=${state}`;
+  };
+
+  const handleDisconnect = () => {
+    if (
+      !window.confirm(
+        "Disconnect TikTok? Your stats and agency invite will stop syncing until you reconnect.",
+      )
+    )
+      return;
+    setSaving(true);
+    updateRecord.mutate({
+      recordId: data.id,
+      fields: {
+        shopBound: false,
+        liveBound: false,
+      },
+    });
   };
 
   return (
@@ -280,7 +322,7 @@ export default function Block() {
       <Toaster />
       <div className="container py-8">
         <div className="content max-w-4xl mx-auto space-y-6">
-          {/* Profile Section */}
+          {/* ─── Profile (avatar + name + email + bio + tagline) ─── */}
           <SectionCard
             title="Profile"
             isEditing={editSection === "profile"}
@@ -291,34 +333,56 @@ export default function Block() {
                 tagline: data.fields.tagline || "",
               })
             }
-            onSave={() =>
-              saveSection("profile", {
-                fullName: "PXdkq",
-                bio: "on8OZ",
-                tagline: "v2Gu1",
-              })
-            }
+            onSave={() => saveSection(["fullName", "bio", "tagline"])}
             onCancel={cancelEdit}
             isSaving={saving}
           >
             {editSection === "profile" ? (
               <div className="space-y-4">
-                <TextField label="Full Name" value={draft.fullName} onChange={(v) => setDraft({ ...draft, fullName: v })} />
-                <TextField label="Bio" value={draft.bio} onChange={(v) => setDraft({ ...draft, bio: v })} multiline />
-                <TextField label="Tagline" value={draft.tagline} onChange={(v) => setDraft({ ...draft, tagline: v })} />
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={avatarUrl || undefined} />
+                    <AvatarFallback style={{ backgroundColor: CS_BORDER, color: CS_NAVY }}>
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-xs" style={{ color: CS_MUTED }}>
+                    Profile picture comes from your connected TikTok account.
+                  </div>
+                </div>
+                <TextField
+                  label="Full Name"
+                  value={draft.fullName}
+                  onChange={(v) => setDraft({ ...draft, fullName: v })}
+                />
+                <TextField
+                  label="Bio"
+                  value={draft.bio}
+                  onChange={(v) => setDraft({ ...draft, bio: v })}
+                  multiline
+                />
+                <TextField
+                  label="Tagline"
+                  value={draft.tagline}
+                  onChange={(v) => setDraft({ ...draft, tagline: v })}
+                />
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-20 w-20">
                     <AvatarImage src={avatarUrl || undefined} />
-                    <AvatarFallback style={{ backgroundColor: CS_BORDER, color: CS_BLUE }}>{initials}</AvatarFallback>
+                    <AvatarFallback style={{ backgroundColor: CS_BORDER, color: CS_NAVY }}>
+                      {initials}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h2 className="text-2xl font-bold" style={{ color: CS_BLUE }}>
+                    <h2 className="text-2xl font-bold" style={{ color: CS_NAVY }}>
                       {data.fields.fullName || "No name"}
                     </h2>
-                    <p className="text-sm text-muted-foreground">{data.fields.email}</p>
+                    <p className="text-sm" style={{ color: CS_MUTED }}>
+                      {data.fields.email}
+                    </p>
                   </div>
                 </div>
                 <DisplayField label="Bio" value={data.fields.bio} />
@@ -327,34 +391,23 @@ export default function Block() {
             )}
           </SectionCard>
 
-          {/* Personal Details Section */}
+          {/* ─── Personal Details (no Age — derived from birthday) ─── */}
           <SectionCard
             title="Personal Details"
             isEditing={editSection === "personal"}
             onEdit={() =>
               startEdit("personal", {
-                age: data.fields.age?.id || "",
                 pronouns: data.fields.pronouns?.id || "",
                 gender: data.fields.gender?.id || "",
-                address: data.fields.address || "",
                 birthday: data.fields.birthday || "",
               })
             }
-            onSave={() =>
-              saveSection("personal", {
-                age: "aNbbk",
-                pronouns: "W933n",
-                gender: "ZrMCm",
-                address: "ONDAV",
-                birthday: "A79E9",
-              })
-            }
+            onSave={() => saveSection(["pronouns", "gender", "birthday"])}
             onCancel={cancelEdit}
             isSaving={saving}
           >
             {editSection === "personal" ? (
               <div className="grid md:grid-cols-2 gap-4">
-                <SelectField label="Age" value={draft.age} onChange={(v) => setDraft({ ...draft, age: v })} options={AGE_OPTIONS} />
                 <SelectField
                   label="Pronouns"
                   value={draft.pronouns}
@@ -367,25 +420,25 @@ export default function Block() {
                   onChange={(v) => setDraft({ ...draft, gender: v })}
                   options={GENDER_OPTIONS}
                 />
-                <TextField label="Birthday" value={draft.birthday} onChange={(v) => setDraft({ ...draft, birthday: v })} />
-                <div className="md:col-span-2">
-                  <TextField label="Address" value={draft.address} onChange={(v) => setDraft({ ...draft, address: v })} multiline />
+                <div className="md:col-span-2 space-y-2">
+                  <Label className="text-sm" style={{ color: CS_NAVY }}>Birthday</Label>
+                  <Input
+                    type="date"
+                    value={draft.birthday}
+                    onChange={(e) => setDraft({ ...draft, birthday: e.target.value })}
+                  />
                 </div>
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
-                <DisplayField label="Age" value={getLabel(AGE_OPTIONS, data.fields.age)} />
                 <DisplayField label="Pronouns" value={getLabel(PRONOUNS_OPTIONS, data.fields.pronouns)} />
                 <DisplayField label="Gender" value={getLabel(GENDER_OPTIONS, data.fields.gender)} />
                 <DisplayField label="Birthday" value={data.fields.birthday} />
-                <div className="md:col-span-2">
-                  <DisplayField label="Address" value={data.fields.address} />
-                </div>
               </div>
             )}
           </SectionCard>
 
-          {/* Location & Language Section */}
+          {/* ─── Location & Language ─── */}
           <SectionCard
             title="Location & Language"
             isEditing={editSection === "location"}
@@ -399,21 +452,23 @@ export default function Block() {
               })
             }
             onSave={() =>
-              saveSection("location", {
-                city: "z4TF1",
-                heritage: "FzvXF",
-                regionalAccent: "TV7Nz",
-                firstLanguage: "3hJpt",
-                localDialect: "aWNgr",
-              })
+              saveSection(["city", "heritage", "regionalAccent", "firstLanguage", "localDialect"])
             }
             onCancel={cancelEdit}
             isSaving={saving}
           >
             {editSection === "location" ? (
               <div className="grid md:grid-cols-2 gap-4">
-                <TextField label="City" value={draft.city} onChange={(v) => setDraft({ ...draft, city: v })} />
-                <TextField label="Heritage" value={draft.heritage} onChange={(v) => setDraft({ ...draft, heritage: v })} />
+                <TextField
+                  label="City"
+                  value={draft.city}
+                  onChange={(v) => setDraft({ ...draft, city: v })}
+                />
+                <TextField
+                  label="Heritage"
+                  value={draft.heritage}
+                  onChange={(v) => setDraft({ ...draft, heritage: v })}
+                />
                 <SelectField
                   label="Regional Accent"
                   value={draft.regionalAccent}
@@ -425,14 +480,15 @@ export default function Block() {
                   value={draft.firstLanguage}
                   onChange={(v) => setDraft({ ...draft, firstLanguage: v })}
                 />
-                <div className="flex items-center space-x-2">
+                <div className="md:col-span-2 flex items-start gap-3 rounded-xl p-3" style={{ backgroundColor: CS_BORDER }}>
                   <Checkbox
                     id="localDialect"
                     checked={draft.localDialect}
-                    onCheckedChange={(checked) => setDraft({ ...draft, localDialect: checked })}
+                    onCheckedChange={(checked) => setDraft({ ...draft, localDialect: !!checked })}
+                    className="mt-0.5"
                   />
-                  <Label htmlFor="localDialect" className="text-sm font-normal cursor-pointer">
-                    Local Dialect
+                  <Label htmlFor="localDialect" className="text-sm cursor-pointer" style={{ color: CS_NAVY }}>
+                    I post in my local dialect (used to write scripts in your voice)
                   </Label>
                 </div>
               </div>
@@ -440,14 +496,17 @@ export default function Block() {
               <div className="grid md:grid-cols-2 gap-4">
                 <DisplayField label="City" value={data.fields.city} />
                 <DisplayField label="Heritage" value={data.fields.heritage} />
-                <DisplayField label="Regional Accent" value={getLabel(REGIONAL_ACCENT_OPTIONS, data.fields.regionalAccent)} />
+                <DisplayField
+                  label="Regional Accent"
+                  value={getLabel(REGIONAL_ACCENT_OPTIONS, data.fields.regionalAccent)}
+                />
                 <DisplayField label="First Language" value={data.fields.firstLanguage} />
                 <DisplayField label="Local Dialect" value={data.fields.localDialect} />
               </div>
             )}
           </SectionCard>
 
-          {/* Career Section */}
+          {/* ─── Career ─── */}
           <SectionCard
             title="Career"
             isEditing={editSection === "career"}
@@ -456,17 +515,17 @@ export default function Block() {
                 jobTitle: data.fields.jobTitle || "",
               })
             }
-            onSave={() =>
-              saveSection("career", {
-                jobTitle: "6aChZ",
-              })
-            }
+            onSave={() => saveSection(["jobTitle"])}
             onCancel={cancelEdit}
             isSaving={saving}
           >
             {editSection === "career" ? (
               <div className="grid md:grid-cols-2 gap-4">
-                <TextField label="Job Title" value={draft.jobTitle} onChange={(v) => setDraft({ ...draft, jobTitle: v })} />
+                <TextField
+                  label="Job Title"
+                  value={draft.jobTitle}
+                  onChange={(v) => setDraft({ ...draft, jobTitle: v })}
+                />
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
@@ -475,7 +534,7 @@ export default function Block() {
             )}
           </SectionCard>
 
-          {/* Creator Goals Section */}
+          {/* ─── Creator Goals ─── */}
           <SectionCard
             title="Creator Goals"
             isEditing={editSection === "goals"}
@@ -484,17 +543,18 @@ export default function Block() {
                 myGoal: data.fields.myGoal || "",
               })
             }
-            onSave={() =>
-              saveSection("goals", {
-                myGoal: "uNdfV",
-              })
-            }
+            onSave={() => saveSection(["myGoal"])}
             onCancel={cancelEdit}
             isSaving={saving}
           >
             {editSection === "goals" ? (
               <div className="space-y-4">
-                <TextField label="My Goal" value={draft.myGoal} onChange={(v) => setDraft({ ...draft, myGoal: v })} multiline />
+                <TextField
+                  label="My Goal"
+                  value={draft.myGoal}
+                  onChange={(v) => setDraft({ ...draft, myGoal: v })}
+                  multiline
+                />
               </div>
             ) : (
               <div className="space-y-4">
@@ -503,27 +563,100 @@ export default function Block() {
             )}
           </SectionCard>
 
-          {/* TikTok Connection Section (Read-only) */}
+          {/* ─── TikTok Connection (Connect / Disconnect) ─── */}
           <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold" style={{ color: CS_BLUE }}>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold" style={{ color: CS_NAVY }}>
                 TikTok Connection
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <DisplayField label="TikTok Username" value={data.fields.tiktokUsername} />
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-2">
-                    {data.fields.shopBound ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-600" />}
-                    <span className="text-sm">Shop</span>
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="rounded-xl flex items-center justify-center shrink-0"
+                    style={{ width: 48, height: 48, backgroundColor: "#000624" }}
+                  >
+                    <img
+                      src={TIKTOK_LOGO}
+                      alt="TikTok"
+                      style={{ width: 28, height: 28, display: "block" }}
+                    />
                   </div>
-                  <div className="flex items-center gap-2">
-                    {data.fields.liveBound ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-600" />}
-                    <span className="text-sm">LIVE</span>
+                  <div>
+                    {data.fields.tiktokUsername ? (
+                      <>
+                        <div className="font-semibold" style={{ color: CS_NAVY }}>
+                          @{data.fields.tiktokUsername}
+                        </div>
+                        <div
+                          className="flex items-center gap-1.5 text-xs mt-0.5"
+                          style={{ color: isConnected ? CS_GREEN : CS_MUTED }}
+                        >
+                          <span
+                            className="rounded-full"
+                            style={{
+                              width: 6,
+                              height: 6,
+                              backgroundColor: isConnected ? CS_GREEN : "#9ca3af",
+                            }}
+                          />
+                          {isConnected ? "Connected" : "Not connected"}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="font-semibold" style={{ color: CS_NAVY }}>
+                          No TikTok connected
+                        </div>
+                        <div className="text-xs mt-0.5" style={{ color: CS_MUTED }}>
+                          Connect to import your bio, profile picture, and stats.
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
+                <div>
+                  {isConnected ? (
+                    <Button
+                      variant="outline"
+                      onClick={handleDisconnect}
+                      disabled={saving}
+                      style={{
+                        color: CS_MUTED,
+                        borderColor: CS_BORDER,
+                      }}
+                    >
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleConnect}
+                      disabled={saving}
+                      className="font-semibold"
+                      style={{ backgroundColor: CS_PERIWINKLE, color: "#fff" }}
+                    >
+                      Connect TikTok
+                    </Button>
+                  )}
+                </div>
               </div>
+
+              {data.fields.tiktokUsername && (
+                <div
+                  className="mt-5 pt-4 border-t flex flex-wrap gap-3"
+                  style={{ borderColor: CS_BORDER }}
+                >
+                  <BoundChip label="Shop" bound={!!data.fields.shopBound} />
+                  <BoundChip label="LIVE" bound={!!data.fields.liveBound} />
+                </div>
+              )}
+
+              {!isConnected && data.fields.tiktokUsername && (
+                <p className="mt-4 text-xs" style={{ color: CS_MUTED }}>
+                  Your handle is on file but the agency invite hasn't been sent yet. Connect TikTok to finish.
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
