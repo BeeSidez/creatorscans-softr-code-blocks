@@ -1,0 +1,331 @@
+import { useRecords, q } from "@/lib/datasource";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Activity, AlertTriangle, ArrowRight, Flame, Sparkles } from "lucide-react";
+
+// ─── Brand palette ────────────────────────────────────────────────
+const CS_NAVY = "#001364";
+const CS_PERIWINKLE = "#7a93ff";
+const CS_BORDER = "#eef4fd";
+const CS_MUTED = "#6b7a99";
+const CS_GREEN = "#16a34a";
+const CS_AMBER = "#b45309";
+const CS_RED = "#b91c1c";
+
+// ─── Track icons (Cloudinary) ─────────────────────────────────────
+const TRACK_ICONS = {
+  shop:    "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/SHOP_yneevd.png",
+  live:    "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264988/LIVE_mfem6w.png",
+  organic: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264988/ORGANIC_rcxwbs.png",
+};
+
+// ─── Field map (Commitments table) ────────────────────────────────
+// SOURCE TAB MUST BE SET TO COMMITMENTS WITH A FILTER user = logged in user.
+const select = q.select({
+  member: "2hNt4",                  // FORMULA — display name
+  membership: "IuCeA",              // LOOKUP — membership name(s)
+  joinDate: "ijYPw",                // LOOKUP — Users.join_date
+  weeklyLiveTarget: "6Dax4",
+  weeklyShopTarget: "3vrSz",
+  weeklyOrganicTarget: "ciAoc",
+  liveDoneThisWeek: "eeAd3",
+  shopDoneThisWeek: "UARou",
+  organicDoneThisWeek: "9RWQS",
+  liveRemaining: "FI6ZG",
+  shopRemaining: "HDK5G",
+  organicRemaining: "JqBcT",
+  liveStreak: "QFVZf",
+  postingStreak: "U4k88",
+  warningStatus: "de4EX",
+  aiCredits: "N3laD",               // total monthly allowance
+  aiCreditsUsed: "wqJ3n",           // total_ai_credits (Users) — count used
+  aiCreditsRemaining: "AFACw",      // ai_credits - used
+});
+
+// ─── Warning status styles ────────────────────────────────────────
+const WARNING_STYLES = {
+  warned: {
+    color: CS_AMBER,
+    bg: "rgba(180,83,9,0.10)",
+    border: "rgba(180,83,9,0.30)",
+    title: "Heads up",
+    body: "You've fallen below your weekly commitment. Hit your minimums this week to clear the warning.",
+  },
+  cooldown: {
+    color: CS_AMBER,
+    bg: "rgba(180,83,9,0.12)",
+    border: "rgba(180,83,9,0.35)",
+    title: "Cooldown",
+    body: "You're in a cooldown period. Catch up to keep your tier.",
+  },
+  pending_downgrade: {
+    color: CS_RED,
+    bg: "rgba(185,28,28,0.10)",
+    border: "rgba(185,28,28,0.30)",
+    title: "Pending downgrade",
+    body: "Your tier will be downgraded if you don't hit your weekly commitment soon.",
+  },
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────
+function num(value) {
+  if (value === null || value === undefined || value === "") return 0;
+  const n = Number(value);
+  return Number.isNaN(n) ? 0 : n;
+}
+
+function pct(done, target) {
+  if (!target || target <= 0) return 0;
+  return Math.min(100, Math.round((done / target) * 100));
+}
+
+function getLabel(value) {
+  if (!value) return "";
+  if (Array.isArray(value)) return value.map((v) => getLabel(v)).filter(Boolean).join(", ");
+  return typeof value === "object" ? value.label : value;
+}
+
+function formatJoinDate(value) {
+  if (!value) return "";
+  try {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  } catch (e) {
+    return "";
+  }
+}
+
+// ─── Sub-components ───────────────────────────────────────────────
+
+function ProgressBar({ value, max, color }) {
+  const percent = pct(value, max);
+  return (
+    <div
+      className="w-full rounded-full overflow-hidden"
+      style={{ height: 6, backgroundColor: CS_BORDER }}
+    >
+      <div
+        className="h-full transition-all duration-500"
+        style={{ width: `${percent}%`, backgroundColor: color }}
+      />
+    </div>
+  );
+}
+
+function CommitmentCard({ label, icon, target, done, remaining, streak, accent }) {
+  if (!target || target <= 0) return null;
+  const isComplete = done >= target;
+  return (
+    <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-3">
+          <img
+            src={icon}
+            alt={label}
+            style={{ width: 36, height: 36, borderRadius: 9, objectFit: "cover", display: "block" }}
+          />
+          <div>
+            <CardTitle className="text-sm font-semibold" style={{ color: CS_NAVY }}>
+              {label}
+            </CardTitle>
+            <div className="text-xs" style={{ color: CS_MUTED }}>This week</div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-baseline gap-2 mb-3">
+          <span className="font-extrabold" style={{ color: CS_NAVY, fontSize: 32, lineHeight: 1 }}>
+            {done}
+          </span>
+          <span className="text-base font-medium" style={{ color: CS_MUTED }}>
+            / {target}
+          </span>
+        </div>
+        <ProgressBar value={done} max={target} color={accent} />
+        <div className="flex items-center justify-between mt-3 text-xs">
+          <span style={{ color: isComplete ? CS_GREEN : CS_MUTED, fontWeight: isComplete ? 600 : 400 }}>
+            {isComplete ? "Done this week" : `${remaining} to go`}
+          </span>
+          {streak > 0 && (
+            <span className="inline-flex items-center gap-1 font-semibold" style={{ color: CS_PERIWINKLE }}>
+              <Flame className="h-3 w-3" />
+              {streak} wk
+            </span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function WarningBanner({ status }) {
+  const style = WARNING_STYLES[status];
+  if (!style) return null;
+  return (
+    <div
+      className="rounded-xl p-4 flex items-start gap-3"
+      style={{ backgroundColor: style.bg, border: `1px solid ${style.border}` }}
+    >
+      <AlertTriangle className="h-5 w-5 mt-0.5 shrink-0" style={{ color: style.color }} />
+      <div>
+        <div className="text-sm font-semibold" style={{ color: style.color }}>
+          {style.title}
+        </div>
+        <div className="text-sm mt-0.5" style={{ color: CS_NAVY }}>
+          {style.body}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Block ───────────────────────────────────────────────────
+export default function Block() {
+  const { data, status } = useRecords({ select, count: 1 });
+
+  if (status === "pending") {
+    return (
+      <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+        <div className="text-sm" style={{ color: CS_MUTED }}>Loading your commitments…</div>
+      </div>
+    );
+  }
+
+  const records = data?.pages.flatMap((p) => p.items) || [];
+  const record = records[0];
+
+  if (!record) {
+    return (
+      <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+        <div className="text-sm" style={{ color: CS_MUTED }}>
+          You don't have any commitments set up yet.{" "}
+          <a href="/onboarding" style={{ color: CS_PERIWINKLE, fontWeight: 600 }}>
+            Finish onboarding →
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  const f = record.fields || {};
+
+  const aiTotal = num(f.aiCredits);
+  const aiUsed = num(f.aiCreditsUsed);
+  const aiRemaining = num(f.aiCreditsRemaining) || Math.max(0, aiTotal - aiUsed);
+
+  const warningStatusLabel = getLabel(f.warningStatus);
+  const membershipLabel = getLabel(f.membership);
+  const joinDateLabel = formatJoinDate(f.joinDate);
+
+  return (
+    <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+      {/* ── Header ── */}
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider mb-3"
+            style={{
+              backgroundColor: "rgba(122,147,255,0.10)",
+              color: CS_PERIWINKLE,
+              border: `1px solid ${CS_PERIWINKLE}40`,
+            }}
+          >
+            <Activity className="h-3 w-3" />
+            Your commitments
+          </div>
+          <h2 className="text-2xl font-bold" style={{ color: CS_NAVY }}>
+            This week
+          </h2>
+          <div className="flex items-center gap-3 mt-1 text-xs" style={{ color: CS_MUTED }}>
+            {membershipLabel && <span>{membershipLabel}</span>}
+            {membershipLabel && joinDateLabel && <span style={{ opacity: 0.4 }}>·</span>}
+            {joinDateLabel && <span>Joined {joinDateLabel}</span>}
+          </div>
+        </div>
+        <Button
+          asChild
+          variant="outline"
+          className="font-semibold gap-2"
+          style={{ color: CS_NAVY, borderColor: CS_BORDER }}
+        >
+          <a href="/commitments">
+            Change commitments
+            <ArrowRight className="h-4 w-4" />
+          </a>
+        </Button>
+      </div>
+
+      {/* ── Warning banner (if any) ── */}
+      {warningStatusLabel && (
+        <div className="mb-5">
+          <WarningBanner status={warningStatusLabel} />
+        </div>
+      )}
+
+      {/* ── Commitments grid ── */}
+      <section className="mb-6">
+        <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: CS_MUTED }}>
+          TikTok commitments
+        </h3>
+        <div className="grid md:grid-cols-3 gap-4">
+          <CommitmentCard
+            label="TikTok LIVE"
+            icon={TRACK_ICONS.live}
+            target={num(f.weeklyLiveTarget)}
+            done={num(f.liveDoneThisWeek)}
+            remaining={num(f.liveRemaining)}
+            streak={num(f.liveStreak)}
+            accent={CS_PERIWINKLE}
+          />
+          <CommitmentCard
+            label="TikTok Shop"
+            icon={TRACK_ICONS.shop}
+            target={num(f.weeklyShopTarget)}
+            done={num(f.shopDoneThisWeek)}
+            remaining={num(f.shopRemaining)}
+            streak={num(f.postingStreak)}
+            accent="#FE2C55"
+          />
+          <CommitmentCard
+            label="Organic posts"
+            icon={TRACK_ICONS.organic}
+            target={num(f.weeklyOrganicTarget)}
+            done={num(f.organicDoneThisWeek)}
+            remaining={num(f.organicRemaining)}
+            streak={0}
+            accent="#7ED9A7"
+          />
+        </div>
+      </section>
+
+      {/* ── AI Credits ── */}
+      <section>
+        <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: CS_MUTED }}>
+          AI credits
+        </h3>
+        <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+          <CardContent className="pt-6">
+            <div className="flex items-end justify-between flex-wrap gap-3 mb-4">
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <Sparkles className="h-5 w-5" style={{ color: CS_PERIWINKLE }} />
+                  <span className="font-extrabold" style={{ color: CS_NAVY, fontSize: 32, lineHeight: 1 }}>
+                    {aiRemaining}
+                  </span>
+                  <span className="text-base font-medium" style={{ color: CS_MUTED }}>
+                    / {aiTotal} remaining
+                  </span>
+                </div>
+                <p className="text-xs mt-1" style={{ color: CS_MUTED }}>
+                  {aiUsed} used this cycle. Resets monthly.
+                </p>
+              </div>
+            </div>
+            <ProgressBar value={aiUsed} max={aiTotal} color={CS_PERIWINKLE} />
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+}
