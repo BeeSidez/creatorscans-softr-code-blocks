@@ -1,0 +1,267 @@
+import { useState } from "react";
+import { useCurrentUser } from "@/lib/user";
+import { useRecordCreate, q } from "@/lib/datasource";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Handshake, MessageSquare } from "lucide-react";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+
+// ─── Brand palette ────────────────────────────────────────────────
+const CS_NAVY = "#001364";
+const CS_PERIWINKLE = "#7a93ff";
+const CS_BORDER = "#eef4fd";
+const CS_MUTED = "#6b7a99";
+const CS_GREEN = "#16a34a";
+
+// ─── Field map (Requests table) ───────────────────────────────────
+// SOURCE TAB IN SOFTR MUST BE SET TO THE REQUESTS TABLE.
+const select = q.select({
+  notes: "cy26q",   // LONG_TEXT — the message body
+  request: "zPHQj", // SELECT — request subject
+  type: "5GA3J",    // SELECT — request type
+  status: "QoxNq",  // SELECT — request status
+  email: "0GTuv",   // LINKED_RECORD -> Users (the requester)
+});
+
+// ─── Option UUIDs (verified via Softr Database API) ───────────────
+const REQUEST_PAYMENT_BILLING = {
+  id: "312273f5-b900-4a5b-b71f-7b61b18fb56f",
+  label: "Payment/billing question",
+};
+
+const TYPE_SUPPORT = {
+  id: "7b4f93a8-a67a-4d98-9d5b-9d0e9afc86b5",
+  label: "Support",
+};
+
+const STATUS_NEW = {
+  id: "7ba10cf6-68fd-4d0c-a8eb-5b08b1f99984",
+  label: "New",
+};
+
+const FEE_PERCENT = "10%";
+
+export default function Block() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const user = useCurrentUser();
+  const createRecord = useRecordCreate({ fields: select });
+
+  const handleSubmit = async () => {
+    if (!message.trim()) {
+      toast.error("Please add a message before sending.");
+      return;
+    }
+    if (!user?.id) {
+      toast.error("You need to be signed in to send a request.");
+      return;
+    }
+    if (createRecord.enabled === false) {
+      toast.error(
+        "This block can't write to Requests. Check the Source tab in Softr is set to the Requests table.",
+      );
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const fields = {
+        notes: message.trim(),
+        request: REQUEST_PAYMENT_BILLING,
+        type: TYPE_SUPPORT,
+        status: STATUS_NEW,
+        email: [{ id: user.id }],
+      };
+      console.log("=== fee-billing request payload:", JSON.stringify(fields, null, 2));
+      await createRecord.mutateAsync(fields);
+      toast.success("Message sent. We'll reply in your support inbox.");
+      setDialogOpen(false);
+      setMessage("");
+    } catch (e) {
+      console.error("=== fee-billing request error:", e);
+      toast.error("Couldn't send message", {
+        description: e?.message || "Open the browser console for details.",
+      });
+    }
+    setSubmitting(false);
+  };
+
+  return (
+    <>
+      <Toaster />
+      <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+        {/* ── Header ── */}
+        <div className="mb-6">
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider mb-3"
+            style={{
+              backgroundColor: "rgba(122,147,255,0.10)",
+              color: CS_PERIWINKLE,
+              border: `1px solid ${CS_PERIWINKLE}40`,
+            }}
+          >
+            <Handshake className="h-3 w-3" />
+            Agency billing
+          </div>
+          <h2 className="text-2xl font-bold" style={{ color: CS_NAVY }}>
+            Your billing
+          </h2>
+          <p className="text-sm mt-1" style={{ color: CS_MUTED }}>
+            You're on the agency fee agreement — no subscription, just commission on TikTok Shop sales.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-5">
+          {/* ── My agreement card (left, 1 col) ── */}
+          <Card
+            className="bg-white"
+            style={{ borderColor: `${CS_PERIWINKLE}55`, borderWidth: 2 }}
+          >
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: CS_MUTED }}>
+                  My agreement
+                </span>
+                <div
+                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
+                  style={{ backgroundColor: "rgba(22,163,74,0.10)", color: CS_GREEN }}
+                >
+                  <span className="rounded-full" style={{ width: 6, height: 6, backgroundColor: CS_GREEN }} />
+                  Active
+                </div>
+              </div>
+              <CardTitle className="font-extrabold" style={{ color: CS_NAVY, fontSize: 36, lineHeight: 1 }}>
+                {FEE_PERCENT}
+                <span className="text-lg font-normal ml-1" style={{ color: CS_MUTED }}>
+                  commission
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3 text-sm" style={{ color: CS_NAVY }}>
+                <li className="flex items-start gap-3">
+                  <span
+                    className="rounded-full mt-1.5 shrink-0"
+                    style={{ width: 5, height: 5, backgroundColor: CS_PERIWINKLE }}
+                  />
+                  <span>On TikTok Shop sales only. Other earnings stay yours.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span
+                    className="rounded-full mt-1.5 shrink-0"
+                    style={{ width: 5, height: 5, backgroundColor: CS_PERIWINKLE }}
+                  />
+                  <span>Taken automatically through TikTok Shop. No invoices to chase.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span
+                    className="rounded-full mt-1.5 shrink-0"
+                    style={{ width: 5, height: 5, backgroundColor: CS_PERIWINKLE }}
+                  />
+                  <span>No monthly subscription. Ever.</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* ── Need help card (right, 2 cols) ── */}
+          <Card className="bg-white md:col-span-2" style={{ borderColor: CS_BORDER }}>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base font-semibold flex items-center gap-2" style={{ color: CS_NAVY }}>
+                <MessageSquare className="h-4 w-4" style={{ color: CS_PERIWINKLE }} />
+                Need help with billing?
+              </CardTitle>
+              <p className="text-xs mt-1" style={{ color: CS_MUTED }}>
+                Got a question, want to update something, or want to cancel? Drop us a message.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div
+                className="rounded-xl p-4 mb-5"
+                style={{ backgroundColor: CS_BORDER }}
+              >
+                <p className="text-sm" style={{ color: CS_NAVY }}>
+                  We typically reply within one working day. Your message lands in your support inbox so you can track the response there.
+                </p>
+              </div>
+              <Button
+                onClick={() => setDialogOpen(true)}
+                className="font-semibold"
+                style={{
+                  backgroundColor: CS_PERIWINKLE,
+                  color: "#fff",
+                  paddingTop: 12,
+                  paddingBottom: 12,
+                  paddingLeft: 24,
+                  paddingRight: 24,
+                  fontSize: 14,
+                  border: "none",
+                }}
+              >
+                Ask a billing question
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* ── Modal ── */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle style={{ color: CS_NAVY }}>
+              Ask a billing question
+            </DialogTitle>
+            <DialogDescription>
+              Tell us what you'd like help with. We'll reply in your support inbox.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium" style={{ color: CS_NAVY }}>
+              What can we help with?
+            </label>
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="e.g. I'd like to know how my fees are calculated this month..."
+              rows={6}
+              autoFocus
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setDialogOpen(false)}
+              disabled={submitting}
+              style={{ color: CS_MUTED }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting || !message.trim()}
+              className="font-semibold"
+              style={{ backgroundColor: CS_PERIWINKLE, color: "#fff" }}
+            >
+              {submitting ? "Sending…" : "Send message"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
