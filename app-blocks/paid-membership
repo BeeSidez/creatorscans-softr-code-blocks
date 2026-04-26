@@ -1,0 +1,191 @@
+import { useRecord, useCurrentRecordId, q } from "@/lib/datasource";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check, Sparkles, CreditCard } from "lucide-react";
+
+// ─── Brand palette ────────────────────────────────────────────────
+const CS_NAVY = "#001364";
+const CS_PERIWINKLE = "#7a93ff";
+const CS_BORDER = "#eef4fd";
+const CS_MUTED = "#6b7a99";
+const CS_GREEN = "#16a34a";
+
+// ─── Field map (Users table) ──────────────────────────────────────
+const select = q.select({
+  fullName: "PXdkq",
+  userGroup: "l8nWy",
+  status: "M5XgY",
+  monthlyMembership: "6JwII",
+  annualMembership: "IduFS",
+});
+
+// ─── Status badge styles ──────────────────────────────────────────
+const STATUS_STYLES = {
+  Pending:  { color: "#b45309", bg: "rgba(245,158,11,0.10)", label: "Pending approval" },
+  Approved: { color: CS_GREEN,   bg: "rgba(22,163,74,0.10)",  label: "Approved" },
+  Active:   { color: CS_GREEN,   bg: "rgba(22,163,74,0.10)",  label: "Active" },
+  Trial:    { color: "#b45309", bg: "rgba(245,158,11,0.10)", label: "Trial" },
+  Paused:   { color: CS_MUTED,   bg: "rgba(107,122,153,0.10)", label: "Paused" },
+  Banned:   { color: "#b91c1c", bg: "rgba(220,38,38,0.10)",  label: "Banned" },
+};
+
+// Everything a paid member gets (free + premium combined).
+const FEATURES = [
+  "Academy access",
+  "TikTok Shop affiliate status",
+  "TikTok LIVE agency status",
+  "Products library",
+  "Brands library",
+  "Full dashboard",
+  "AI content feedback",
+  "Script generation and remix tools",
+  "Ask AI",
+  "Commitment tracking",
+  "Violation support",
+  "Product sample requests",
+];
+
+function getLabel(value) {
+  if (!value) return "";
+  return typeof value === "object" ? value.label : value;
+}
+
+export default function Block() {
+  const recordId = useCurrentRecordId();
+  const { data, status } = useRecord({ recordId, select });
+
+  if (status === "pending") {
+    return (
+      <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+        <div className="text-sm" style={{ color: CS_MUTED }}>Loading membership…</div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+        <div className="text-sm text-destructive">Couldn't load your membership.</div>
+      </div>
+    );
+  }
+
+  const planLabel = getLabel(data.fields.userGroup) || "Premium";
+  const statusLabel = getLabel(data.fields.status);
+  const statusStyle = STATUS_STYLES[statusLabel] || STATUS_STYLES.Active;
+  const priceLine = data.fields.monthlyMembership || "£34.99 / month";
+  const firstName = (data.fields.fullName || "").split(" ")[0] || "there";
+
+  return (
+    <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+      {/* ── Header ── */}
+      <div className="mb-6">
+        <div
+          className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider mb-3"
+          style={{
+            backgroundColor: "rgba(122,147,255,0.10)",
+            color: CS_PERIWINKLE,
+            border: `1px solid ${CS_PERIWINKLE}40`,
+          }}
+        >
+          <Sparkles className="h-3 w-3" />
+          {planLabel}
+        </div>
+        <h2 className="text-2xl font-bold" style={{ color: CS_NAVY }}>
+          Your membership
+        </h2>
+        <p className="text-sm mt-1" style={{ color: CS_MUTED }}>
+          Hi {firstName}, you're all set. Manage everything from here.
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-5">
+        {/* ── My plan card (left, 1 col) ── */}
+        <Card
+          className="bg-white"
+          style={{ borderColor: `${CS_PERIWINKLE}55`, borderWidth: 2 }}
+        >
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: CS_MUTED }}>
+                My plan
+              </span>
+              <div
+                className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{ backgroundColor: statusStyle.bg, color: statusStyle.color }}
+              >
+                <span
+                  className="rounded-full"
+                  style={{ width: 6, height: 6, backgroundColor: statusStyle.color }}
+                />
+                {statusStyle.label}
+              </div>
+            </div>
+            <CardTitle className="text-xl font-bold" style={{ color: CS_NAVY }}>
+              {priceLine}
+            </CardTitle>
+            {data.fields.annualMembership && (
+              <p className="text-xs mt-1" style={{ color: CS_MUTED }}>
+                Or {data.fields.annualMembership} billed yearly
+              </p>
+            )}
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Button
+                asChild
+                className="w-full font-semibold"
+                style={{ backgroundColor: CS_PERIWINKLE, color: "#fff" }}
+              >
+                <a href="/billing" className="inline-flex items-center justify-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Manage billing
+                </a>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full"
+                style={{ color: CS_MUTED, borderColor: CS_BORDER }}
+              >
+                <a href="/billing">Cancel subscription</a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Features card (right, 2 cols) ── */}
+        <Card className="bg-white md:col-span-2" style={{ borderColor: CS_BORDER }}>
+          <CardHeader className="pb-4">
+            <CardTitle
+              className="text-base font-semibold flex items-center gap-2"
+              style={{ color: CS_NAVY }}
+            >
+              <Check className="h-4 w-4" style={{ color: CS_GREEN }} strokeWidth={3} />
+              What you get
+            </CardTitle>
+            <p className="text-xs mt-1" style={{ color: CS_MUTED }}>
+              Everything in your Premium membership.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
+              {FEATURES.map((feature, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <Check
+                    className="h-4 w-4 mt-0.5 shrink-0"
+                    style={{ color: CS_GREEN }}
+                    strokeWidth={3}
+                  />
+                  <span className="text-sm" style={{ color: CS_NAVY }}>
+                    {feature}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

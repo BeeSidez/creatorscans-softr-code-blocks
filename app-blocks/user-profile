@@ -322,8 +322,7 @@ export default function Block() {
   return (
     <>
       <Toaster />
-      <div className="container py-8">
-        <div className="content mx-auto space-y-6" style={{ maxWidth: 1140 }}>
+      <div className="content mx-auto py-4 space-y-6" style={{ maxWidth: 1140 }}>
           {/* ─── Profile (avatar + name + email + bio + tagline) ─── */}
           <SectionCard
             title="Profile"
@@ -662,7 +661,6 @@ export default function Block() {
             </CardContent>
           </Card>
         </div>
-      </div>
     </>
   );
 }
