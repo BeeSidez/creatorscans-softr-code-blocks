@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import {
   useRecord,
   useRecordUpdate,
+  useLinkedRecords,
   useCurrentRecordId,
   q,
 } from "@/lib/datasource";
@@ -32,11 +33,6 @@ import {
 } from "lucide-react";
 
 // ─── Configuration ────────────────────────────────────────────────
-// Memberships webhook — POSTed with cadence data to create Memberships rows.
-// Set this to your n8n / Softr workflow webhook URL when ready.
-// If left empty, the cadence payload is logged to console instead.
-const MEMBERSHIPS_WEBHOOK_URL = "";
-
 // TikTok OAuth (sandbox). Swap client_key when going to production.
 const TIKTOK_OAUTH_BASE =
   "https://www.tiktok.com/v2/auth/authorize/?client_key=sbaw80qjizq8tx78nd&scope=user.info.basic%2Cuser.info.profile%2Cuser.info.stats%2Cvideo.list%2Cvideo.publish%2Cvideo.upload&response_type=code&redirect_uri=https%3A%2F%2Fwww.creatorscans.com%2Fdashboard";
@@ -51,6 +47,7 @@ const select = q.select({
   email: "T3cFq",
   tiktokUsername: "uZ8z0",
   track: "QbvGk",
+  memberships: "PxOWN",
   age: "aNbbk",
   pronouns: "W933n",
   gender: "ZrMCm",
@@ -69,19 +66,22 @@ const select = q.select({
   myGoal: "uNdfV",
 });
 
+// Memberships table fields (used by useLinkedRecords to read the
+// available membership options — does NOT write to the Memberships table)
+const membershipSelect = q.select({
+  name: "yZbhV",
+  trackType: "cxm7q",
+  tier: "21LDd",
+  postsPerWeek: "M16Ja",
+  livesPerWeek: "OY4r9",
+});
+
 // ─── Option UUIDs ─────────────────────────────────────────────────
 const TRACK_OPTIONS = [
   { id: "b272a5a6-b463-4f0e-aabb-8c231bb5e0e3", label: "TikTok Shop", key: "shop", Icon: ShoppingBag },
   { id: "43a33905-ce96-43b1-adca-381d5bb530b9", label: "TikTok Lives", key: "live", Icon: Radio },
   { id: "c882b6ac-ec17-400b-bdc0-05344400fcd9", label: "Organic Posts", key: "organic", Icon: PenTool },
 ];
-
-// Memberships table uses different option UUIDs for Track Type
-const MEMBERSHIP_TRACK_UUIDS = {
-  shop: "336ec709-8e8b-4682-987d-64d68cd7adbc",
-  live: "f93109ee-4c99-4a91-829e-9ad09e145956",
-  organic: "fb3cfd46-591f-49e1-a377-d4dfef279a88",
-};
 
 const AGE_OPTIONS = [
   { id: "7c18b135-14c3-4495-b16e-95b72d3e0cbc", label: "18-24" },
@@ -414,11 +414,23 @@ export default function Block() {
   const [stepIdx, setStepIdx] = useState(0);
   const [saving, setSaving] = useState(false);
 
+  // Fetch the available Memberships rows (read-only, populates the
+  // dropdown of tier options the user can link themselves to).
+  const { data: membershipData } = useLinkedRecords({
+    select: membershipSelect,
+    field: "memberships",
+    count: 100,
+  });
+  const allMemberships = useMemo(
+    () => membershipData?.pages.flatMap((p) => p.items) || [],
+    [membershipData],
+  );
+
   // Local form state — initialised from the user record once loaded
   const [form, setForm] = useState({
     tiktokUsername: "",
     track: [],
-    cadence: { shop: 0, live: 0, organic: 0 },
+    membershipsByTrack: {}, // { shop: "rec123", live: "rec456", organic: "rec789" }
     age: "",
     pronouns: "",
     gender: "",
@@ -528,10 +540,15 @@ export default function Block() {
     goNext();
   };
 
-  const continueCadence = () => {
+  const continueCadence = async () => {
     const selectedKeys = TRACK_OPTIONS.filter((t) => form.track.includes(t.id)).map((t) => t.key);
-    const allSet = selectedKeys.every((k) => Number(form.cadence[k]) > 0);
-    if (!allSet) return;
+    const allPicked = selectedKeys.every((k) => !!form.membershipsByTrack[k]);
+    if (!allPicked) return;
+    const ids = selectedKeys
+      .map((k) => form.membershipsByTrack[k])
+      .filter(Boolean)
+      .map((id) => ({ id }));
+    await persistFields({ PxOWN: ids });
     goNext();
   };
 
@@ -582,33 +599,7 @@ export default function Block() {
   const handleConnectTikTok = async () => {
     setSaving(true);
 
-    // 1. POST cadence to memberships webhook (or log if no URL set)
-    const cadencePayload = {
-      userId: data.id,
-      tracks: TRACK_OPTIONS.filter((t) => form.track.includes(t.id)).map((t) => ({
-        key: t.key,
-        membershipTrackUuid: MEMBERSHIP_TRACK_UUIDS[t.key],
-        label: t.label,
-        cadencePerWeek: Number(form.cadence[t.key]) || 0,
-        cadenceField: t.key === "live" ? "Lives Per Week" : "Posts Per Week",
-      })),
-    };
-
-    if (MEMBERSHIPS_WEBHOOK_URL) {
-      try {
-        await fetch(MEMBERSHIPS_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cadencePayload),
-        });
-      } catch (e) {
-        console.warn("Memberships webhook failed", e);
-      }
-    } else {
-      console.log("=== onboarding cadence payload (set MEMBERSHIPS_WEBHOOK_URL to POST):", cadencePayload);
-    }
-
-    // 2. Generate CSRF state, store in sessionStorage to match dashboard block
+    // Generate CSRF state, store in sessionStorage to match dashboard block
     const state = generateOAuthState();
     try {
       sessionStorage.setItem("cs_tiktok_oauth_state", state);
@@ -616,7 +607,7 @@ export default function Block() {
       // sessionStorage might be blocked; proceed anyway
     }
 
-    // 3. Redirect to TikTok OAuth with our state
+    // Redirect to TikTok OAuth with our state
     const url = `${TIKTOK_OAUTH_BASE}&state=${state}`;
     window.location.href = url;
   };
@@ -744,53 +735,92 @@ export default function Block() {
                 </>
               )}
 
-              {/* ─── 4. Cadence ─── */}
+              {/* ─── 4. Cadence (membership tier picker) ─── */}
               {step.id === "cadence" && (
                 <>
                   <StepHeading
                     eyebrow="Step 3"
-                    title="How often will you post?"
-                    description="Be honest — these become your weekly commitment. You can update them later as your rhythm changes."
+                    title="Pick your weekly intensity."
+                    description="Each track has three levels. Pick the one you can realistically commit to. You can change it later."
                   />
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {TRACK_OPTIONS.filter((t) => form.track.includes(t.id)).map((t) => {
-                      const isLive = t.key === "live";
-                      const unit = isLive ? "lives" : "posts";
+                      const trackLabel = t.key === "live" ? "Live" : t.key === "shop" ? "Shop" : "Organic";
+                      const optionsForTrack = allMemberships.filter((m) => {
+                        const tt = m.fields?.trackType;
+                        const ttLabel = typeof tt === "object" ? tt?.label : tt;
+                        return (ttLabel || "").toLowerCase() === trackLabel.toLowerCase();
+                      });
+                      const sorted = [...optionsForTrack].sort((a, b) => {
+                        const order = { Starter: 0, Pro: 1, Advanced: 2, Custom: 3 };
+                        const ta = a.fields?.tier?.label || "";
+                        const tb = b.fields?.tier?.label || "";
+                        return (order[ta] ?? 99) - (order[tb] ?? 99);
+                      });
                       return (
-                        <div
-                          key={t.id}
-                          className="flex items-center justify-between rounded-xl p-4 border"
-                          style={{ borderColor: CS_BORDER }}
-                        >
-                          <div className="flex items-center gap-3">
+                        <div key={t.id}>
+                          <div className="flex items-center gap-2 mb-3">
                             <div
-                              className="rounded-lg p-2"
+                              className="rounded-lg p-1.5"
                               style={{ backgroundColor: CS_BORDER, color: CS_BLUE }}
                             >
                               <t.Icon className="h-4 w-4" />
                             </div>
-                            <div>
-                              <div className="font-semibold text-sm" style={{ color: CS_BLUE }}>
-                                {t.label}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {unit} per week
-                              </div>
+                            <div className="font-semibold text-sm" style={{ color: CS_BLUE }}>
+                              {t.label}
                             </div>
                           </div>
-                          <Input
-                            type="number"
-                            min={0}
-                            value={form.cadence[t.key] || ""}
-                            onChange={(e) =>
-                              setForm((f) => ({
-                                ...f,
-                                cadence: { ...f.cadence, [t.key]: e.target.value },
-                              }))
-                            }
-                            placeholder="0"
-                            className="w-24 text-center text-base font-semibold"
-                          />
+                          {sorted.length === 0 ? (
+                            <div className="text-xs text-muted-foreground italic">
+                              No membership tiers found for {trackLabel}. Check the Memberships table.
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-3 gap-2">
+                              {sorted.map((m) => {
+                                const tierLabel = m.fields?.tier?.label || m.title || "";
+                                const cadence =
+                                  t.key === "live"
+                                    ? m.fields?.livesPerWeek
+                                    : m.fields?.postsPerWeek;
+                                const unit = t.key === "live" ? "lives" : "posts";
+                                const selected = form.membershipsByTrack[t.key] === m.id;
+                                return (
+                                  <button
+                                    key={m.id}
+                                    type="button"
+                                    onClick={() =>
+                                      setForm((f) => ({
+                                        ...f,
+                                        membershipsByTrack: {
+                                          ...f.membershipsByTrack,
+                                          [t.key]: m.id,
+                                        },
+                                      }))
+                                    }
+                                    className="text-left transition-all rounded-xl p-3 border-2"
+                                    style={{
+                                      borderColor: selected ? CS_PINK : CS_BORDER,
+                                      backgroundColor: selected
+                                        ? "rgba(254,44,85,0.04)"
+                                        : "#fff",
+                                    }}
+                                  >
+                                    <div
+                                      className="text-xs font-bold uppercase tracking-wider mb-1"
+                                      style={{ color: selected ? CS_PINK : CS_BLUE }}
+                                    >
+                                      {tierLabel}
+                                    </div>
+                                    {cadence != null && (
+                                      <div className="text-xs text-muted-foreground">
+                                        {cadence} {unit}/wk
+                                      </div>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -801,7 +831,7 @@ export default function Block() {
                     isSaving={saving}
                     canContinue={
                       TRACK_OPTIONS.filter((t) => form.track.includes(t.id)).every(
-                        (t) => Number(form.cadence[t.key]) > 0,
+                        (t) => !!form.membershipsByTrack[t.key],
                       )
                     }
                     showBack={showBack}
