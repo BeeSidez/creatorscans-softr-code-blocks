@@ -1,0 +1,242 @@
+import { useState } from "react";
+import { useRecord, useCurrentRecordId, q } from "@/lib/datasource";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Copy, Check, ExternalLink, MousePointerClick, Users, TrendingUp, Wallet } from "lucide-react";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+
+// ─── Brand palette ────────────────────────────────────────────────
+const CS_NAVY = "#001364";
+const CS_PERIWINKLE = "#7a93ff";
+const CS_BORDER = "#eef4fd";
+const CS_MUTED = "#6b7a99";
+
+// ─── Assets ───────────────────────────────────────────────────────
+const MONEY_ICON =
+  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045486/money_vewclt.png";
+
+// External affiliate dashboard. Bev to swap with the real URL once
+// the affiliate dashboard page exists (could be /affiliate-dashboard
+// internally, or an external dashboard like FirstPromoter / Tolt).
+const AFFILIATE_DASHBOARD_URL = "/affiliate-dashboard";
+
+const COMMISSION_PERCENT = "40%";
+
+// ─── Field map (Users table) ──────────────────────────────────────
+const select = q.select({
+  fullName: "PXdkq",
+  link: "3NYSQ",                 // ref code (e.g. "test329")
+  affiliateLink: "lLV7p",        // FORMULA — full URL
+  numberOfReferredUsers: "5GRiI",
+  numberOfClicks: "rpjk8",
+  totalCommissionEarned: "QiVGE",
+  totalRevenue: "FyaLv",
+  last30Days: "X5K39",
+  lifeTime: "VAaex",
+});
+
+// ─── Helpers ──────────────────────────────────────────────────────
+function num(value) {
+  if (value === null || value === undefined || value === "") return 0;
+  const n = Number(value);
+  return Number.isNaN(n) ? 0 : n;
+}
+
+function formatMoney(value) {
+  const n = num(value);
+  return `£${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function formatCount(value) {
+  return num(value).toLocaleString("en-GB");
+}
+
+// ─── Sub-components ───────────────────────────────────────────────
+function StatCard({ icon: IconComp, label, value, accent }) {
+  return (
+    <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+      <CardContent className="pt-5">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div
+            className="rounded-lg flex items-center justify-center"
+            style={{ width: 36, height: 36, backgroundColor: "rgba(122,147,255,0.10)" }}
+          >
+            <IconComp className="h-4 w-4" style={{ color: accent || CS_PERIWINKLE }} strokeWidth={2.5} />
+          </div>
+        </div>
+        <div className="font-extrabold" style={{ color: CS_NAVY, fontSize: 24, lineHeight: 1 }}>
+          {value}
+        </div>
+        <div className="text-xs mt-2" style={{ color: CS_MUTED }}>
+          {label}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Main Block ───────────────────────────────────────────────────
+export default function Block() {
+  const recordId = useCurrentRecordId();
+  const { data, status } = useRecord({ recordId, select });
+
+  const [copied, setCopied] = useState(false);
+
+  if (status === "pending") {
+    return (
+      <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+        <div className="text-sm" style={{ color: CS_MUTED }}>Loading…</div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+        <div className="text-sm" style={{ color: CS_MUTED }}>
+          Couldn't load your affiliate details.
+        </div>
+      </div>
+    );
+  }
+
+  const f = data.fields || {};
+  const affiliateUrl = f.affiliateLink || (f.link ? `https://www.creatorscans.com/?ref=${f.link}` : "");
+
+  const handleCopy = async () => {
+    if (!affiliateUrl) return;
+    try {
+      await navigator.clipboard.writeText(affiliateUrl);
+      setCopied(true);
+      toast.success("Link copied");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      toast.error("Couldn't copy. Select the link and copy manually.");
+    }
+  };
+
+  return (
+    <>
+      <Toaster />
+      <div className="content mx-auto py-4 space-y-5" style={{ maxWidth: 1140 }}>
+        {/* ── Header ── */}
+        <div>
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider mb-3"
+            style={{
+              backgroundColor: "rgba(122,147,255,0.10)",
+              color: CS_PERIWINKLE,
+              border: `1px solid ${CS_PERIWINKLE}40`,
+            }}
+          >
+            <span className="rounded-full" style={{ width: 6, height: 6, backgroundColor: CS_PERIWINKLE }} />
+            Affiliates
+          </div>
+          <h2 className="text-2xl font-bold" style={{ color: CS_NAVY }}>
+            Your affiliate link
+          </h2>
+          <p className="text-sm mt-1" style={{ color: CS_MUTED }}>
+            Earn <span style={{ color: CS_NAVY, fontWeight: 600 }}>{COMMISSION_PERCENT} commission</span>{" "}
+            every month for every paying member you refer to Creator Scans.
+          </p>
+        </div>
+
+        {/* ── Affiliate link card ── */}
+        <Card
+          className="bg-white"
+          style={{ borderColor: `${CS_PERIWINKLE}55`, borderWidth: 2 }}
+        >
+          <CardContent className="pt-5">
+            <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: CS_PERIWINKLE }}>
+                {COMMISSION_PERCENT} commission, per user, per month
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div
+                className="flex-1 min-w-0 rounded-lg px-3 py-2.5 font-mono text-sm truncate"
+                style={{
+                  backgroundColor: CS_BORDER,
+                  color: CS_NAVY,
+                  border: `1px solid ${CS_BORDER}`,
+                }}
+                title={affiliateUrl}
+              >
+                {affiliateUrl || "No affiliate link set yet"}
+              </div>
+              <Button
+                onClick={handleCopy}
+                disabled={!affiliateUrl}
+                className="font-semibold gap-2"
+                style={{ backgroundColor: CS_PERIWINKLE, color: "#fff" }}
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? "Copied" : "Copy link"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Stats grid ── */}
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: CS_MUTED }}>
+            Your performance
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard
+              icon={MousePointerClick}
+              label="Link clicks"
+              value={formatCount(f.numberOfClicks)}
+            />
+            <StatCard
+              icon={Users}
+              label="Referred members"
+              value={formatCount(f.numberOfReferredUsers)}
+            />
+            <StatCard
+              icon={TrendingUp}
+              label="Earned (last 30 days)"
+              value={formatMoney(f.last30Days)}
+            />
+            <StatCard
+              icon={Wallet}
+              label="Lifetime earned"
+              value={formatMoney(f.lifeTime || f.totalCommissionEarned)}
+            />
+          </div>
+        </div>
+
+        {/* ── Track Your Earnings card ── */}
+        <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+          <CardContent className="pt-6 pb-6">
+            <div className="flex items-center gap-5 flex-wrap">
+              <img
+                src={MONEY_ICON}
+                alt=""
+                style={{ width: 56, height: 56, objectFit: "contain", display: "block" }}
+              />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-semibold" style={{ color: CS_NAVY }}>
+                  Track your earnings
+                </h3>
+                <p className="text-sm mt-1" style={{ color: CS_MUTED }}>
+                  See referral details, update payment info, and request payouts in your affiliate dashboard.
+                </p>
+              </div>
+              <a href={AFFILIATE_DASHBOARD_URL} target="_blank" rel="noopener noreferrer">
+                <Button
+                  className="font-semibold gap-2"
+                  style={{ backgroundColor: CS_NAVY, color: "#fff" }}
+                >
+                  View affiliate dashboard
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+}

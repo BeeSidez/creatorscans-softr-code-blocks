@@ -1,7 +1,13 @@
 import { useRecord, useCurrentRecordId, q } from "@/lib/datasource";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 
+// ─── Brand palette ────────────────────────────────────────────────
+const CS_NAVY = "#001364";
+const CS_PERIWINKLE = "#7a93ff";
+const CS_BORDER = "#eef4fd";
+const CS_MUTED = "#6b7a99";
+
+// ─── Field map (Commitments table) ────────────────────────────────
 const select = q.select({
   memberName: "OZt9d",
   weeklyLiveTarget: "6Dax4",
@@ -18,33 +24,40 @@ const select = q.select({
   daysToWeekEnd: "sz0al",
 });
 
-// Brand palette
-const CS = {
-  blue: "#294ff6",
-  navy: "#000f4d",
-  light2: "#eef4fd",
-  muted: "#6b7a99",
-};
-
-// Cloudinary icon URLs (replaces all emojis)
+// ─── Cloudinary icons (replaces all emojis) ───────────────────────
 const ICONS = {
-  post: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104219/sticker-icon_blue-target-bullseye-arrow-hit-goal_t2sh9y.png",
-  live: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776808369/63_fjuobd.png",
-  bolt: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png",
-  fire: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png",
-  rocket: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104217/sticker-icon_blue-rocket-ship-launch-blast-off_qyzwli.png",
-  shop: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776808368/62_vqmcpc.png",
+  post:    "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104219/sticker-icon_blue-target-bullseye-arrow-hit-goal_t2sh9y.png",
+  live:    "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776808369/63_fjuobd.png",
+  bolt:    "https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/56_wpngbq.png",
+  fire:    "https://res.cloudinary.com/dmrekfwpj/image/upload/v1770810149/57_kvqzg0.png",
+  rocket:  "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776104217/sticker-icon_blue-rocket-ship-launch-blast-off_qyzwli.png",
+  shop:    "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776808368/62_vqmcpc.png",
   organic: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1776808369/64_no74vt.png",
 };
 
-function Icon({ name, size = 40 }) {
+function Icon({ name, size = 24 }) {
   return (
     <img
       src={ICONS[name]}
       alt=""
-      className="flex-shrink-0 object-contain"
-      style={{ width: size, height: size }}
+      className="shrink-0 object-contain"
+      style={{ width: size, height: size, display: "block" }}
     />
+  );
+}
+
+function ProgressBar({ value, color = CS_PERIWINKLE }) {
+  const safe = Math.max(0, Math.min(100, value || 0));
+  return (
+    <div
+      className="w-full rounded-full overflow-hidden"
+      style={{ height: 6, backgroundColor: CS_BORDER }}
+    >
+      <div
+        className="h-full transition-all duration-500"
+        style={{ width: `${safe}%`, backgroundColor: color }}
+      />
+    </div>
   );
 }
 
@@ -54,27 +67,29 @@ export default function Block() {
 
   if (status === "pending") {
     return (
-      <div className="container py-12">
-        <div className="content flex items-center justify-center min-h-[400px]">
-          <div className="text-muted-foreground">Loading your dashboard...</div>
-        </div>
+      <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+        <div className="text-sm" style={{ color: CS_MUTED }}>Loading…</div>
       </div>
     );
   }
 
   if (status === "error" || !data) {
     return (
-      <div className="container py-12">
-        <div className="content flex items-center justify-center min-h-[400px]">
-          <div className="text-muted-foreground">Unable to load dashboard data</div>
+      <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+        <div className="text-sm" style={{ color: CS_MUTED }}>
+          Couldn't load your commitments.
         </div>
       </div>
     );
   }
 
   const f = data.fields;
-  const postsProgress = f.postsTarget > 0 ? Math.round((f.postsThisWeek / f.postsTarget) * 100) : 0;
-  const liveProgress = f.weeklyLiveTarget > 0 ? Math.round((f.liveCompletedThisWeek / f.weeklyLiveTarget) * 100) : 0;
+  const postsProgress = f.postsTarget > 0
+    ? Math.round((f.postsThisWeek / f.postsTarget) * 100)
+    : 0;
+  const liveProgress = f.weeklyLiveTarget > 0
+    ? Math.round((f.liveCompletedThisWeek / f.weeklyLiveTarget) * 100)
+    : 0;
   const consistencyScore = f.consistencyScore || 0;
   const daysLeft = f.daysToWeekEnd;
 
@@ -97,182 +112,183 @@ export default function Block() {
       : "Every post counts. Get back on track.";
 
   return (
-    <div className="container py-12" style={{ color: CS.navy }}>
-      <div className="content space-y-8">
-        {/* Weekly tanks */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: CS.navy }}>
-                <Icon name="post" size={36} />
-                Post Tank
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-baseline gap-3">
-                <span className="text-5xl font-bold" style={{ color: CS.navy }}>
-                  {f.postsThisWeek}
-                </span>
-                <span style={{ color: CS.muted }}>
-                  / {f.postsTarget} committed posts
-                </span>
-              </div>
-              <Progress value={postsProgress} className="h-4" />
-              <div className="text-right text-sm" style={{ color: CS.muted }}>
-                {postsProgress}%
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: CS.navy }}>
-                <Icon name="live" size={36} />
-                Live Tank
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-baseline gap-3">
-                <span className="text-5xl font-bold" style={{ color: CS.navy }}>
-                  {f.liveCompletedThisWeek}
-                </span>
-                <span style={{ color: CS.muted }}>
-                  / {f.weeklyLiveTarget} committed lives
-                </span>
-              </div>
-              <Progress value={liveProgress} className="h-4" />
-              <div className="text-right text-sm" style={{ color: CS.muted }}>
-                {liveProgress}%
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Consistency score (now with a title) */}
-        <Card className="bg-gradient-to-br from-primary/5 to-accent/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: CS.navy }}>
-              <Icon name="bolt" size={36} />
-              Consistency score
+    <div className="content mx-auto py-4 space-y-5" style={{ maxWidth: 1140, color: CS_NAVY }}>
+      {/* ── Weekly tanks ── */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold" style={{ color: CS_NAVY }}>
+              <Icon name="post" size={20} />
+              Post tank
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-baseline justify-between gap-3 flex-wrap">
-              <div className="flex items-baseline gap-3">
-                <span className="text-5xl font-bold" style={{ color: CS.navy }}>
-                  {consistencyScore}
-                </span>
-                <span className="text-sm" style={{ color: CS.muted }}>
-                  {consistencyMessage}
-                </span>
-              </div>
-              {daysLeftLabel && (
-                <span className="text-sm font-medium" style={{ color: CS.blue }}>
-                  {daysLeftLabel}
-                </span>
-              )}
+          <CardContent className="space-y-3">
+            <div className="flex items-baseline gap-2">
+              <span className="font-extrabold" style={{ color: CS_NAVY, fontSize: 28, lineHeight: 1 }}>
+                {f.postsThisWeek}
+              </span>
+              <span className="text-sm" style={{ color: CS_MUTED }}>
+                / {f.postsTarget} committed posts
+              </span>
             </div>
-            <div className="w-full rounded-full h-5 overflow-hidden" style={{ background: CS.light2 }}>
-              <div
-                className="h-full bg-gradient-to-r from-red-400 via-orange-400 via-yellow-400 to-teal-400 transition-all duration-500"
-                style={{ width: `${Math.min(consistencyScore, 100)}%` }}
-              />
+            <ProgressBar value={postsProgress} />
+            <div className="text-right text-xs" style={{ color: CS_MUTED }}>
+              {postsProgress}%
             </div>
           </CardContent>
         </Card>
 
-        {/* Year streaks */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <Icon name="fire" size={48} />
-                <div>
-                  <div className="text-5xl font-bold" style={{ color: CS.navy }}>
-                    {f.postsThisYear}
-                  </div>
-                  <div className="text-sm" style={{ color: CS.muted }}>
-                    posts this year
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold" style={{ color: CS_NAVY }}>
+              <Icon name="live" size={20} />
+              Live tank
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-baseline gap-2">
+              <span className="font-extrabold" style={{ color: CS_NAVY, fontSize: 28, lineHeight: 1 }}>
+                {f.liveCompletedThisWeek}
+              </span>
+              <span className="text-sm" style={{ color: CS_MUTED }}>
+                / {f.weeklyLiveTarget} committed lives
+              </span>
+            </div>
+            <ProgressBar value={liveProgress} />
+            <div className="text-right text-xs" style={{ color: CS_MUTED }}>
+              {liveProgress}%
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <Icon name="rocket" size={48} />
-                <div>
-                  <div className="text-5xl font-bold" style={{ color: CS.navy }}>
-                    {f.liveCompletedThisYear}
-                  </div>
-                  <div className="text-sm" style={{ color: CS.muted }}>
-                    lives this year
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Weekly breakdown */}
-        <div>
-          <h2 className="font-heading text-2xl mb-4" style={{ color: CS.navy }}>
-            This week's breakdown
-          </h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg" style={{ color: CS.navy }}>
-                  <Icon name="shop" size={28} />
-                  Shop content
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-1" style={{ color: CS.navy }}>
-                  {f.shopCompletedThisWeek} / {f.weeklyShopTarget}
-                </div>
-                <div className="text-sm" style={{ color: CS.muted }}>
-                  completed
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg" style={{ color: CS.navy }}>
-                  <Icon name="live" size={28} />
-                  Live content
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-1" style={{ color: CS.navy }}>
-                  {f.liveCompletedThisWeek} / {f.weeklyLiveTarget}
-                </div>
-                <div className="text-sm" style={{ color: CS.muted }}>
-                  completed
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg" style={{ color: CS.navy }}>
-                  <Icon name="organic" size={28} />
-                  Organic content
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-1" style={{ color: CS.navy }}>
-                  {f.organicCompletedThisWeek} / {f.weeklyOrganicTarget}
-                </div>
-                <div className="text-sm" style={{ color: CS.muted }}>
-                  completed
-                </div>
-              </CardContent>
-            </Card>
+      {/* ── Consistency score ── */}
+      <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold" style={{ color: CS_NAVY }}>
+            <Icon name="bolt" size={20} />
+            Consistency score
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-baseline justify-between gap-3 flex-wrap">
+            <div className="flex items-baseline gap-2">
+              <span className="font-extrabold" style={{ color: CS_NAVY, fontSize: 28, lineHeight: 1 }}>
+                {consistencyScore}
+              </span>
+              <span className="text-sm" style={{ color: CS_MUTED }}>
+                {consistencyMessage}
+              </span>
+            </div>
+            {daysLeftLabel && (
+              <span className="text-xs font-medium" style={{ color: CS_PERIWINKLE }}>
+                {daysLeftLabel}
+              </span>
+            )}
           </div>
+          <div
+            className="w-full rounded-full overflow-hidden"
+            style={{ height: 8, background: CS_BORDER }}
+          >
+            <div
+              className="h-full bg-gradient-to-r from-red-400 via-orange-400 via-yellow-400 to-teal-400 transition-all duration-500"
+              style={{ width: `${Math.min(consistencyScore, 100)}%` }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Year totals ── */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3">
+              <Icon name="fire" size={32} />
+              <div>
+                <div className="font-extrabold" style={{ color: CS_NAVY, fontSize: 28, lineHeight: 1 }}>
+                  {f.postsThisYear || 0}
+                </div>
+                <div className="text-xs mt-1" style={{ color: CS_MUTED }}>
+                  posts this year
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3">
+              <Icon name="rocket" size={32} />
+              <div>
+                <div className="font-extrabold" style={{ color: CS_NAVY, fontSize: 28, lineHeight: 1 }}>
+                  {f.liveCompletedThisYear || 0}
+                </div>
+                <div className="text-xs mt-1" style={{ color: CS_MUTED }}>
+                  lives this year
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── This week's breakdown ── */}
+      <div>
+        <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: CS_MUTED }}>
+          This week's breakdown
+        </h3>
+        <div className="grid md:grid-cols-3 gap-4">
+          <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold" style={{ color: CS_NAVY }}>
+                <Icon name="shop" size={18} />
+                Shop content
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="font-extrabold" style={{ color: CS_NAVY, fontSize: 22, lineHeight: 1 }}>
+                {f.shopCompletedThisWeek || 0} / {f.weeklyShopTarget || 0}
+              </div>
+              <div className="text-xs mt-1" style={{ color: CS_MUTED }}>
+                completed
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold" style={{ color: CS_NAVY }}>
+                <Icon name="live" size={18} />
+                Live content
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="font-extrabold" style={{ color: CS_NAVY, fontSize: 22, lineHeight: 1 }}>
+                {f.liveCompletedThisWeek || 0} / {f.weeklyLiveTarget || 0}
+              </div>
+              <div className="text-xs mt-1" style={{ color: CS_MUTED }}>
+                completed
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold" style={{ color: CS_NAVY }}>
+                <Icon name="organic" size={18} />
+                Organic content
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="font-extrabold" style={{ color: CS_NAVY, fontSize: 22, lineHeight: 1 }}>
+                {f.organicCompletedThisWeek || 0} / {f.weeklyOrganicTarget || 0}
+              </div>
+              <div className="text-xs mt-1" style={{ color: CS_MUTED }}>
+                completed
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
