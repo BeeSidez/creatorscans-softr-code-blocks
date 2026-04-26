@@ -564,9 +564,18 @@ export default function Block() {
   };
 
   // ─── Build the single atomic save payload ─────────────────────
-  // Industry / Position / Career Stage / Income are multi-select fields
-  // in the schema but the UI is single-pick, so wrap each in a one-item
-  // array so Softr accepts them.
+  // Format per field type (matches the working user-profile block):
+  //   Single select  -> { id, label }   object
+  //   Multi-select   -> [uuid, uuid]    array of UUID strings
+  //   Linked record  -> [{ id }]        array of {id} objects
+  //   Industry / Position / Career Stage / Income are multi in the
+  //   schema but single-pick in the UI, so we wrap each in a one-item
+  //   array of UUIDs.
+  const toIdLabel = (options, id) => {
+    const opt = options.find((o) => o.id === id);
+    return opt ? { id: opt.id, label: opt.label } : null;
+  };
+
   const buildUpdates = () => {
     const membershipIds = TRACK_OPTIONS
       .filter((t) => form.track.includes(t.key))
@@ -576,12 +585,12 @@ export default function Block() {
 
     return {
       PxOWN: membershipIds,
-      aNbbk: form.age,
-      ZrMCm: form.gender,
-      W933n: form.pronouns,
+      aNbbk: toIdLabel(AGE_OPTIONS, form.age),
+      ZrMCm: toIdLabel(GENDER_OPTIONS, form.gender),
+      W933n: toIdLabel(PRONOUNS_OPTIONS, form.pronouns),
       A79E9: form.birthday,
       z4TF1: form.city.trim(),
-      TV7Nz: form.regionalAccent,
+      TV7Nz: toIdLabel(REGIONAL_ACCENT_OPTIONS, form.regionalAccent),
       FzvXF: form.heritage.trim(),
       "3hJpt": form.firstLanguage.trim(),
       aWNgr: form.localDialect,
