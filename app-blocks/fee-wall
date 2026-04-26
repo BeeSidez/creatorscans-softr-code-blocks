@@ -27,6 +27,8 @@ const select = q.select({
   notes: "cy26q",   // LONG_TEXT — the message body
   request: "zPHQj", // SELECT — request subject
   type: "5GA3J",    // SELECT — request type (Bug / Suggestion / Praise / Support)
+  status: "QoxNq",  // SELECT — request status (New / In progress / Resolved)
+  email: "0GTuv",   // LINKED_RECORD -> Users (the requester)
 });
 
 // ─── Option UUIDs (verified via Softr Database API) ───────────────
@@ -38,6 +40,11 @@ const REQUEST_PAYMENT_BILLING = {
 const TYPE_SUPPORT = {
   id: "7b4f93a8-a67a-4d98-9d5b-9d0e9afc86b5",
   label: "Support",
+};
+
+const STATUS_NEW = {
+  id: "7ba10cf6-68fd-4d0c-a8eb-5b08b1f99984",
+  label: "New",
 };
 
 const FEE_PERCENT = "10%";
@@ -80,12 +87,15 @@ export default function Block() {
 
     setSubmitting(true);
     try {
-      // All three fields are hidden from the user. The user sees the
+      // All fields are hidden from the user. The user sees the
       // resulting record later in their support inbox / messages.
+      // Email is a LINKED_RECORD to Users, so we link via user.id.
       const fields = {
         notes: PREFILLED_MESSAGE,
         request: REQUEST_PAYMENT_BILLING,
         type: TYPE_SUPPORT,
+        status: STATUS_NEW,
+        email: [{ id: user.id }],
       };
       console.log("=== fee-wall request payload:", JSON.stringify(fields, null, 2));
       await createRecord.mutateAsync(fields);
