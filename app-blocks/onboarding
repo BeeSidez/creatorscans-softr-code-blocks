@@ -36,6 +36,7 @@ const CS_BORDER = "#eef4fd";
 const select = q.select({
   fullName: "PXdkq",
   email: "T3cFq",
+  tiktokUsername: "uZ8z0",
   memberships: "PxOWN",
   pronouns: "W933n",
   gender: "ZrMCm",
@@ -251,6 +252,11 @@ function getMaxBirthDate() {
   return d.toISOString().split("T")[0];
 }
 
+// TikTok handles must be lowercase and have no leading "@".
+function sanitizeHandle(s) {
+  return (s || "").trim().toLowerCase().replace(/^@+/, "");
+}
+
 function generateOAuthState() {
   const r = Math.random().toString(36).slice(2);
   const t = Date.now().toString(36);
@@ -435,6 +441,7 @@ export default function Block() {
   const [form, setForm] = useState({
     track: [],
     membershipsByTrack: {}, // { shop: "rec123", live: "rec456", organic: "rec789" }
+    tiktokUsername: "", // populated only on the "I'll connect later" path
     pronouns: "",
     gender: "",
     birthday: "",
@@ -452,9 +459,12 @@ export default function Block() {
     myGoal: "",
   });
 
-  // Tracks whether the in-flight save was triggered by Connect TikTok
-  // (so onSuccess knows it needs to do the OAuth redirect after).
-  const oauthPendingRef = useRef(false);
+  // Whether the connect step's "I'll connect later" form is open.
+  const [showSkipForm, setShowSkipForm] = useState(false);
+
+  // After the save succeeds, where do we send the user? "oauth" =
+  // TikTok auth flow, "skip" = straight to dashboard.
+  const pendingDestRef = useRef(null);
 
   // Diagnostic: Softr's internal fetch wrapper throws away the
   // response body on errors, so we never see WHY a 400 happened.
@@ -492,22 +502,29 @@ export default function Block() {
   const updateRecord = useRecordUpdate({
     fields: select,
     onSuccess() {
-      if (!oauthPendingRef.current) return;
-      oauthPendingRef.current = false;
+      const dest = pendingDestRef.current;
+      pendingDestRef.current = null;
 
-      // Server confirmed the save. Now safe to fire CSRF state +
-      // navigate away — no race with an in-flight write.
-      const state = generateOAuthState();
-      try {
-        sessionStorage.setItem("cs_tiktok_oauth_state", state);
-      } catch (e) {
-        // sessionStorage might be blocked; proceed anyway
+      if (dest === "oauth") {
+        // Server confirmed the save. Now safe to fire CSRF state and
+        // redirect to TikTok. No race with an in-flight write.
+        const state = generateOAuthState();
+        try {
+          sessionStorage.setItem("cs_tiktok_oauth_state", state);
+        } catch (e) {
+          // sessionStorage might be blocked; proceed anyway
+        }
+        window.location.href = `${TIKTOK_OAUTH_BASE}&state=${state}`;
+      } else if (dest === "skip") {
+        // User chose to connect TikTok later. Save is done, send them
+        // to the dashboard. Their tiktokUsername is on the record so
+        // we can prompt them to finish connecting from there.
+        window.location.href = "/dashboard";
       }
-      window.location.href = `${TIKTOK_OAUTH_BASE}&state=${state}`;
     },
     onError(err) {
       console.error("=== onboarding save error:", err);
-      oauthPendingRef.current = false;
+      pendingDestRef.current = null;
       toast.error("Save failed", {
         description: err?.message || "Open the browser console for details.",
       });
@@ -610,7 +627,7 @@ export default function Block() {
     // layer maps alias -> field ID internally. Sending field IDs as
     // keys results in every field being stripped and a 400 with
     // "Record data cannot be empty".
-    return {
+    const updates = {
       memberships: membershipIds,
       gender: toIdLabel(GENDER_OPTIONS, form.gender),
       pronouns: toIdLabel(PRONOUNS_OPTIONS, form.pronouns),
@@ -628,6 +645,14 @@ export default function Block() {
       lookingFor: form.lookingFor,
       myGoal: form.myGoal.trim(),
     };
+
+    // Only include tiktokUsername on the "skip" path, where the user
+    // typed it manually. On the OAuth path the n8n workflow sets it
+    // from TikTok's response, so we don't want to overwrite anything.
+    const handle = sanitizeHandle(form.tiktokUsername);
+    if (handle) updates.tiktokUsername = handle;
+
+    return updates;
   };
 
   const handleConnectTikTok = () => {
@@ -641,15 +666,41 @@ export default function Block() {
     }
 
     setSaving(true);
-    oauthPendingRef.current = true;
+    pendingDestRef.current = "oauth";
 
-    // Fire the save. The OAuth redirect is now triggered inside the
+    // Fire the save. The OAuth redirect is triggered inside the
     // onSuccess callback above, only once the server has confirmed
     // the write. No race with window.location.href.
     const updates = buildUpdates();
-    console.log("=== onboarding save payload:", JSON.stringify(updates, null, 2));
-    console.log("=== onboarding recordId:", user.id);
-    console.log("=== onboarding updateRecord.enabled:", updateRecord.enabled);
+    console.log("=== onboarding save payload (oauth):", JSON.stringify(updates, null, 2));
+    updateRecord.mutate({ recordId: user.id, fields: updates });
+  };
+
+  const handleSkip = () => {
+    if (!user?.id) {
+      toast.error("Not signed in");
+      return;
+    }
+    if (updateRecord.enabled === false) {
+      toast.error("Saving is disabled for this block. Check the Visibility / permissions tabs in Softr.");
+      return;
+    }
+    const handle = sanitizeHandle(form.tiktokUsername);
+    if (!handle) {
+      toast.error("Please enter your TikTok handle so we can find you later.");
+      return;
+    }
+
+    // Persist the sanitized handle back into form state so buildUpdates picks it up.
+    setForm((f) => ({ ...f, tiktokUsername: handle }));
+
+    setSaving(true);
+    pendingDestRef.current = "skip";
+
+    const updates = buildUpdates();
+    // Belt-and-braces: setForm above is async, so set the handle on the payload directly too.
+    updates.tiktokUsername = handle;
+    console.log("=== onboarding save payload (skip):", JSON.stringify(updates, null, 2));
     updateRecord.mutate({ recordId: user.id, fields: updates });
   };
 
@@ -1146,6 +1197,66 @@ export default function Block() {
                     />
                     {saving ? "Saving and redirecting…" : "Connect TikTok"}
                   </button>
+
+                  {/* Skip option — for users who can't / don't want to OAuth right now */}
+                  {!showSkipForm ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowSkipForm(true)}
+                      disabled={saving}
+                      className="w-full text-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: saving ? "wait" : "pointer",
+                        padding: "8px",
+                      }}
+                    >
+                      I'll connect later →
+                    </button>
+                  ) : (
+                    <div className="space-y-3 rounded-xl p-4" style={{ backgroundColor: CS_BORDER }}>
+                      <div>
+                        <Label htmlFor="skipHandle" style={{ color: CS_BLUE }}>
+                          Your TikTok handle
+                        </Label>
+                        <p className="text-xs mt-1 mb-2" style={{ color: CS_BLUE, opacity: 0.7 }}>
+                          We need this to find you later. Lowercase, no @ sign. We can't send your TikTok agency invite until you connect.
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span style={{ color: CS_BLUE, opacity: 0.55, fontSize: 16 }}>@</span>
+                          <Input
+                            id="skipHandle"
+                            value={form.tiktokUsername}
+                            onChange={(e) => set("tiktokUsername", e.target.value)}
+                            placeholder="yourhandle"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          onClick={handleSkip}
+                          disabled={!sanitizeHandle(form.tiktokUsername) || saving}
+                          className="font-semibold"
+                          style={{ backgroundColor: CS_BLUE, color: "#fff" }}
+                        >
+                          {saving ? "Saving…" : "Save and go to dashboard"}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setShowSkipForm(false);
+                            set("tiktokUsername", "");
+                          }}
+                          disabled={saving}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between pt-4">
                     <Button
                       variant="ghost"
