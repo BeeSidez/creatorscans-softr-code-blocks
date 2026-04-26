@@ -1,152 +1,178 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { useCurrentUser } from "@/lib/user";
-import { useRecords, q } from "@/lib/datasource";
 
-const select = q.select({
-  email: "T3cFq",
-  monthlyPaymentLink: "NENYw",
-  annualPaymentLink: "bqT69",
-});
+// ─── Brand palette ────────────────────────────────────────────────
+const CS_NAVY = "#001364";
+const CS_PERIWINKLE = "#7a93ff";
+const CS_PERIWINKLE_DARK = "#5a73ff";
+const CS_BORDER = "#eef4fd";
+const CS_MUTED = "#6b7a99";
+
+// ─── Stripe checkout URLs (live) ──────────────────────────────────
+const STRIPE_MONTHLY = "https://buy.stripe.com/9B67sL8NFggN24U8wobsc0a";
+const STRIPE_YEARLY = "https://buy.stripe.com/5kQaEXe7Z1lT8ti13Wbsc0b";
+
+const PRICE_MONTHLY = 34.99;
+const PRICE_YEARLY = 383.88;
+const PRICE_YEARLY_PER_MONTH = (PRICE_YEARLY / 12).toFixed(2); // 31.99
+const YEARLY_SAVINGS = (PRICE_MONTHLY * 12 - PRICE_YEARLY).toFixed(0); // 36
+
+const FEATURES = [
+  "Unlimited AI-powered accountability tracking",
+  "Unlimited AI TikTok video reviews and feedback",
+  "TikTok account unbanning and violation support",
+  "Higher commission rates on brand deals",
+  "Exclusive brand partnerships and campaigns",
+  "Product samples and PR packages",
+  "Community access and leaderboards",
+  "Exclusive tools and resources",
+];
+
+function buildCheckoutUrl(base, email) {
+  if (!email) return base;
+  return `${base}?locked_prefilled_email=${encodeURIComponent(email)}`;
+}
 
 export default function Block() {
   const [isYearly, setIsYearly] = useState(false);
   const user = useCurrentUser();
-  
-  const { data, status } = useRecords({ 
-    select,
-    count: 1,
-    where: user?.email ? q.text("email").is(user.email) : undefined
-  });
 
-  const userRecord = data?.pages[0]?.items[0];
-  const monthlyLink = userRecord?.fields.monthlyPaymentLink || "#";
-  const annualLink = userRecord?.fields.annualPaymentLink || "#";
-
-  const features = [
-    "Unlimited AI-powered accountability tracking",
-    "Unlimited AI TikTok video reviews & feedback",
-    "TikTok Account unbanning & violation support",
-    "Higher commission rates on brand deals",
-    "Exclusive brand partnerships & campaigns",
-    "Product samples & PR packages",
-    "Community access & leaderboards",
-    "Exclusive tools & resources",
-  ];
+  const checkoutUrl = isYearly
+    ? buildCheckoutUrl(STRIPE_YEARLY, user?.email)
+    : buildCheckoutUrl(STRIPE_MONTHLY, user?.email);
 
   return (
-    <div className="container py-12 md:py-16">
-      <div className="content max-w-6xl mx-auto">
-        {/* Header Section */}
-        <div className="text-center mb-12 space-y-4">
-          <h1 className="font-sans font-bold text-3xl md:text-4xl lg:text-5xl" style={{ color: "#001364" }}>
-            One price. Build your own path.
-          </h1>
-          <p className="font-sans text-base md:text-lg max-w-3xl mx-auto" style={{ color: "#555555" }}>
-            Creator Scans costs £19/month. No hidden fees, no complicated tiers.
-            <br className="hidden md:block" />
-            You pick what you want to work on and choose how hard you want to push yourself.
-          </p>
-
-          {/* Toggle Switch - Pill Style */}
-          <div className="flex flex-col items-center gap-2 mt-8">
-            <div 
-              className="inline-flex rounded-full p-1 gap-1"
-              style={{ backgroundColor: "#d9e0ff" }}
-            >
-              <button
-                onClick={() => setIsYearly(false)}
-                className="font-sans font-medium text-sm md:text-base px-6 py-2.5 rounded-full transition-all duration-300"
-                style={{
-                  backgroundColor: !isYearly ? "#294ff6" : "transparent",
-                  color: !isYearly ? "#ffffff" : "#001364",
-                }}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setIsYearly(true)}
-                className="font-sans font-medium text-sm md:text-base px-6 py-2.5 rounded-full transition-all duration-300"
-                style={{
-                  backgroundColor: isYearly ? "#294ff6" : "transparent",
-                  color: isYearly ? "#ffffff" : "#001364",
-                }}
-              >
-                Yearly
-              </button>
-            </div>
-            <p className="font-sans text-sm" style={{ color: "#294ff6" }}>
-              1.5 months free!
-            </p>
-          </div>
+    <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
+      {/* ── Header ── */}
+      <div className="text-center mb-8 space-y-3">
+        <div
+          className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider"
+          style={{
+            backgroundColor: "rgba(122,147,255,0.10)",
+            color: CS_PERIWINKLE,
+            border: `1px solid ${CS_PERIWINKLE}40`,
+          }}
+        >
+          <Sparkles className="h-3 w-3" />
+          Premium membership
         </div>
+        <h1 className="text-3xl md:text-4xl font-bold" style={{ color: CS_NAVY }}>
+          One price. Build your own path.
+        </h1>
+        <p className="text-base max-w-2xl mx-auto" style={{ color: CS_MUTED }}>
+          Creator Scans is £34.99/month. No hidden fees, no complicated tiers. Pick what you want to work on, and choose how hard you want to push yourself.
+        </p>
 
-        {/* Pricing Card */}
-        <div className="flex justify-center">
-          <Card 
-            className="w-full max-w-md transition-all duration-300 hover:shadow-xl"
-            style={{
-              borderColor: "#d9e0ff",
-              borderWidth: "1px",
-              borderRadius: "16px",
-              boxShadow: "0 4px 12px rgba(0, 15, 77, 0.08)",
-            }}
+        {/* Monthly / Yearly toggle */}
+        <div className="flex flex-col items-center gap-2 mt-6">
+          <div
+            className="inline-flex rounded-full p-1 gap-1"
+            style={{ backgroundColor: "rgba(122,147,255,0.10)" }}
           >
-            <CardHeader className="pb-4">
-              <CardTitle className="font-sans font-medium text-2xl md:text-3xl" style={{ color: "#001364" }}>
-                Membership
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Pricing */}
-              <div>
-                <div className="font-sans font-extrabold text-3xl md:text-4xl" style={{ color: "#001364" }}>
-                  {isYearly ? "£16.58" : "£19.00"}
-                  <span className="font-sans font-normal text-lg" style={{ color: "#555555" }}>/month</span>
-                </div>
-                {isYearly && (
-                  <p className="font-sans text-sm mt-1" style={{ color: "#555555" }}>
-                    Billed annually at £199
-                  </p>
-                )}
-              </div>
-
-              {/* Features List */}
-              <ul className="space-y-3">
-                {features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#294ff6" }} />
-                    <span className="font-sans font-light text-sm md:text-base" style={{ color: "#001364" }}>
-                      {feature}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA Button */}
-              <Button
-                asChild
-                className="w-full font-sans font-medium text-base py-6 rounded-lg transition-all duration-300"
-                style={{
-                  backgroundColor: "#294ff6",
-                  color: "#ffffff",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#001364";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#294ff6";
-                }}
-              >
-                <a href={isYearly ? annualLink : monthlyLink} target="_self">
-                  {status === "pending" ? "Loading..." : "Start Paid Plan"}
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
+            <button
+              type="button"
+              onClick={() => setIsYearly(false)}
+              className="px-6 py-2.5 rounded-full text-sm font-semibold transition-all"
+              style={{
+                backgroundColor: !isYearly ? CS_PERIWINKLE : "transparent",
+                color: !isYearly ? "#fff" : CS_NAVY,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsYearly(true)}
+              className="px-6 py-2.5 rounded-full text-sm font-semibold transition-all"
+              style={{
+                backgroundColor: isYearly ? CS_PERIWINKLE : "transparent",
+                color: isYearly ? "#fff" : CS_NAVY,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Yearly
+            </button>
+          </div>
+          {isYearly && (
+            <p className="text-xs font-semibold" style={{ color: CS_PERIWINKLE_DARK }}>
+              Save £{YEARLY_SAVINGS} a year
+            </p>
+          )}
         </div>
+      </div>
+
+      {/* ── Pricing card ── */}
+      <div className="flex justify-center">
+        <Card
+          className="w-full max-w-md"
+          style={{
+            borderColor: `${CS_PERIWINKLE}55`,
+            borderWidth: 2,
+            borderRadius: 16,
+          }}
+        >
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-semibold" style={{ color: CS_NAVY }}>
+              Membership
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Price */}
+            <div>
+              <div className="font-extrabold" style={{ color: CS_NAVY, fontSize: 36, lineHeight: 1 }}>
+                £{isYearly ? PRICE_YEARLY_PER_MONTH : PRICE_MONTHLY.toFixed(2)}
+                <span className="text-lg font-normal ml-1" style={{ color: CS_MUTED }}>
+                  /month
+                </span>
+              </div>
+              {isYearly && (
+                <p className="text-sm mt-2" style={{ color: CS_MUTED }}>
+                  Billed annually at £{PRICE_YEARLY.toFixed(2)}
+                </p>
+              )}
+            </div>
+
+            {/* Features */}
+            <ul className="space-y-3">
+              {FEATURES.map((feature, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <Check
+                    className="h-4 w-4 mt-0.5 shrink-0"
+                    style={{ color: CS_PERIWINKLE }}
+                    strokeWidth={3}
+                  />
+                  <span className="text-sm" style={{ color: CS_NAVY }}>
+                    {feature}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            {/* CTA */}
+            <Button
+              asChild
+              className="w-full font-semibold rounded-lg"
+              style={{
+                backgroundColor: CS_PERIWINKLE,
+                color: "#fff",
+                paddingTop: 14,
+                paddingBottom: 14,
+                fontSize: 15,
+              }}
+            >
+              <a href={checkoutUrl}>Start paid plan</a>
+            </Button>
+            <p className="text-xs text-center" style={{ color: CS_MUTED }}>
+              Cancel any time from your billing page.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
