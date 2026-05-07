@@ -91,7 +91,11 @@ export default function Block() {
     select,
   });
 
-  const [pickedByTrack, setPickedByTrack] = useState({});
+  // Init to all-NONE so Studio (where there's no user) starts in a clean,
+  // not-dirty state and Save stays disabled.
+  const [pickedByTrack, setPickedByTrack] = useState(() =>
+    pickedFromMemberships(undefined),
+  );
   const [hydrated, setHydrated] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -106,9 +110,11 @@ export default function Block() {
     setHydrated(true);
   }, [data, hydrated, originalByTrack]);
 
-  const isDirty = TRACKS.some(
-    (t) => pickedByTrack[t.key] !== originalByTrack[t.key],
-  );
+  // Gate dirty on hydrated so Save doesn't briefly enable before the
+  // user's real memberships are loaded into state.
+  const isDirty =
+    hydrated &&
+    TRACKS.some((t) => pickedByTrack[t.key] !== originalByTrack[t.key]);
 
   const updateRecord = useRecordUpdate({
     fields: updateFields,
@@ -143,7 +149,11 @@ export default function Block() {
     setPickedByTrack(originalByTrack);
   };
 
-  if (!user?.id || status === "pending") {
+  // In Softr Studio there is no logged-in user, so the data hooks hang in
+  // "pending" forever. Only show the loading state when we actually have a
+  // user we're waiting on — otherwise render the empty design state so the
+  // block is visible/editable in Studio.
+  if (user?.id && status === "pending") {
     return (
       <div className="content mx-auto py-2" style={{ maxWidth: 1140 }}>
         <div className="text-sm" style={{ color: CS_MUTED }}>Loading…</div>

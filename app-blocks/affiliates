@@ -17,10 +17,7 @@ const CS_MUTED = "#6b7a99";
 const MONEY_ICON =
   "https://res.cloudinary.com/dmrekfwpj/image/upload/v1777045486/money_vewclt.png";
 
-// External affiliate dashboard. Bev to swap with the real URL once
-// the affiliate dashboard page exists (could be /affiliate-dashboard
-// internally, or an external dashboard like FirstPromoter / Tolt).
-const AFFILIATE_DASHBOARD_URL = "/affiliate-dashboard";
+const AFFILIATE_DASHBOARD_URL = "https://affiliates.creatorscans.com/login";
 
 const COMMISSION_PERCENT = "40%";
 
@@ -38,7 +35,11 @@ export default function Block() {
 
   const [copied, setCopied] = useState(false);
 
-  if (!user?.id || status === "pending") {
+  // In Softr Studio there is no logged-in user, so the data hooks hang in
+  // "pending" forever. Only show the loading state when we actually have a
+  // user we're waiting on — otherwise render the empty design state so the
+  // block is visible/editable in Studio.
+  if (user?.id && status === "pending") {
     return (
       <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
         <div className="text-sm" style={{ color: CS_MUTED }}>Loading…</div>
@@ -46,7 +47,7 @@ export default function Block() {
     );
   }
 
-  if (!data) {
+  if (user?.id && !data) {
     return (
       <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
         <div className="text-sm" style={{ color: CS_MUTED }}>
@@ -56,7 +57,7 @@ export default function Block() {
     );
   }
 
-  const f = data.fields || {};
+  const f = data?.fields || {};
   const affiliateUrl = f.affiliateLink || (f.link ? `https://www.creatorscans.com/?ref=${f.link}` : "");
 
   const handleCopy = async () => {
