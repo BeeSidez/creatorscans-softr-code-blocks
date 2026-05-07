@@ -1,0 +1,243 @@
+// /settings · "Change commitments" — inline editor
+//
+// Sits directly above the `usage` block. Three dropdowns, one per track
+// (Shop / Live / Organic). Each pre-fills with the user's current
+// membership in that track and lets them switch tier (or drop the track
+// entirely) in one click. Save / Discard sit in the header.
+//
+// SOFTR CONFIG REQUIRED:
+//   Source tab: bind to USERS, filter to logged-in user.
+//   Actions tab: auto-populated from `updateFields` aliases below.
+
+import { useState, useEffect, useMemo } from "react";
+import { useRecord, useRecordUpdate, q } from "@/lib/datasource";
+import { useCurrentUser } from "@/lib/user";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+
+// ─── Brand palette ────────────────────────────────────────────────
+const CS_NAVY = "#001364";
+const CS_PERIWINKLE = "#7a93ff";
+const CS_BORDER = "#eef4fd";
+const CS_MUTED = "#6b7a99";
+
+// ─── Track icons (Cloudinary) ─────────────────────────────────────
+const TRACK_ICONS = {
+  shop:    "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264991/SHOP_yneevd.png",
+  live:    "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264988/LIVE_mfem6w.png",
+  organic: "https://res.cloudinary.com/dmrekfwpj/image/upload/v1769264988/ORGANIC_rcxwbs.png",
+};
+
+// ─── Field map (Users table) ──────────────────────────────────────
+const select = q.select({
+  fullName:    "PXdkq", // primary — useRecord requires it
+  memberships: "PxOWN",
+});
+
+const updateFields = q.select({
+  memberships: "PxOWN",
+});
+
+// ─── Tracks + memberships ─────────────────────────────────────────
+const TRACKS = [
+  { key: "shop",    label: "Shop content",    icon: TRACK_ICONS.shop },
+  { key: "live",    label: "Live content",    icon: TRACK_ICONS.live },
+  { key: "organic", label: "Organic content", icon: TRACK_ICONS.organic },
+];
+
+const MEMBERSHIPS = [
+  { id: "c3EqdciuLbXkHu", track: "shop",    tier: "Casual",    cadence: "3 posts/wk" },
+  { id: "y02977G0TnLx0k", track: "shop",    tier: "Committed", cadence: "5 posts/wk" },
+  { id: "zsruDrIoDr948G", track: "shop",    tier: "Dedicated", cadence: "7 posts/wk" },
+  { id: "8mbjundbXfpQto", track: "live",    tier: "Casual",    cadence: "2 lives/wk" },
+  { id: "hkuclCaU0JFqwY", track: "live",    tier: "Committed", cadence: "4 lives/wk" },
+  { id: "AWeguSE0bEBtdq", track: "live",    tier: "Dedicated", cadence: "6 lives/wk" },
+  { id: "eWq5hrIgKdgtWC", track: "organic", tier: "Casual",    cadence: "3 posts/wk" },
+  { id: "mIvTXaHi6WYrEM", track: "organic", tier: "Committed", cadence: "5 posts/wk" },
+  { id: "EukDLpN91QEUHV", track: "organic", tier: "Dedicated", cadence: "7 posts/wk" },
+];
+
+const NONE_VALUE = "__none__";
+
+// ─── Helpers ──────────────────────────────────────────────────────
+function pickedFromMemberships(memberships) {
+  const ids = (memberships || [])
+    .map((m) => (typeof m === "object" ? m.id : m))
+    .filter(Boolean);
+  const out = {};
+  TRACKS.forEach((t) => {
+    const found = ids.find((id) =>
+      MEMBERSHIPS.some((m) => m.id === id && m.track === t.key),
+    );
+    out[t.key] = found || NONE_VALUE;
+  });
+  return out;
+}
+
+// ─── Main Block ───────────────────────────────────────────────────
+export default function Block() {
+  const user = useCurrentUser();
+  const { data, status, refetch } = useRecord({
+    recordId: user?.id,
+    select,
+  });
+
+  const [pickedByTrack, setPickedByTrack] = useState({});
+  const [hydrated, setHydrated] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const originalByTrack = useMemo(
+    () => pickedFromMemberships(data?.fields?.memberships),
+    [data?.id, data?.fields?.memberships],
+  );
+
+  useEffect(() => {
+    if (!data?.fields || hydrated) return;
+    setPickedByTrack(originalByTrack);
+    setHydrated(true);
+  }, [data, hydrated, originalByTrack]);
+
+  const isDirty = TRACKS.some(
+    (t) => pickedByTrack[t.key] !== originalByTrack[t.key],
+  );
+
+  const updateRecord = useRecordUpdate({
+    fields: updateFields,
+    async onSuccess() {
+      await refetch();
+      toast.success("Commitments updated.");
+      setSaving(false);
+    },
+    onError(err) {
+      console.error("=== change-commitments-inline save error:", err);
+      toast.error("Save failed", {
+        description: err?.message || "Open the browser console for details.",
+      });
+      setSaving(false);
+    },
+  });
+
+  const handleSave = () => {
+    if (!user?.id || !isDirty) return;
+    setSaving(true);
+    const ids = TRACKS
+      .map((t) => pickedByTrack[t.key])
+      .filter((v) => v && v !== NONE_VALUE)
+      .map((id) => ({ id }));
+    updateRecord.mutate({
+      recordId: user.id,
+      fields: { memberships: ids },
+    });
+  };
+
+  const handleDiscard = () => {
+    setPickedByTrack(originalByTrack);
+  };
+
+  if (!user?.id || status === "pending") {
+    return (
+      <div className="content mx-auto py-2" style={{ maxWidth: 1140 }}>
+        <div className="text-sm" style={{ color: CS_MUTED }}>Loading…</div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Toaster />
+      <div className="content mx-auto py-2" style={{ maxWidth: 1140 }}>
+        <Card className="bg-white" style={{ borderColor: CS_BORDER }}>
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+              <div>
+                <h3 className="text-base font-semibold" style={{ color: CS_NAVY }}>
+                  Change commitments
+                </h3>
+                <p className="text-xs mt-1" style={{ color: CS_MUTED }}>
+                  Pick the weekly intensity for each track.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleDiscard}
+                  disabled={!isDirty || saving}
+                  variant="outline"
+                  className="font-medium"
+                  style={{ color: CS_MUTED, borderColor: CS_BORDER }}
+                >
+                  Discard
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={!isDirty || saving}
+                  className="font-semibold"
+                  style={{ backgroundColor: CS_PERIWINKLE, color: "#fff" }}
+                >
+                  {saving ? "Saving…" : "Save"}
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-3">
+              {TRACKS.map((t) => {
+                const optionsForTrack = MEMBERSHIPS.filter((m) => m.track === t.key);
+                const value = pickedByTrack[t.key] ?? NONE_VALUE;
+                return (
+                  <div
+                    key={t.key}
+                    className="flex items-center gap-3 p-3 rounded-lg border"
+                    style={{ borderColor: CS_BORDER, backgroundColor: "#fff" }}
+                  >
+                    <img
+                      src={t.icon}
+                      alt={t.label}
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        objectFit: "cover",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold mb-1" style={{ color: CS_NAVY }}>
+                        {t.label}
+                      </div>
+                      <Select
+                        value={value}
+                        onValueChange={(v) =>
+                          setPickedByTrack({ ...pickedByTrack, [t.key]: v })
+                        }
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={NONE_VALUE}>Not committed</SelectItem>
+                          {optionsForTrack.map((opt) => (
+                            <SelectItem key={opt.id} value={opt.id}>
+                              {opt.tier} — {opt.cadence}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+}

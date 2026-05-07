@@ -1,7 +1,6 @@
 import { useRecords, q } from "@/lib/datasource";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Activity, AlertTriangle, ArrowRight, Flame, Sparkles } from "lucide-react";
+import { Activity, AlertTriangle, Flame, Sparkles } from "lucide-react";
 
 // ─── Brand palette ────────────────────────────────────────────────
 const CS_NAVY = "#001364";
@@ -221,39 +220,26 @@ export default function Block() {
   return (
     <div className="content mx-auto py-4" style={{ maxWidth: 1140 }}>
       {/* ── Header ── */}
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider mb-3"
-            style={{
-              backgroundColor: "rgba(122,147,255,0.10)",
-              color: CS_PERIWINKLE,
-              border: `1px solid ${CS_PERIWINKLE}40`,
-            }}
-          >
-            <Activity className="h-3 w-3" />
-            Your commitments
-          </div>
-          <h2 className="text-2xl font-bold" style={{ color: CS_NAVY }}>
-            This week
-          </h2>
-          <div className="flex items-center gap-3 mt-1 text-xs" style={{ color: CS_MUTED }}>
-            {membershipLabel && <span>{membershipLabel}</span>}
-            {membershipLabel && joinDateLabel && <span style={{ opacity: 0.4 }}>·</span>}
-            {joinDateLabel && <span>Joined {joinDateLabel}</span>}
-          </div>
-        </div>
-        <Button
-          asChild
-          variant="outline"
-          className="font-semibold gap-2"
-          style={{ color: CS_NAVY, borderColor: CS_BORDER }}
+      <div className="mb-6">
+        <div
+          className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider mb-3"
+          style={{
+            backgroundColor: "rgba(122,147,255,0.10)",
+            color: CS_PERIWINKLE,
+            border: `1px solid ${CS_PERIWINKLE}40`,
+          }}
         >
-          <a href="/change-commitments">
-            Change commitments
-            <ArrowRight className="h-4 w-4" />
-          </a>
-        </Button>
+          <Activity className="h-3 w-3" />
+          Your commitments
+        </div>
+        <h2 className="text-2xl font-bold" style={{ color: CS_NAVY }}>
+          This week
+        </h2>
+        <div className="flex items-center gap-3 mt-1 text-xs" style={{ color: CS_MUTED }}>
+          {membershipLabel && <span>{membershipLabel}</span>}
+          {membershipLabel && joinDateLabel && <span style={{ opacity: 0.4 }}>·</span>}
+          {joinDateLabel && <span>Joined {joinDateLabel}</span>}
+        </div>
       </div>
 
       {/* ── Warning banner (if any) ── */}
