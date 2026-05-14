@@ -1,0 +1,395 @@
+import { useRecords, q } from "@/lib/datasource";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, AlertCircle, TrendingUp, Zap, Download } from "lucide-react";
+import { useEffect, useState } from "react";
+
+const select = q.select({
+  recordId: "aHPUs",
+  email: "4HDoO",
+  overallScore: "bmmGF",
+  paidAdsScore: "Oqdpn",
+  paidAdsStatus: "nHMNI",
+  paidAdsResponse: "AaZxh",
+  creativeVolumeScore: "64J9v",
+  creativeVolumeStatus: "81fKK",
+  creativeVolumeResponse: "4rdeX",
+  contentCreatorsScore: "N7Y9t",
+  contentCreatorsStatus: "IFiBU",
+  contentCreatorsResponse: "kDFu1",
+  approvalScore: "IMNf2",
+  approvalStatus: "Ijcgb",
+  approvalResponse: "p5gWp",
+  platformAnswer: "uLeMe",
+});
+
+export default function Block() {
+  const [recordIdFromUrl, setRecordIdFromUrl] = useState<string | null>(null);
+  const [animatedScore, setAnimatedScore] = useState(0);
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('recordId') || params.get('id') || params.get('record');
+    setRecordIdFromUrl(id);
+  }, []);
+
+  const { data, status } = useRecords({ 
+    select, 
+    count: 100,
+    where: recordIdFromUrl ? q.text("recordId").is(recordIdFromUrl) : undefined
+  });
+
+  const handleExportCSV = () => {
+    if (!data?.pages[0]?.items[0]) return;
+
+    const record = data.pages[0].items[0].fields;
+    
+    const getScoreValue = (score: any) => {
+      return Array.isArray(score) ? score[0] || 0 : score || 0;
+    };
+
+    const getTextValue = (text: any) => {
+      return Array.isArray(text) ? text[0] : text;
+    };
+
+    const csvData = [
+      ['Category', 'Score', 'Status', 'Response'],
+      ['Overall Score', getScoreValue(record.overallScore), '', ''],
+      ['Paid Ads', getScoreValue(record.paidAdsScore), getTextValue(record.paidAdsStatus), getTextValue(record.paidAdsResponse)],
+      ['Creative Volume', getScoreValue(record.creativeVolumeScore), getTextValue(record.creativeVolumeStatus), getTextValue(record.creativeVolumeResponse)],
+      ['Content Creators', getScoreValue(record.contentCreatorsScore), getTextValue(record.contentCreatorsStatus), getTextValue(record.contentCreatorsResponse)],
+      ['Approval Workflow', getScoreValue(record.approvalScore), getTextValue(record.approvalStatus), getTextValue(record.approvalResponse)],
+    ];
+
+    const csvContent = csvData.map(row => 
+      row.map(cell => `\"${String(cell || '').replace(/\"/g, '\"\"')}\"`).join(',')
+    ).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'creative-volume-results.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  useEffect(() => {
+    if (status === "success" && data?.pages[0]?.items[0]) {
+      const record = data.pages[0].items[0].fields;
+      const targetScore = Array.isArray(record.overallScore) ? record.overallScore[0] : record.overallScore;
+      
+      const duration = 2000;
+      const steps = 60;
+      const increment = targetScore / steps;
+      let currentStep = 0;
+
+      const timer = setInterval(() => {
+        currentStep++;
+        setAnimatedScore(Math.min(Math.round(increment * currentStep), targetScore));
+        
+        if (currentStep >= steps) {
+          clearInterval(timer);
+          setShowContent(true);
+        }
+      }, duration / steps);
+
+      return () => clearInterval(timer);
+    }
+  }, [status, data]);
+
+  if (!recordIdFromUrl) {
+    return (
+      <div className="min-h-screen bg-[#FAFBFF] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
+          <p className="text-muted-foreground">No record ID found in URL. Please access this page with a valid record ID.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "pending") {
+    return (
+      <div className="min-h-screen bg-[#FAFBFF] flex items-center justify-center">
+        <div className="text-center space-y-4 animate-fade-in">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground animate-pulse">Analyzing your results...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "error" || !data?.pages[0]?.items[0]) {
+    return (
+      <div className="min-h-screen bg-[#FAFBFF] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
+          <p className="text-muted-foreground">No results found for this record ID. Please complete the quiz first.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const record = data.pages[0].items[0].fields;
+  const overallScore = Array.isArray(record.overallScore) ? record.overallScore[0] : record.overallScore;
+  const userEmail = Array.isArray(record.email) ? record.email[0] : record.email;
+  
+  const platformData = Array.isArray(record.platformAnswer) ? record.platformAnswer[0] : record.platformAnswer;
+  const platformLabel = platformData?.label || "your platform";
+
+  const getStatusColor = (status: string) => {
+    const statusStr = Array.isArray(status) ? status[0] : status;
+    if (!statusStr) return "bg-muted";
+    const lower = statusStr.toLowerCase();
+    if (lower.includes("low")) return "bg-red-200 text-red-800";
+    if (lower.includes("medium")) return "bg-orange-200 text-orange-800";
+    if (lower.includes("high")) return "bg-green-200 text-green-800";
+    return "bg-muted";
+  };
+
+  const getScoreValue = (score: any) => {
+    return Array.isArray(score) ? score[0] || 0 : score || 0;
+  };
+
+  const getTextValue = (text: any) => {
+    return Array.isArray(text) ? text[0] : text;
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 75) return "text-green-500";
+    if (score >= 50) return "text-yellow-500";
+    return "text-orange-500";
+  };
+
+  const getGaugeRotation = (score: number) => {
+    return (score / 100) * 180;
+  };
+
+  const categories = [
+    {
+      title: "Paid Ads",
+      score: getScoreValue(record.paidAdsScore),
+      status: getTextValue(record.paidAdsStatus),
+      response: getTextValue(record.paidAdsResponse),
+      icon: TrendingUp,
+    },
+    {
+      title: "Creative Volume",
+      score: getScoreValue(record.creativeVolumeScore),
+      status: getTextValue(record.creativeVolumeStatus),
+      response: getTextValue(record.creativeVolumeResponse),
+      icon: Zap,
+    },
+    {
+      title: "Content Creators",
+      score: getScoreValue(record.contentCreatorsScore),
+      status: getTextValue(record.contentCreatorsStatus),
+      response: getTextValue(record.contentCreatorsResponse),
+      icon: CheckCircle2,
+    },
+    {
+      title: "Approval Workflow",
+      score: getScoreValue(record.approvalScore),
+      status: getTextValue(record.approvalStatus),
+      response: getTextValue(record.approvalResponse),
+      icon: AlertCircle,
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#FAFBFF] py-12">
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.6s ease-out;
+        }
+        .animate-slide-up {
+          animation: slideUp 0.6s ease-out;
+        }
+        .animate-delay-100 { animation-delay: 0.1s; animation-fill-mode: both; }
+        .animate-delay-200 { animation-delay: 0.2s; animation-fill-mode: both; }
+        .animate-delay-300 { animation-delay: 0.3s; animation-fill-mode: both; }
+        .animate-delay-400 { animation-delay: 0.4s; animation-fill-mode: both; }
+      `}</style>
+      
+      <div className="container">
+        <div className="flex justify-between items-center mb-6 animate-fade-in">
+          <Button 
+            onClick={handleExportCSV}
+            className="gap-2 shadow-lg hover:scale-105 transition-transform duration-200"
+            size="lg"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </Button>
+          {userEmail && (
+            <div className="text-sm text-muted-foreground/70">
+              {userEmail}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-8">
+          <div className="text-center space-y-4 max-w-3xl mx-auto animate-fade-in">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+              <CheckCircle2 className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-4xl font-bold text-foreground">Your Creative Volume Results Are In! 🎉</h1>
+            <p className="text-lg text-muted-foreground">
+              Congratulations on completing the quiz. You're one step closer to mastering the art of high-performance ad campaigns.
+            </p>
+            <p className="text-muted-foreground">
+              In today's fast-paced digital landscape on <span className="font-semibold text-foreground">{platformLabel}</span>, your personalized results will help you identify your strengths and pinpoint areas for improvement, so you can boost your ROI and stay ahead of the demanding creative algorithm.
+            </p>
+          </div>
+
+          <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-lg bg-white animate-slide-up animate-delay-100">
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-2xl">Overall Performance Score</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="text-center">
+                <div className="relative w-64 h-32 mx-auto mb-6">
+                  <svg viewBox="0 0 200 100" className="w-full h-full">
+                    <defs>
+                      <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#ef4444" />
+                        <stop offset="50%" stopColor="#eab308" />
+                        <stop offset="100%" stopColor="#22c55e" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M 20 90 A 80 80 0 0 1 180 90"
+                      fill="none"
+                      stroke="#e5e7eb"
+                      strokeWidth="12"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M 20 90 A 80 80 0 0 1 180 90"
+                      fill="none"
+                      stroke="url(#gaugeGradient)"
+                      strokeWidth="12"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(animatedScore / 100) * 251.2} 251.2`}
+                      style={{ transition: 'stroke-dasharray 0.05s ease-out' }}
+                    />
+                    <circle
+                      cx="100"
+                      cy="90"
+                      r="6"
+                      fill="#6366f1"
+                    />
+                    <line
+                      x1="100"
+                      y1="90"
+                      x2="100"
+                      y2="20"
+                      stroke="#6366f1"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      style={{
+                        transformOrigin: '100px 90px',
+                        transform: `rotate(${getGaugeRotation(animatedScore) - 90}deg)`,
+                        transition: 'transform 0.05s ease-out'
+                      }}
+                    />
+                  </svg>
+                </div>
+                <div className={`text-6xl font-bold mb-2 ${getScoreColor(overallScore)}`}>
+                  {animatedScore}/100
+                </div>
+                <Progress value={animatedScore} className="h-3 max-w-md mx-auto" />
+              </div>
+              <p className="text-center text-muted-foreground">
+                Review your feedback carefully and unlock strategies to scale your brand's creative output.
+              </p>
+            </CardContent>
+          </Card>
+
+          {showContent && (
+            <>
+              <div className="space-y-4 animate-fade-in">
+                <h2 className="text-2xl font-bold text-center mb-6">Detailed Category Breakdown</h2>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {categories.map((category, index) => {
+                    const Icon = category.icon;
+                    const delay = `animate-delay-${(index + 1) * 100}`;
+                    return (
+                      <Card 
+                        key={index} 
+                        className={`hover:shadow-xl hover:scale-105 transition-all duration-300 bg-white animate-slide-up ${delay}`}
+                      >
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <Icon className="w-5 h-5 text-primary" />
+                              </div>
+                              <CardTitle className="text-xl">{category.title}</CardTitle>
+                            </div>
+                            <Badge className="text-lg font-bold px-3 py-1">{category.score}/100</Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Status</span>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(category.status)}`}>
+                                {category.status || "N/A"}
+                              </span>
+                            </div>
+                            <Progress value={category.score} className="h-2" />
+                          </div>
+                          {category.response && (
+                            <div className="pt-2 border-t">
+                              <p className="text-sm text-muted-foreground leading-relaxed">{category.response}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-16"></div>
+
+              <Card className="max-w-3xl mx-auto bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 animate-slide-up animate-delay-400">
+                <CardContent className="py-8 space-y-4">
+                  <div className="text-center space-y-3">
+                    <h3 className="text-2xl font-bold text-foreground">Want to Produce More Ads Without Dropping Quality?</h3>
+                    <p className="text-muted-foreground max-w-2xl mx-auto">
+                      <span className="font-semibold text-foreground">Brieflee</span> helps you check your videos against quality standards in just 60 seconds. Upload a video, get AI-powered feedback on what works and what doesn't—before you post it, before you spend money on ads.
+                    </p>
+                    <div className="pt-4">
+                      <a 
+                        href="/sign-up" 
+                        className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 hover:scale-105 transition-all duration-200"
+                      >
+                        Try Brieflee Now →
+                      </a>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
